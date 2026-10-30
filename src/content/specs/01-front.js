@@ -1,0 +1,70 @@
+/* 封面 / 前环衬 / 扉页 / 版权 */
+export default [
+  {
+    id: 'p01',
+    template: 't-cover',
+    sound: 'chirp',
+    aria: '《啊呜噜啵！》一个要你喂的小怪物。点我，开始。',
+    bg: { kind: 'rays', colors: ['--yellow', '--yellow-deep'], focus: [500, 560] },
+    char: { pose: 'happy', at: [170, 220], scale: 0.64, spiral: true },
+    text: {
+      sound: { at: [75, 85], size: 17, align: 'center', width: 850, rotate: -2, text: '啊呜噜啵！' },
+      narration: { at: [300, 290], size: 3.4, align: 'center', width: 400, text: '一个要你喂的小怪物' },
+      /* 屏幕上要告诉孩子"点我"；纸书上点不动，封面上就不放这句（跟真的书封一样干净） */
+      prompt: { at: [60, 870], size: 4, align: 'center', width: 1000, text: '点我，开始。', print: '' },
+    },
+    hotspot: { action: 'start', at: [0, 0], size: 1000, label: '点封面开始阅读' },
+  },
+  {
+    id: 'p02',
+    template: 't-endpaper',
+    noSound: true,
+    aria: '前环衬：苹果、小鱼、星星散落在纸上。',
+    props: [
+      { kind: 'apple', at: [90, 120], scale: 0.19, rotate: -12 },
+      { kind: 'fish', at: [560, 60], scale: 0.22, rotate: 14 },
+      { kind: 'star', at: [320, 330], scale: 0.17, rotate: -8 },
+      { kind: 'apple', at: [690, 430], scale: 0.15, rotate: 18 },
+      { kind: 'fish', at: [70, 600], scale: 0.18, rotate: -16 },
+      { kind: 'star', at: [420, 700], scale: 0.2, rotate: 9 },
+      { kind: 'apple', at: [250, 830], scale: 0.14, rotate: 24 },
+      { kind: 'star', at: [840, 790], scale: 0.12, rotate: -20 },
+    ],
+  },
+  {
+    id: 'p03',
+    template: 't-title',
+    sound: 'chirp',
+    aria: '扉页：《啊呜噜啵！》一个要你喂的小怪物。',
+    bg: { kind: 'rays-tight', colors: ['--pink', '--pink-deep'], focus: [500, 760] },
+    char: { pose: 'idle', at: [250, 470], scale: 0.6, spiral: true },
+    text: {
+      sound: { at: [250, 70], size: 15, align: 'center', width: 500, rotate: -1, text: '啊呜噜啵！' },
+      narration: { at: [300, 300], size: 3.4, align: 'center', width: 400, text: '一个要你喂的小怪物' },
+    },
+  },
+  {
+    id: 'p04',
+    template: 't-plain',
+    screen: false,
+    noSound: true,
+    aria: '版权页：《啊呜噜啵！》，一个要你喂的小怪物。文字与插画、出版信息留空待填。',
+    props: [{ kind: 'spiral', at: [430, 640], scale: 0.14 }],
+    text: {
+      narration: { at: [140, 120], size: 3.4, width: 600, text: '《啊呜噜啵！》' },
+      adult: {
+        at: [140, 240],
+        size: 2.2,
+        width: 720,
+        text: [
+          '一个要你喂的小怪物',
+          '文字与插画：＿＿＿＿＿＿＿',
+          '出版：＿＿＿＿＿＿＿　初版：＿＿＿＿年＿＿月',
+          '字体：站酷快乐体 · 霞鹜文楷（SIL OFL 1.1）',
+          '本书另有屏幕互动版，可点、可听；纸书版供共读。',
+          '版本 1.0。未经许可不得转载。',
+        ],
+      },
+    },
+  },
+];

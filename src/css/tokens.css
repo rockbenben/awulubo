@@ -1,0 +1,82 @@
+/* 《啊呜噜啵！》设计令牌
+   色板实测自参考书（见 docs/superpowers/specs/2026-10-30-awulubo-picture-book-design.md §3.3）。
+   字体 @font-face 由 tools/build.mjs 在构建时注入（内联 base64 woff2 子集）。 */
+
+:root {
+  /* —— 纸与墨 —— */
+  --paper: #FFFFFF;
+  --ink: #1F1F1F;
+  --grey: #6B6B6B;
+
+  /* —— 饱和平涂色 —— */
+  --red: #F43934;
+  --red-deep: #D8332D;
+  --yellow: #FFE94D;
+  --yellow-deep: #F5D324;
+  --blue: #8ABFE9;
+  --deep-blue: #4778BB;
+  --pink: #F9ACB6;
+  --pink-deep: #EF8E9B;
+  --green: #8EAF5A;
+  --orange: #FA743C;
+  --purple: #5B4A8A;
+  --night: #2E2A5A;
+  --tongue: #F58A9B;
+  --mouth: #3A1A1A;
+  --cheek: #FD8F92;
+
+  /* —— 笔触特效层（放射线 / 色带 / 漩涡 / 色盘 / 彩纸）—— */
+  --ray: var(--yellow);
+  --ray2: var(--yellow-deep);
+  --ray-gap: var(--paper);
+  --disc: var(--blue);
+  --confetti-red: #F43934;
+  --confetti-yellow: #FFE94D;
+  --confetti-blue: #8ABFE9;
+  --confetti-pink: #F9ACB6;
+  --confetti-green: #8EAF5A;
+  --confetti-orange: #FA743C;
+
+  /* —— 彩虹六色（页面色带 / 角色身体共用）—— */
+  --band-1: #F43934;
+  --band-2: #FA743C;
+  --band-3: #FFE94D;
+  --band-4: #8EAF5A;
+  --band-5: #8ABFE9;
+  --band-6: #5B4A8A;
+  --body-band-1: #F43934;
+  --body-band-2: #FA743C;
+  --body-band-3: #FFE94D;
+  --body-band-4: #8EAF5A;
+  --body-band-5: #8ABFE9;
+  --body-band-6: #5B4A8A;
+
+  /* —— 夜 —— */
+  --moon: #FFF3B0;
+  --moon-deep: #E4CE86;
+  --star: var(--paper);
+
+  /* —— 角色颜色状态（默认：纸白身体 + 黑螺旋） —— */
+  --body: var(--paper);
+  --spiral: var(--ink);
+
+  /* —— 笔画 —— */
+  --line: 26;      /* 角色主笔画宽度（角色坐标系 1000×1000） */
+
+  /* —— 字阶（单位为页宽 %） —— */  --fs-sound: 16;
+  --fs-narration: 3.4;
+  --fs-prompt: 4.0;
+  --fs-adult: 2.2;
+}
+
+/* —— 颜色状态 —— */
+.state-paper  { --body: var(--paper);   --spiral: var(--ink); }
+.state-red    { --body: var(--red);     --spiral: var(--ink); }
+.state-blue   { --body: var(--blue);    --spiral: var(--ink); }
+.state-yellow { --body: var(--yellow);  --spiral: var(--ink); }
+.state-pale   { --body: #F4F1EC;        --spiral: var(--ink); }
+
+/* 满版色页上的角色：身体与底色同色，靠黑线与白色细节撑住形状 */
+.on-color     { --body: var(--red);     --spiral: var(--ink); }
+.on-color.state-blue   { --body: var(--blue); }
+.on-color.state-yellow { --body: var(--yellow); }

@@ -1,0 +1,18 @@
+/* 字体子集：Vite 会把这些 woff2 当作资源内联进单文件 HTML。
+   字体由 tools/build-fonts.mjs 按全书实际用字切出。
+   旁白用霞鹜文楷 500（比 Light 粗，才像手写毛笔字，而不是印刷体课本）。 */
+@font-face {
+  font-family: 'ZCOOL KuaiLe';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/zcool-kuaile-subset.woff2') format('woff2');
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'LXGW WenKai';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../fonts/lxgw-wenkai-subset.woff2') format('woff2');
+  font-display: block;
+}

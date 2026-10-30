@@ -1,0 +1,183 @@
+<!-- 噜啵：角色零件库。
+     坐标系 1000 × 1000，身体直径约 560，主笔画宽 26。
+     路径由 tools/gen-paths.py 确定性生成后誊入（抖动圆 = 手绘的不圆）。
+
+     注意：零件被 <use> 引用后落在影子树里，文档 CSS 选择器不生效，
+     因此所有外观都写成元素内联样式，颜色/线宽走 CSS 变量（变量可穿透影子树）。 -->
+
+<svg xmlns="http://www.w3.org/2000/svg">
+
+  <!-- 身体轮廓线：只描边不填色。
+       ch-body（纸白身体）与彩虹身体共用这一份路径，改形状时只改这里。
+       path 用 fill="inherit"：克隆进 <use> 影子树后，填充由引用方的 fill 决定。 -->
+  <g id="ch-body-line" style="stroke:var(--ink);stroke-width:var(--line);stroke-linecap:round;stroke-linejoin:round">
+    <path fill="inherit"
+          d="M 490.4 239.0 C 581.0 235.8 621.6 257.7 679.2 309.1 C 736.8 360.4 758.9 382.0 772.8 463.9 C 786.6 545.9 784.5 562.6 754.1 628.1 C 723.6 693.6 702.3 722.2 618.9 761.6 C 535.6 801.0 513.5 792.9 429.9 770.4 C 346.3 747.9 288.2 717.5 252.6 657.9 C 217.0 598.3 219.8 568.3 228.3 482.9 C 236.8 397.6 261.0 328.0 318.5 282.2 C 376.0 236.4 399.9 242.2 506.4 238.4" />
+  </g>
+
+  <g id="ch-body">
+    <use href="#ch-body-line" style="fill:var(--body)" />
+  </g>
+
+  <g id="ch-spiral">
+    <path style="fill:none;stroke:var(--spiral);stroke-width:18;stroke-linecap:round;stroke-linejoin:round"
+          d="M 514.0 667.6 C 514.0 669.1 514.7 673.6 513.9 676.3 C 513.1 679.0 511.5 682.0 509.1 684.0 C 506.6 686.1 502.7 688.1 499.1 688.6 C 495.6 689.1 491.0 688.5 487.5 687.1 C 484.1 685.7 480.7 683.6 478.2 680.3 C 475.8 677.1 473.1 672.6 472.8 667.6 C 472.5 662.7 474.1 655.3 476.3 650.7 C 478.4 646.0 481.5 642.5 485.9 639.7 C 490.2 637.0 496.2 634.2 502.3 634.3 C 508.4 634.3 517.1 636.9 522.6 640.0 C 528.0 643.0 532.1 647.0 535.0 652.7 C 537.9 658.5 540.1 667.5 539.9 674.4 C 539.7 681.3 537.7 688.1 533.7 694.0 C 529.7 699.9 522.5 706.4 515.9 709.9 C 509.3 713.3 502.2 715.4 494.3 714.6 C 486.3 713.9 475.3 710.7 468.1 705.5 C 460.9 700.3 454.5 691.6 451.0 683.6 C 447.6 675.7 446.0 666.8 447.4 657.8 C 448.7 648.9 453.1 637.6 459.0 630.1 C 465.0 622.6 474.4 616.1 483.0 612.5 C 491.6 609.0 500.4 606.9 510.6 608.7 C 520.7 610.6 535.3 616.7 543.9 623.6 C 552.5 630.6 558.7 640.6 562.2 650.5 C 565.7 660.5 566.9 672.7 565.0 683.3 C 563.2 694.0 559.3 705.4 551.0 714.4 C 542.7 723.5 527.1 733.5 515.2 737.6 C 503.3 741.6 491.6 741.7 479.7 738.5 C 467.8 735.4 453.1 727.9 443.8 718.5 C 434.4 709.1 426.7 694.9 423.5 682.1 C 420.3 669.3 424.3 648.4 424.5 641.7" />
+  </g>
+
+  <g id="ch-feet">
+    <path style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linecap:round;stroke-linejoin:round"
+          d="M 386 752 C 366 762, 350 782, 354 802 C 358 822, 384 828, 402 816 C 417 806, 428 786, 428 758 Z" />
+    <path style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linecap:round;stroke-linejoin:round"
+          d="M 614 752 C 634 762, 650 782, 646 802 C 642 822, 616 828, 598 816 C 583 806, 572 786, 572 758 Z" />
+  </g>
+
+  <g id="ch-eyes-dots">
+    <circle style="fill:var(--ink)" cx="412" cy="352" r="26" />
+    <circle style="fill:var(--ink)" cx="588" cy="352" r="26" />
+    <circle style="fill:var(--glint,var(--paper))" cx="404" cy="342" r="9" />
+    <circle style="fill:var(--glint,var(--paper))" cx="580" cy="342" r="9" />
+  </g>
+
+  <g id="ch-eyes-happy">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 384 358 C 396 330, 428 330, 440 356" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 560 356 C 572 330, 604 330, 616 358" />
+  </g>
+
+  <g id="ch-brows-neutral">
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 384 300 C 400 292, 420 290, 438 294" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 616 300 C 600 292, 580 290, 562 294" />
+  </g>
+
+  <g id="ch-brows-worried">
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 382 306 C 400 292, 422 286, 440 282" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 618 306 C 600 292, 578 286, 560 282" />
+  </g>
+
+  <g id="ch-brows-excited">
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 382 292 C 398 276, 424 276, 440 288" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 618 292 C 602 276, 576 276, 560 288" />
+  </g>
+
+  <g id="ch-cheeks">
+    <circle style="fill:var(--cheek);opacity:0.45" cx="342" cy="424" r="30" />
+    <circle style="fill:var(--cheek);opacity:0.45" cx="658" cy="424" r="30" />
+  </g>
+
+  <g id="ch-mouth-smile">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 428 452 C 448 500, 552 500, 572 452" />
+  </g>
+
+  <g id="ch-mouth-oops">
+    <path style="fill:var(--mouth);stroke:var(--ink);stroke-width:22;stroke-linejoin:round;stroke-linecap:round"
+          d="M 436 434 C 468 420, 532 420, 564 434 C 582 452, 566 500, 500 502 C 434 504, 418 452, 436 434 Z" />
+    <path style="fill:var(--tongue)" d="M 464 490 C 472 468, 528 468, 536 490 C 516 500, 484 500, 464 490 Z" />
+  </g>
+
+  <g id="ch-mouth-open">
+    <path style="fill:var(--mouth);stroke:var(--ink);stroke-width:22;stroke-linejoin:round;stroke-linecap:round"
+          d="M 352 438 C 400 424, 600 424, 648 438 C 664 520, 596 590, 500 590 C 404 590, 336 520, 352 438 Z" />
+    <path style="fill:var(--tongue)" d="M 450 582 C 458 542, 542 542, 550 582 C 520 594, 480 594, 450 582 Z" />
+  </g>
+
+  <g id="ch-mouth-grin">
+    <path style="fill:var(--mouth);stroke:var(--ink);stroke-width:22;stroke-linejoin:round;stroke-linecap:round"
+          d="M 404 462 C 442 566, 558 566, 596 462 C 538 496, 462 496, 404 462 Z" />
+    <path style="fill:var(--tongue)" d="M 452 520 C 462 486, 538 486, 548 520 C 518 538, 482 538, 452 520 Z" />
+  </g>
+
+  <g id="ch-mouth-flat">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 448 478 C 478 468, 522 468, 552 478" />
+  </g>
+
+  <!-- ============ 姿态（不含螺旋：螺旋由页面单独引用，方便在屏幕上转） ============ -->
+
+  <!-- idle：平常，闭着嘴 -->
+  <g id="pose-idle">
+        <use href="#ch-feet" />
+    <use href="#ch-body" />
+
+    <use href="#ch-brows-neutral" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-smile" />
+  </g>
+
+  <!-- hungry：饿了，眉毛发愁，嘴微微张着 -->
+  <g id="pose-hungry">
+        <use href="#ch-feet" />
+    <use href="#ch-body" />
+
+    <use href="#ch-brows-worried" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-oops" />
+  </g>
+
+  <!-- chomp：啊呜，大张嘴 -->
+  <g id="pose-chomp">
+        <use href="#ch-feet" />
+    <use href="#ch-body" />
+
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-mouth-open" />
+  </g>
+
+  <!-- happy：吃饱了，眯眼大笑 -->
+  <g id="pose-happy">
+        <use href="#ch-feet" />
+    <use href="#ch-body" />
+
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-happy" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-grin" />
+  </g>
+
+  <!-- peek：从下缘探出头（页面负责裁切） -->
+  <g id="pose-peek">
+    <use href="#ch-body" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-mouth-oops" />
+  </g>
+
+  <!-- full：吃太多，鼓成球，抿着嘴 -->
+  <g id="pose-full">
+    <use href="#ch-body" />
+    <use href="#ch-feet" />
+    <use href="#ch-brows-worried" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-flat" />
+  </g>
+
+  <!-- burp：打嗝，眯着眼张大嘴 -->
+  <g id="pose-burp">
+    <use href="#ch-body" />
+    <use href="#ch-feet" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-happy" />
+    <use href="#ch-mouth-open" />
+  </g>
+
+  <!-- asleep：睡着了 -->
+  <g id="pose-asleep">
+    <use href="#ch-body" />
+    <use href="#ch-brows-neutral" />
+    <use href="#ch-eyes-happy" />
+    <use href="#ch-mouth-smile" />
+  </g>
+
+  <!-- rainbow：彩虹身体（色带在 rainbow.svg），轮廓线沿用 ch-body-line -->
+  <g id="pose-rainbow">
+    <use href="#ch-body-rainbow" />
+    <use href="#ch-body-line" style="fill:none" />
+    <use href="#ch-feet" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-grin" />
+  </g>
+
+</svg>
