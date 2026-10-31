@@ -297,13 +297,17 @@
     if (document.body.classList.contains('print')) return;
 
     var id = location.hash.slice(1);
+    /* 找起始页，然后**只调一次** show()。
+       以前是 show(k) 之后又 show(current)——地址栏带 #pXX 打开时，
+       这一页的进场音效会响两遍（同时），页面状态也被复位两次。 */
+    var start = 0;
     for (var k = 0; k < pages.length; k++) {
       if (pages[k].getAttribute('data-id') === id) {
-        show(k);
+        start = k;
         break;
       }
     }
-    show(current);
+    show(start);
 
     var mute = document.getElementById('mute');
     if (mute) {
@@ -318,6 +322,13 @@
 
     /* 封面/首屏的第一次点击解锁音频 */
     document.addEventListener('pointerdown', function () {
+      global.AudioBook.unlock();
+    }, { once: true });
+
+    /* 键盘也要能解锁：只用键盘读书的孩子不点屏幕，
+       pointerdown 永远不来，音频上下文就一直是挂起的——整本书没有声音。
+       方向键/回车/空格都算一次用户手势。 */
+    document.addEventListener('keydown', function () {
       global.AudioBook.unlock();
     }, { once: true });
 

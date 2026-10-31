@@ -16,7 +16,15 @@
       master.gain.value = 0.25;
       master.connect(ctx.destination);
     }
-    if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+    if (ctx.state === 'suspended' && ctx.resume) {
+      var resumed = ctx.resume();
+      /* 没有用户手势时 Safari 会拿 NotAllowedError 拒绝这个 promise：
+         不接住就是一个未处理的 rejection（控制台红字）。
+         拒绝就拒绝——等读者真的点了屏幕，下一次 ensure() 会再试。 */
+      if (resumed && typeof resumed.catch === 'function') {
+        resumed.catch(function () {});
+      }
+    }
     return ctx;
   }
 
@@ -555,15 +563,36 @@
       if (!fn) return Promise.resolve(0);
       var analyser = ctx.createAnalyser();
       analyser.fftSize = 2048;
+      /* 量信号，但不把它再放一遍。
+         以前 analyser 直接接到 ctx.destination，于是同一个声音走了两条路
+         （master→destination 和 master→analyser→destination）——听着是双份，
+         而主音量已经是 0.25，双份就变响，测出来的音色跟实际听见的对不上。
+         现在 analyser 后面接一个增益为 0 的哑节点：图照样被拉动
+         （AnalyserNode 不接到终点就不出数据），但这条路不出声。 */
+      var silent = ctx.createGain();
+      silent.gain.value = 0;
       master.connect(analyser);
-      analyser.connect(ctx.destination);
+      analyser.connect(silent);
+      silent.connect(ctx.destination);
       var buf = new Float32Array(analyser.fftSize);
       var peak = 0;
       var started = Date.now();
       var windowMs = ms || 300;
+      function detach() {
+        /* 无论从哪条路出来，这条旁路都得拆掉：
+           漏拆的话，量过的音色从此一直双份，后面的测试全被污染。 */
+        try {
+          master.disconnect(analyser);
+          analyser.disconnect();
+          silent.disconnect();
+        } catch (e) {
+          /* 断开失败不影响结论 */
+        }
+      }
       try {
         fn();
       } catch (e) {
+        detach();
         return Promise.resolve(0);
       }
       return new Promise(function (resolve) {
@@ -576,12 +605,7 @@
           if (Date.now() - started < windowMs) {
             setTimeout(tick, 25);
           } else {
-            try {
-              master.disconnect(analyser);
-              analyser.disconnect();
-            } catch (e) {
-              /* 断开失败不影响结论 */
-            }
+            detach();
             resolve(peak);
           }
         }
