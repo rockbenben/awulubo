@@ -2,7 +2,13 @@ node_modules/
 dist/
 dist-site/
 .gstack/
-src/fonts/*.stamp
+# 字体子集的戳记**要进仓库**（src/fonts/.*.stamp）：
+#   里面记的是字符集与源字体的哈希，跟机器无关；
+#   --check 靠它判断子集是不是最新的。
+#   戳记不进仓库，干净检出上就没有"最新的子集"这个凭据，
+#   npm run check 必然判"字体子集过期"，CI 永远是红的。
+# 只忽略切割过程中的临时字符集文件。
+src/fonts/.charset.txt
 *.log
 .DS_Store
 Thumbs.db

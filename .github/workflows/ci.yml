@@ -70,18 +70,40 @@ jobs:
       # 浏览器：版式检查、冒烟、压力测试都要它
       - run: npx playwright install --with-deps chromium
 
-      # 结构 / 版式 / 授权 / 字体覆盖 + 子集是不是最新
-      - run: npm run check
-
-      # 构建产物（屏幕互动版 + 印刷版页面 + 拼版页面）
+      # **先构建，再检查**。
+      # 版式检查（tools/check-layout.mjs）量的是 dist/proof.html，
+      # 而 dist/ 是 gitignored 的——干净检出的仓库里没有 dist/，
+      # 检查排在构建前面就必然报"找不到 dist/proof.html"，CI 永远是红的。
+      # 顺序反过一次，代价是一条推不上去的流水线。
       - run: npm run build
+
+      # 结构 / 内容审查 / 热区 / 版式 / 授权 / 字体覆盖 + 子集是不是最新
+      # （npm run check 里含 check-hotspots.mjs：每个热区都要罩住它指的东西的墨迹，
+      #   且在 320px 小屏上不小于 44 CSS px——孩子按不准就等于没有这个热区）
+      - run: npm run check
 
       # 印刷 PDF 也要验：页数必须是 4 的倍数（骑马钉排得出帖）、
       # 字体只能是那两套授权子集（漏字会混进未授权的系统字体）
       - run: npm run pdf
+
+      # 骑马钉拼版（家里双面打印对折即成书的那份）也要验：
+      # 页数与字体跟单页 PDF 是两套检查，不跑它就等于没人管
+      - run: npm run pdf:booklet
 
       # 交互冒烟（Playwright，几十项断言）
       - run: npm run smoke
 
       # 幼儿乱读压力测试：随机种子可复现
       - run: npm run chaos -- --seed 1 --steps 400
+
+      # 逐页截图闸门：每页都得真的画出来，背景要铺满四条边。
+      # 以前这两步（截图 + 对比度）靠本机的 html-shot 技能，
+      # 路径写死在脚本里——换台机器跑不了，CI 里更跑不了，
+      # 于是"整本白板"这种事只能靠人眼看联系表才发现。
+      # 现在截图与对比度都由项目自己用 Playwright 拍，CI 上跑得动。
+      - run: npm run shots
+      - run: npm run check:shots
+
+      # 文字对比度闸门：按真实像素量文字底下是什么颜色
+      # （正文 ≥ 4.5:1，大字 ≥ 3:1）；屏幕版与印刷版都量。
+      - run: npm run check:contrast

@@ -61,12 +61,15 @@ async function main() {
 
   console.log(`字符集：${[...chars].length} 个字符`);
 
+  /* 字符集本身的哈希：改了正文文字就变。
+     用哈希而不是长度——改一个字换一个字，长度不变也要重切。 */
+  const hash = crypto.createHash('sha1').update(chars).digest('hex');
+
   /* 只检查：子集是不是按当前字符集切的。
      子集漏字 → 浏览器拿系统字体顶上（STKaiti/SimSun…），那些字体没有商用授权。
      真实发生过：改完文案没重切子集，PDF 里就混进了一套 STKaiti，
      而页面截图上完全看不出来。 */
   if (process.argv.includes('--check')) {
-    const hash = crypto.createHash('sha1').update(chars).digest('hex');
     const stale = [];
     for (const source of SOURCES) {
       const stampFile = path.join(fontsDir, `.${source.out}.stamp`);
@@ -90,13 +93,23 @@ async function main() {
       continue;
     }
     const out = path.join(fontsDir, source.out);
-    const srcTime = fs.statSync(source.file).mtimeMs;
     const stampFile = path.join(fontsDir, `.${source.out}.stamp`);
     const stamp = fs.existsSync(stampFile) ? fs.readFileSync(stampFile, 'utf8') : '';
-    /* 用字符集本身的哈希，不能只用长度：改一个字换一个字，长度不变也要重切 */
-    const current = `${crypto.createHash('sha1').update(chars).digest('hex')}:${srcTime}`;
+    /* 戳记里记两样**跟机器无关**的东西：
+         · 字符集的哈希——改了正文文字哈希就变，必须重切；
+         · 源字体文件的哈希——@fontsource 升级了就得用新源重切。
+       以前记的是源字体的 mtime：mtime 是"这台机器上装的时候"，
+       换个机器装同一个包，mtime 也不同——戳记就没法进仓库，
+       而戳记不进仓库，干净检出上 --check 必然判"子集过期"，
+       CI 永远是红的。哈希跟机器无关，戳记才能进仓库。
+       用字符集长度不够：改一个字换一个字，长度不变也要重切。 */
+    const srcHash = crypto
+      .createHash('sha1')
+      .update(fs.readFileSync(source.file))
+      .digest('hex');
+    const current = `${hash}:${srcHash}`;
 
-    if (stamp === current && fs.existsSync(out) && fs.statSync(out).mtimeMs >= srcTime) {
+    if (stamp === current && fs.existsSync(out)) {
       console.log(`· ${source.out} 已是最新（${(fs.statSync(out).size / 1024).toFixed(1)} KB），跳过`);
       continue;
     }

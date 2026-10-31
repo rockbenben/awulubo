@@ -59,9 +59,12 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      - run: npm run check
-
+      # **先构建，再检查**：版式检查量的是 dist/proof.html，
+      # 而 dist/ 不进仓库——检查排在构建前面，干净检出上必然失败，
+      # 部署分支就永远推不上去。
       - run: npm run build
+
+      - run: npm run check
 
       - name: Push to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
