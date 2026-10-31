@@ -1,7 +1,7 @@
 /* S5 三样一起喂：变成彩虹 */
 export default [
   {
-    id: 'p13',
+    id: 'p15',
     template: 't-rainbow',
     sound: 'chomp',
     aria: '红苹果、蓝小鱼、黄星星。一、二、三——啊呜！按顺序点三样。',
@@ -32,7 +32,7 @@ export default [
     ],
   },
   {
-    id: 'p14',
+    id: 'p16',
     template: 't-rainbow',
     sound: 'rainbow',
     aria: '噜啵变成彩虹啦！彩虹！',

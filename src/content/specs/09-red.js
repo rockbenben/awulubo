@@ -1,7 +1,7 @@
 /* S2 红苹果：吃完变红 */
 export default [
   {
-    id: 'p07',
+    id: 'p09',
     template: 't-food',
     sound: 'chomp',
     aria: '先吃一个红苹果。噜啵，张嘴。啊呜！点一下红苹果。',
@@ -18,7 +18,7 @@ export default [
     hotspot: { action: 'feed', target: 'apple', at: [337, 188], size: 324, label: '喂噜啵吃红苹果' },
   },
   {
-    id: 'p08',
+    id: 'p10',
     template: 't-color',
     sound: 'burp',
     aria: '啊呜！噜啵变红啦！嗝——',

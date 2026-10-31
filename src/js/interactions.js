@@ -4,13 +4,13 @@
   'use strict';
 
   /* 每页的临时计数（喂了三样、吃了几口、找到几个）。
-     读者会走回头路：p25 摸噜啵、p42 再读一次，都会跳回 p05 重读一遍。
+     读者会走回头路：p29 摸噜啵、p62 再读一次，都会跳回 p05 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
      计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。 */
   var counters = {};
 
   /* 点错次数**单独记**，不能混进 counters：
-     p13 的"按顺序点三样"、p15 的"喂三口"都共用 counters，
+     p15 的"按顺序点三样"、p17 的"喂三口"都共用 counters，
      点错一下就把顺序挤偏——孩子的第一次正确点击会被判成"顺序错了"（摇头、苹果不吃）。 */
   var misses = {};
 
@@ -38,11 +38,11 @@
   }
 
   /* 进入页面时把这一页的互动状态复位。
-     读者会走回头路：p25 摸噜啵、p42 再读一次，都会跳回 p05 重读一遍。
+     读者会走回头路：p29 摸噜啵、p62 再读一次，都会跳回 p05 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
      计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。
-     同理，这一页"已经演出过的效果"也要复位：p23 的灯变暗、p19 的彩纸开花、
-     p17 的螺旋角度、p15 的越吃越圆——不复位的话，读者第二次进来会看到
+     同理，这一页"已经演出过的效果"也要复位：p27 的灯变暗、p23 的彩纸开花、
+     p21 的螺旋角度、p17 的越吃越圆——不复位的话，读者第二次进来会看到
      "效果已经演过了"的样子：点月亮没反应、点肚子直接就翻页，看起来像坏了。 */
   function reset(page) {
     counters[page.getAttribute('data-id')] = 0;
@@ -81,7 +81,7 @@
 
     /* 道具复原：被吃掉/被找到的道具会停在 10% 不透明度。
        不复位的话，回头重进这一页时它们还是"已经没了"的样子，
-       提示却还在让人点它们（p13 的三样、p27 的三样都这样）。 */
+       提示却还在让人点它们（p15 的三样、p31 的三样都这样）。 */
     var flown = page.querySelectorAll('.is-flying');
     for (var f = 0; f < flown.length; f++) {
       flown[f].classList.remove('is-flying');
@@ -89,7 +89,7 @@
 
     /* 数一数：数字与"数过了"的痕迹都要复位。
        不复位的话，回头再进这一页，数字已经全亮着——数一遍就翻页，没法再数。
-       只复位"数数"这一页自己的数字：答案页（p32）那个「3」是**静态亮着**的
+       只复位"数数"这一页自己的数字：答案页（p42）那个「3」是**静态亮着**的
        （页面数据里 numbers[].on = true），它不是数出来的，是本来就在那儿。
        以前连它一起清掉，结果读者数完三个苹果翻到答案页，
        上面写着"三个红苹果！"，那个大大的「3」却不见了——答案页没了答案。 */
@@ -163,7 +163,7 @@
   }
 
   /* 吃掉的道具要回来。
-     p15 要连喂三口：第一口之后苹果就停在 10% 不透明度、缩成 1/4，看不见了，
+     p17 要连喂三口：第一口之后苹果就停在 10% 不透明度、缩成 1/4，看不见了，
      可提示还写着"再喂一口！"——孩子面前没有东西可喂，只能去戳那颗不能点的星星，
      一戳就翻页，"越吃越圆"这场戏没了。喂完一口就把道具放回原位。 */
   function restoreProp(page, target, delay) {
@@ -384,8 +384,8 @@
     /* 点肚子：咕噜声 + 噜啵晃一下 → 翻页 */
     belly: function (page) {
       /* 同一套动作，两种声音：
-         p05 是"肚子饿了"的咕噜；p16 是"越吃越圆"，身子弹一下（果冻声）。 */
-      if (page.getAttribute('data-id') === 'p16') {
+         p05 是"肚子饿了"的咕噜；p18 是"越吃越圆"，身子弹一下（果冻声）。 */
+      if (page.getAttribute('data-id') === 'p18') {
         global.AudioBook.play('boing');
       } else {
         global.AudioBook.play('gulu');
@@ -402,7 +402,7 @@
       fly(page, target);
       clearMisses(page);
       var n = bump(page);
-      if (page.getAttribute('data-id') === 'p15') {
+      if (page.getAttribute('data-id') === 'p17') {
         /* 还要还要：一口一口地吃，越吃越圆。
            基准缩放取 data-base-scale（页面数据里的原值），
            不能读当前 transform——那已经是上一次改过的值，会越叠越大。 */
@@ -538,7 +538,7 @@
     },
 
     /* 飞：彩纸把它送到天上以后，点它，它横着飞过天空。
-       全书唯一一次「它自己在动」——p20 那句"送到天上啦"就在这一页兑现，
+       全书唯一一次「它自己在动」——p24 那句"送到天上啦"就在这一页兑现，
        不另起一页：另起一页的话，承诺和兑现之间还隔着"玩累了""晚安"，
        孩子的注意力早就跟不上了。 */
     fly: function (page) {
@@ -664,6 +664,44 @@
           );
         });
       }
+      global.Book.after(800, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 问名字：它歪一下头、笑一声，然后翻页 */
+    name: function (page) {
+      global.AudioBook.play('giggle');
+      wobble(page);
+      global.Book.after(750, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 揉一揉：它舒服地哼一声，身子一软，然后翻页 */
+    massage: function (page) {
+      global.AudioBook.play('gulu');
+      wobble(page);
+      global.Book.after(750, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 送颜色：全书的爆点——彩虹声 + 它蹦一下，然后翻页。
+       视觉上这一页本来就是满彩虹，真正"炸"的是下一页的彩纸，
+       所以这里不用再撒一次彩纸（撒了也看不见：彩虹底上没有彩纸花）。 */
+    gift: function (page) {
+      global.AudioBook.play('rainbow');
+      wobble(page);
+      global.Book.after(900, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 困了：打个哈欠，身子一软，然后翻页 */
+    sleepy: function (page) {
+      global.AudioBook.play('sigh');
+      wobble(page);
       global.Book.after(800, function () {
         global.Book.next();
       }, page);

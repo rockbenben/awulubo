@@ -2,7 +2,7 @@
    （前面多了「躲猫猫」「数一数」两个跨页，这四页的编号整体往后挪） */
 export default [
   {
-    id: 'p41',
+    id: 'p61',
     template: 't-plain',
     screen: false,
     noSound: true,
@@ -30,7 +30,7 @@ export default [
     },
   },
   {
-    id: 'p42',
+    id: 'p62',
     template: 't-again',
     sound: 'chirp',
     aria: '读完啦？再读一次。点圆圈，转回去。',
@@ -56,7 +56,7 @@ export default [
     hotspot: { action: 'again', target: 'arrow', at: [184, 190], size: 508, label: '点圆圈，再读一次' },
   },
   {
-    id: 'p43',
+    id: 'p63',
     template: 't-endpaper',
     screen: false,
     noSound: true,
@@ -72,7 +72,7 @@ export default [
     ],
   },
   {
-    id: 'p44',
+    id: 'p64',
     template: 't-color',
     screen: false,
     sound: 'chirp',

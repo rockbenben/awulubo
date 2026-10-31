@@ -1,7 +1,10 @@
-/* S12 找一找：噜啵躲起来了 */
+/* S14 找一找：三样东西藏在哪儿
+   —— 原来「找一找」和「你都找到了吗」挤在一跨页（2 页）里，
+      孩子点完还没反应过来。现在拆成两跨页：
+      这一跨页只管找，下一跨页才管"找到了，然后呢"。 */
 export default [
   {
-    id: 'p27',
+    id: 'p31',
     noSound: true,
     template: 't-search',
     aria: '找一找：红苹果、蓝小鱼、黄星星。它们都藏在哪儿？点你找到的东西。',
@@ -22,7 +25,6 @@ export default [
     /* 热区罩住各自的墨迹（苹果 128–255 × 223–336、小鱼 717–825 × 675–733、
        星星 577–732 × 161–293），而且都不小于 250 个单位——
        规格 §6.6：点按目标 ≥ 25% 页宽。
-       原来三个热区都偏上偏大，苹果那一块的下缘点不到。
        三个热区上下分开（星止于 400、小鱼自 620 起），星星那一块
        也不会盖到小鱼（星星的墨迹到 732，小鱼从 717 起——横向差 15 个单位，
        靠上下分开避开：星星的热区只到 400，小鱼的热区从 620 起）。 */
@@ -33,20 +35,22 @@ export default [
     ],
   },
   {
-    id: 'p28',
-    template: 't-search',
+    id: 'p32',
+    template: 't-burst',
     sound: 'chirp',
-    aria: '你都找到了吗？啊呜！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
+    aria: '全找到啦！它们都在这儿。',
+    /* 找齐了：三样东西不再藏在角落，大大方方摆出来。
+       淡黄底 = 从"找一找"的淡蓝底升上来，孩子看得出场景换了。 */
+    bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
     props: [
-      { kind: 'apple', at: [140, 180], scale: 0.16, rotate: -10, class: 'prop-apple' },
-      { kind: 'fish', at: [690, 200], scale: 0.18, rotate: 12, class: 'prop-fish' },
-      { kind: 'star', at: [420, 150], scale: 0.15, rotate: -6, class: 'prop-star' },
+      { kind: 'apple', at: [180, 400], scale: 0.3, rotate: -10, class: 'prop-apple' },
+      { kind: 'fish', at: [520, 420], scale: 0.32, rotate: 12, class: 'prop-fish' },
+      { kind: 'star', at: [690, 380], scale: 0.28, rotate: -6, class: 'prop-star' },
     ],
-    char: { pose: 'happy', at: [300, 360], scale: 0.58, spiral: true },
+    char: { pose: 'happy', at: [300, 620], scale: 0.44, spiral: true },
     text: {
-      narration: { text: '你都找到了吗？', at: [60, 70], size: 3.4, width: 340 },
-      sound: { text: '啊呜！', at: [518, 78], size: 20, rotate: 5 },
+      narration: { at: [60, 70], size: 3.4, width: 460, text: '全找到啦！' },
+      sound: { at: [60, 230], size: 12, rotate: 2, text: '它们都在这儿！' },
     },
   },
 ];

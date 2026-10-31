@@ -1,7 +1,7 @@
 /* S9 玩累了：颜色要回家了 */
 export default [
   {
-    id: 'p21',
+    id: 'p25',
     sound: 'sigh',
     template: 't-dialog',
     aria: '玩累了……唉——颜色要回家了。',
@@ -14,7 +14,7 @@ export default [
     },
   },
   {
-    id: 'p22',
+    id: 'p26',
     template: 't-dialog',
     sound: 'snore',
     aria: '明天，再变新的颜色。呼噜……',

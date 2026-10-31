@@ -1,7 +1,7 @@
 /* S6 吃太多：鼓成一个大球 */
 export default [
   {
-    id: 'p15',
+    id: 'p17',
     template: 't-dialog',
     sound: 'chomp',
     aria: '还要！还要！啊呜、啊呜、啊呜……再喂一口！',
@@ -21,7 +21,7 @@ export default [
     hotspot: { action: 'feed', target: 'apple', at: [660, 580], size: 260, label: '再喂噜啵一口' },
   },
   {
-    id: 'p16',
+    id: 'p18',
     template: 't-dialog',
     sound: 'gulu',
     aria: '哎呀……噜啵吃太多，动不了了。帮帮我——点点它的肚子。',

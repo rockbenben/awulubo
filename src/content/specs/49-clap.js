@@ -3,7 +3,7 @@
       把他从纸上"请"到身体上：拍一下，跟着它拍一下。 */
 export default [
   {
-    id: 'p35',
+    id: 'p49',
     template: 't-dialog',
     aria: '我们一起拍手！啪！点它，一起拍。',
     bg: { kind: 'rays-tight', colors: ['--yellow'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-yellow' },
@@ -18,7 +18,7 @@ export default [
     hotspot: { action: 'clap', target: 'char', at: [460, 335], size: 390, label: '和它一起拍手' },
   },
   {
-    id: 'p36',
+    id: 'p50',
     template: 't-burst',
     sound: 'giggle',
     aria: '拍得真开心！嘿嘿！',

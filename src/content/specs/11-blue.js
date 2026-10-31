@@ -1,7 +1,7 @@
 /* S3 蓝小鱼：吃完变蓝，还会吐泡泡 */
 export default [
   {
-    id: 'p09',
+    id: 'p11',
     template: 't-food',
     sound: 'chomp',
     aria: '再来一条蓝小鱼。噜啵，张嘴。啊呜！点一下蓝小鱼。',
@@ -21,7 +21,7 @@ export default [
     hotspot: { action: 'feed', target: 'fish', at: [400, 205], size: 400, label: '喂噜啵吃蓝小鱼' },
   },
   {
-    id: 'p10',
+    id: 'p12',
     template: 't-color t-blue',
     sound: 'bubble',
     aria: '啊呜！噜啵变蓝啦！噗噜，噗噜。',

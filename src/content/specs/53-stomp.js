@@ -3,7 +3,7 @@
       跺下去整页都跟着颤一下——纸上的抖动是屏幕给不了的。 */
 export default [
   {
-    id: 'p39',
+    id: 'p53',
     template: 't-dialog',
     aria: '我们一起跺脚！咚！点它，一起跺。',
     /* 放射线从右下角冲上来：震动从脚下起 */
@@ -17,7 +17,7 @@ export default [
     hotspot: { action: 'stomp', target: 'char', at: [455, 415], size: 380, label: '和它一起跺脚' },
   },
   {
-    id: 'p40',
+    id: 'p54',
     template: 't-burst',
     sound: 'giggle',
     aria: '大家都跳起来啦！耶！',

@@ -50,7 +50,7 @@ await page.waitForTimeout(1100);
 active = await activeId();
 check(active === 'p06', `点肚子后翻到 p06（实际 ${active}）`);
 
-/* 点空白处 → p07 */
+/* 点空白处 → p07（问名字那页） */
 await page.mouse.click(60, 60);
 await page.waitForTimeout(500);
 active = await activeId();
@@ -62,74 +62,74 @@ await page.waitForTimeout(450);
 active = await activeId();
 check(active === 'p06', `方向键回到 p06（实际 ${active}）`);
 
-/* 走到 p07，点苹果 → p08 */
-await page.keyboard.press('ArrowRight');
-await page.waitForTimeout(450);
-await page.click('[data-id="p07"] .hotspot');
+/* 走到 p09，点苹果 → p10 */
+await page.evaluate(() => window.Book.goToId('p09'));
+await page.waitForTimeout(300);
+await page.click('[data-id="p09"] .hotspot');
 await page.waitForTimeout(1100);
 active = await activeId();
-check(active === 'p08', `点苹果后翻到 p08（实际 ${active}）`);
+check(active === 'p10', `点苹果后翻到 p10（实际 ${active}）`);
 
-/* p13：三样依次点 → p14 */
-await page.evaluate(() => window.Book.goToId('p13'));
+/* p15：三样依次点 → p16 */
+await page.evaluate(() => window.Book.goToId('p15'));
 await page.waitForTimeout(200);
 for (const target of ['apple', 'fish', 'star']) {
-  await page.click(`[data-id="p13"] .hotspot[data-target="${target}"]`);
+  await page.click(`[data-id="p15"] .hotspot[data-target="${target}"]`);
   await page.waitForTimeout(380);
 }
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p14', `三样依次点完后翻到 p14（实际 ${active}）`);
+check(active === 'p16', `三样依次点完后翻到 p16（实际 ${active}）`);
 
-/* p15：连喂三口 → 变圆 → 翻到 p16 */
-await page.evaluate(() => window.Book.goToId('p15'));
+/* p17：连喂三口 → 变圆 → 翻到 p18 */
+await page.evaluate(() => window.Book.goToId('p17'));
 await page.waitForTimeout(200);
 for (let i = 0; i < 3; i++) {
-  await page.click('[data-id="p15"] .hotspot[data-action="feed"]');
+  await page.click('[data-id="p17"] .hotspot[data-action="feed"]');
   await page.waitForTimeout(320);
 }
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p16', `p15 连喂三口后翻到 p16（实际 ${active}）`);
+check(active === 'p18', `p17 连喂三口后翻到 p18（实际 ${active}）`);
 
-/* p17：连点三下肚子（揉肚子的兜底）→ 翻到 p18 */
-await page.evaluate(() => window.Book.goToId('p17'));
+/* p21：连点三下肚子（揉肚子的兜底）→ 翻到 p22 */
+await page.evaluate(() => window.Book.goToId('p21'));
 await page.waitForTimeout(200);
 for (let i = 0; i < 3; i++) {
-  await page.click('[data-id="p17"] .hotspot[data-action="rub"]');
+  await page.click('[data-id="p21"] .hotspot[data-action="rub"]');
   await page.waitForTimeout(260);
 }
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p18', `p17 连点三下后翻到 p18（实际 ${active}）`);
+check(active === 'p22', `p21 连点三下后翻到 p22（实际 ${active}）`);
 
-/* p19：点彩纸 → 彩纸变淡、小花冒出来 → 翻到 p20 */
-await page.evaluate(() => window.Book.goToId('p19'));
-await page.waitForTimeout(200);
-await page.click('[data-id="p19"] .hotspot');
-await page.waitForTimeout(600);
-const bloomed = await page.evaluate(
-  () => document.querySelector('[data-id="p19"]').classList.contains('is-bloom')
-);
-check(bloomed, 'p19 点彩纸后进入开花状态（is-bloom）');
-await page.waitForTimeout(500);
-active = await activeId();
-check(active === 'p20', `p19 点彩纸后翻到 p20（实际 ${active}）`);
-
-/* p23：点月亮 → 变暗 → 翻到 p24 */
+/* p23：点彩纸 → 彩纸变淡、小花冒出来 → 翻到 p24 */
 await page.evaluate(() => window.Book.goToId('p23'));
 await page.waitForTimeout(200);
 await page.click('[data-id="p23"] .hotspot');
+await page.waitForTimeout(600);
+const bloomed = await page.evaluate(
+  () => document.querySelector('[data-id="p23"]').classList.contains('is-bloom')
+);
+check(bloomed, 'p23 点彩纸后进入开花状态（is-bloom）');
+await page.waitForTimeout(500);
+active = await activeId();
+check(active === 'p24', `p23 点彩纸后翻到 p24（实际 ${active}）`);
+
+/* p27：点月亮 → 变暗 → 翻到 p28 */
+await page.evaluate(() => window.Book.goToId('p27'));
+await page.waitForTimeout(200);
+await page.click('[data-id="p27"] .hotspot');
 await page.waitForTimeout(1000);
 active = await activeId();
-check(active === 'p24', `p23 点月亮后翻到 p24（实际 ${active}）`);
+check(active === 'p28', `p27 点月亮后翻到 p28（实际 ${active}）`);
 
-/* p17：在肚子上画满一圈 → 螺旋转过 360° → 翻到 p18 */
-await page.evaluate(() => window.Book.goToId('p17'));
+/* p21：在肚子上画满一圈 → 螺旋转过 360° → 翻到 p22 */
+await page.evaluate(() => window.Book.goToId('p21'));
 await page.waitForTimeout(200);
 {
   const c = await page.evaluate(() => {
-    const r = document.querySelector('[data-id="p17"] .hotspot[data-action="rub"]').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p21"] .hotspot[data-action="rub"]').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   const R = 40;
@@ -143,123 +143,123 @@ await page.waitForTimeout(200);
 }
 await page.waitForTimeout(1000);
 active = await activeId();
-check(active === 'p18', `p17 画满一圈后翻到 p18（实际 ${active}）`);
+check(active === 'p22', `p21 画满一圈后翻到 p22（实际 ${active}）`);
 
-/* p27：找到一个不能翻页，找齐三个才翻 */
-await page.evaluate(() => window.Book.goToId('p27'));
+/* p31：找到一个不能翻页，找齐三个才翻 */
+await page.evaluate(() => window.Book.goToId('p31'));
 await page.waitForTimeout(200);
-await page.click('[data-id="p27"] .hotspot[data-target="apple"]');
+await page.click('[data-id="p31"] .hotspot[data-target="apple"]');
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p27', `p27 只找到一个时不翻页（实际 ${active}）`);
+check(active === 'p31', `p31 只找到一个时不翻页（实际 ${active}）`);
 for (const t of ['fish', 'star']) {
-  await page.click(`[data-id="p27"] .hotspot[data-target="${t}"]`);
+  await page.click(`[data-id="p31"] .hotspot[data-target="${t}"]`);
   await page.waitForTimeout(300);
 }
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p28', `p27 找齐三个后翻到 p28（实际 ${active}）`);
+check(active === 'p32', `p31 找齐三个后翻到 p32（实际 ${active}）`);
 
-/* p13 走回头路后必须还能玩：p25 摸噜啵、p42 再读一次都会跳回 p05 重读。
+/* p15 走回头路后必须还能玩：p29 摸噜啵、p62 再读一次都会跳回 p05 重读。
    如果进入页面不清零计数，第二遍读到这里会永远卡住。 */
-await page.evaluate(() => window.Book.goToId('p13'));
+await page.evaluate(() => window.Book.goToId('p15'));
 await page.waitForTimeout(200);
 for (const target of ['apple', 'fish', 'star']) {
-  await page.click(`[data-id="p13"] .hotspot[data-target="${target}"]`);
+  await page.click(`[data-id="p15"] .hotspot[data-target="${target}"]`);
   await page.waitForTimeout(320);
 }
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p14', `p13 第一遍三样点完到 p14（实际 ${active}）`);
+check(active === 'p16', `p15 第一遍三样点完到 p16（实际 ${active}）`);
 
-/* 回头重读：跳回 p05 再到 p13，三样仍然点得动 */
+/* 回头重读：跳回 p05 再到 p15，三样仍然点得动 */
 await page.evaluate(() => window.Book.goToId('p05'));
 await page.waitForTimeout(150);
-await page.evaluate(() => window.Book.goToId('p13'));
+await page.evaluate(() => window.Book.goToId('p15'));
 await page.waitForTimeout(150);
 for (const target of ['apple', 'fish', 'star']) {
-  await page.click(`[data-id="p13"] .hotspot[data-target="${target}"]`);
+  await page.click(`[data-id="p15"] .hotspot[data-target="${target}"]`);
   await page.waitForTimeout(320);
 }
 await page.waitForTimeout(900);
 active = await activeId();
-check(active === 'p14', `p13 回头重读后仍然能玩（实际 ${active}）`);
+check(active === 'p16', `p15 回头重读后仍然能玩（实际 ${active}）`);
 
 /* 回头重进某页时，这一页"已经演出过的效果"必须复位：
-   p23 的灯变暗、p19 的彩纸开花、p15 的越吃越圆、p17 的螺旋角度。
+   p27 的灯变暗、p23 的彩纸开花、p17 的越吃越圆、p21 的螺旋角度。
    不复位的话，读者第二次进来会看到"效果已经演过了"：点月亮没反应、
    点肚子直接就翻页，看起来像坏了。 */
+{
+  await page.evaluate(() => window.Book.goToId('p27'));
+  await page.waitForTimeout(150);
+  await page.click('[data-id="p27"] .hotspot');
+  await page.waitForTimeout(900);
+  const dimmed = await page.evaluate(() =>
+    document.querySelector('[data-id="p27"]').classList.contains('is-dim')
+  );
+  check(dimmed, 'p27 点月亮后变暗');
+  await page.evaluate(() => window.Book.goToId('p26'));
+  await page.waitForTimeout(150);
+  await page.evaluate(() => window.Book.goToId('p27'));
+  await page.waitForTimeout(150);
+  const dimAgain = await page.evaluate(() =>
+    document.querySelector('[data-id="p27"]').classList.contains('is-dim')
+  );
+  check(!dimAgain, 'p27 回头重进时灯恢复明亮');
+}
+
 {
   await page.evaluate(() => window.Book.goToId('p23'));
   await page.waitForTimeout(150);
   await page.click('[data-id="p23"] .hotspot');
-  await page.waitForTimeout(900);
-  const dimmed = await page.evaluate(() =>
-    document.querySelector('[data-id="p23"]').classList.contains('is-dim')
+  await page.waitForTimeout(800);
+  const bloomed = await page.evaluate(() =>
+    document.querySelector('[data-id="p23"]').classList.contains('is-bloom')
   );
-  check(dimmed, 'p23 点月亮后变暗');
+  check(bloomed, 'p23 点彩纸后开花');
   await page.evaluate(() => window.Book.goToId('p22'));
   await page.waitForTimeout(150);
   await page.evaluate(() => window.Book.goToId('p23'));
   await page.waitForTimeout(150);
-  const dimAgain = await page.evaluate(() =>
-    document.querySelector('[data-id="p23"]').classList.contains('is-dim')
-  );
-  check(!dimAgain, 'p23 回头重进时灯恢复明亮');
-}
-
-{
-  await page.evaluate(() => window.Book.goToId('p19'));
-  await page.waitForTimeout(150);
-  await page.click('[data-id="p19"] .hotspot');
-  await page.waitForTimeout(800);
-  const bloomed = await page.evaluate(() =>
-    document.querySelector('[data-id="p19"]').classList.contains('is-bloom')
-  );
-  check(bloomed, 'p19 点彩纸后开花');
-  await page.evaluate(() => window.Book.goToId('p18'));
-  await page.waitForTimeout(150);
-  await page.evaluate(() => window.Book.goToId('p19'));
-  await page.waitForTimeout(150);
   const bloomedAgain = await page.evaluate(() =>
-    document.querySelector('[data-id="p19"]').classList.contains('is-bloom')
+    document.querySelector('[data-id="p23"]').classList.contains('is-bloom')
   );
-  check(!bloomedAgain, 'p19 回头重进时彩纸恢复原样');
+  check(!bloomedAgain, 'p23 回头重进时彩纸恢复原样');
 }
 
 {
-  await page.evaluate(() => window.Book.goToId('p15'));
+  await page.evaluate(() => window.Book.goToId('p17'));
   await page.waitForTimeout(150);
   for (let i = 0; i < 3; i++) {
-    await page.click('[data-id="p15"] .hotspot[data-action="feed"]');
+    await page.click('[data-id="p17"] .hotspot[data-action="feed"]');
     await page.waitForTimeout(120);
   }
   const grown = await page.evaluate(() => {
-    const m = (document.querySelector('[data-id="p15"] #grow-char')?.getAttribute('transform') || '').match(
+    const m = (document.querySelector('[data-id="p17"] #grow-char')?.getAttribute('transform') || '').match(
       /scale\(([\d.]+)\)/
     );
     return m ? parseFloat(m[1]) : null;
   });
-  await page.evaluate(() => window.Book.goToId('p14'));
+  await page.evaluate(() => window.Book.goToId('p16'));
   await page.waitForTimeout(150);
-  await page.evaluate(() => window.Book.goToId('p15'));
+  await page.evaluate(() => window.Book.goToId('p17'));
   await page.waitForTimeout(150);
   const back = await page.evaluate(() => {
-    const el = document.querySelector('[data-id="p15"] #grow-char');
+    const el = document.querySelector('[data-id="p17"] #grow-char');
     const m = (el?.getAttribute('transform') || '').match(/scale\(([\d.]+)\)/);
     return { scale: m ? parseFloat(m[1]) : null, base: parseFloat(el?.dataset.baseScale || '') };
   });
   check(
     grown !== null && back.scale === back.base,
-    `p15 回头重进时角色缩放回到基准 ${back.scale}（基准 ${back.base}，喂饱后 ${grown}）`
+    `p17 回头重进时角色缩放回到基准 ${back.scale}（基准 ${back.base}，喂饱后 ${grown}）`
   );
 }
 
 {
-  await page.evaluate(() => window.Book.goToId('p17'));
+  await page.evaluate(() => window.Book.goToId('p21'));
   await page.waitForTimeout(150);
   const c = await page.evaluate(() => {
-    const r = document.querySelector('[data-id="p17"] .hotspot[data-action="rub"]').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p21"] .hotspot[data-action="rub"]').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   const R = 40;
@@ -271,71 +271,71 @@ check(active === 'p14', `p13 回头重读后仍然能玩（实际 ${active}）`)
   }
   await page.mouse.up();
   await page.waitForTimeout(900);
-  await page.evaluate(() => window.Book.goToId('p16'));
+  await page.evaluate(() => window.Book.goToId('p18'));
   await page.waitForTimeout(150);
-  await page.evaluate(() => window.Book.goToId('p17'));
+  await page.evaluate(() => window.Book.goToId('p21'));
   await page.waitForTimeout(150);
-  await page.click('[data-id="p17"] .hotspot[data-action="rub"]');
+  await page.click('[data-id="p21"] .hotspot[data-action="rub"]');
   await page.waitForTimeout(900);
   active = await activeId();
-  check(active === 'p17', `p17 回头重进后螺旋角度归零，点一下不会直接翻页（实际 ${active}）`);
+  check(active === 'p21', `p21 回头重进后螺旋角度归零，点一下不会直接翻页（实际 ${active}）`);
 }
 
 /* 孩子会乱点：多步互动的页面上，点空白不该把这一页跳过。
    以前点错直接翻页——"找一找"一戳就跳到"你都找到了吗？"，孩子一个都没找到。 */
 {
-  await page.evaluate(() => window.Book.goToId('p27'));
+  await page.evaluate(() => window.Book.goToId('p31'));
   await page.waitForTimeout(200);
   await page.mouse.click(450, 450);
   await page.waitForTimeout(700);
   active = await activeId();
-  check(active === 'p27', `p27 点空白不翻页，还在找（实际 ${active}）`);
+  check(active === 'p31', `p31 点空白不翻页，还在找（实际 ${active}）`);
 
-  await page.evaluate(() => window.Book.goToId('p13'));
-  await page.waitForTimeout(200);
-  await page.mouse.click(450, 450);
-  await page.waitForTimeout(700);
-  active = await activeId();
-  check(active === 'p13', `p13 点空白不翻页，还能按顺序点（实际 ${active}）`);
-}
-
-/* p15：喂一口之后苹果要回到原位——不然提示写着"再喂一口！"，
-   孩子面前却没有东西可喂（苹果停在 10% 不透明度、缩成 1/4，看不见）。 */
-{
   await page.evaluate(() => window.Book.goToId('p15'));
   await page.waitForTimeout(200);
-  await page.click('[data-id="p15"] .hotspot[data-action="feed"]');
+  await page.mouse.click(450, 450);
+  await page.waitForTimeout(700);
+  active = await activeId();
+  check(active === 'p15', `p15 点空白不翻页，还能按顺序点（实际 ${active}）`);
+}
+
+/* p17：喂一口之后苹果要回到原位——不然提示写着"再喂一口！"，
+   孩子面前却没有东西可喂（苹果停在 10% 不透明度、缩成 1/4，看不见）。 */
+{
+  await page.evaluate(() => window.Book.goToId('p17'));
+  await page.waitForTimeout(200);
+  await page.click('[data-id="p17"] .hotspot[data-action="feed"]');
   await page.waitForTimeout(900);
   const apple = await page.evaluate(() => {
-    const el = document.querySelector('[data-id="p15"] .prop-apple');
+    const el = document.querySelector('[data-id="p17"] .prop-apple');
     return { opacity: getComputedStyle(el).opacity, flying: el.classList.contains('is-flying') };
   });
   check(
     apple.opacity === '1' && !apple.flying,
-    `p15 喂一口后苹果回到原位（opacity ${apple.opacity}）`
+    `p17 喂一口后苹果回到原位（opacity ${apple.opacity}）`
   );
 }
 
 /* 走回头路时，道具也要复位：被吃掉/被找到的道具停在 10% 不透明度，
    回头再进这一页就"什么都没有可点"，而提示还在让人点它。 */
 {
-  await page.evaluate(() => window.Book.goToId('p13'));
+  await page.evaluate(() => window.Book.goToId('p15'));
   await page.waitForTimeout(200);
-  await page.click('[data-id="p13"] .hotspot[data-target="apple"]');
+  await page.click('[data-id="p15"] .hotspot[data-target="apple"]');
   await page.waitForTimeout(900);
   const eaten = await page.evaluate(
-    () => getComputedStyle(document.querySelector('[data-id="p13"] .prop-apple')).opacity
+    () => getComputedStyle(document.querySelector('[data-id="p15"] .prop-apple')).opacity
   );
   await page.evaluate(() => window.Book.goToId('p05'));
   await page.waitForTimeout(150);
-  await page.evaluate(() => window.Book.goToId('p13'));
+  await page.evaluate(() => window.Book.goToId('p15'));
   await page.waitForTimeout(250);
   const back = await page.evaluate(
-    () => getComputedStyle(document.querySelector('[data-id="p13"] .prop-apple')).opacity
+    () => getComputedStyle(document.querySelector('[data-id="p15"] .prop-apple')).opacity
   );
   check(
     Number(eaten) < 1 && Number(back) === 1,
-    `p13 回头重进时道具复原（吃掉后 ${eaten} → 重进后 ${back}）`
+    `p15 回头重进时道具复原（吃掉后 ${eaten} → 重进后 ${back}）`
   );
 }
 
@@ -371,10 +371,10 @@ check(active === 'p14', `p13 回头重读后仍然能玩（实际 ${active}）`)
   const tp = await ctx.newPage();
   await tp.goto(url, { waitUntil: 'load' });
   await tp.evaluate(() => document.fonts.ready);
-  await tp.evaluate(() => window.Book.goToId('p17'));
+  await tp.evaluate(() => window.Book.goToId('p21'));
   await tp.waitForTimeout(250);
   const c = await tp.evaluate(() => {
-    const r = document.querySelector('[data-id="p17"] .hotspot').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p21"] .hotspot').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   const cdp = await tp.context().newCDPSession(tp);
@@ -394,37 +394,37 @@ check(active === 'p14', `p13 回头重读后仍然能玩（实际 ${active}）`)
   const touched = await tp.evaluate(
     () => document.querySelector('.page.is-active').dataset.id
   );
-  check(touched === 'p18', `触屏画圈也能揉肚子过关（实际 ${touched}）`);
+  check(touched === 'p22', `触屏画圈也能揉肚子过关（实际 ${touched}）`);
   await ctx.close();
 }
 
-/* p17：第一下点肚子就要有反应（"画个圈"3 岁孩子做不到，
+/* p21：第一下点肚子就要有反应（"画个圈"3 岁孩子做不到，
    连点兜底不能是"点了没反应"） */
 {
-  await page.evaluate(() => window.Book.goToId('p17'));
+  await page.evaluate(() => window.Book.goToId('p21'));
   await page.waitForTimeout(200);
-  await page.click('[data-id="p17"] .hotspot[data-action="rub"]');
+  await page.click('[data-id="p21"] .hotspot[data-action="rub"]');
   await page.waitForTimeout(400);
   const deg = await page.evaluate(
-    () => document.querySelector('[data-id="p17"] .spiral').dataset.deg
+    () => document.querySelector('[data-id="p21"] .spiral').dataset.deg
   );
-  check(parseFloat(deg) >= 120, `p17 第一下点肚子螺旋转了一格（${deg}°）`);
+  check(parseFloat(deg) >= 120, `p21 第一下点肚子螺旋转了一格（${deg}°）`);
 }
 
-/* p09：热区必须罩住鱼本身——按锚点摆热区的话，点鱼会点空，
+/* p11：热区必须罩住鱼本身——按锚点摆热区的话，点鱼会点空，
    书直接翻页过去，鱼根本没被喂到。 */{
-  await page.evaluate(() => window.Book.goToId('p09'));
+  await page.evaluate(() => window.Book.goToId('p11'));
   await page.waitForTimeout(200);
   const spot = await page.evaluate(() => {
-    const r = document.querySelector('[data-id="p09"] .prop-fish').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p11"] .prop-fish').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   await page.mouse.click(spot.x, spot.y);
   await page.waitForTimeout(350);
   const fed = await page.evaluate(() =>
-    document.querySelector('[data-id="p09"] .prop-fish').classList.contains('is-flying')
+    document.querySelector('[data-id="p11"] .prop-fish').classList.contains('is-flying')
   );
-  check(fed, 'p09 点蓝小鱼的中心真的喂到了（不是只翻页）');
+  check(fed, 'p11 点蓝小鱼的中心真的喂到了（不是只翻页）');
 }
 
 /* 孩子是照着屏幕上的话去点"看得见的东西"的，所以要验的是可见中心，
@@ -445,131 +445,131 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   return true;
 }
 
-/* p19：点一片彩纸（不是恰好那朵花）就该开花 */
-{
-  await page.evaluate(() => window.Book.goToId('p19'));
-  await page.waitForTimeout(200);
-  /* 只挑笔触，不挑底色场：底色场是第一个 .fx use，点它当然不会开花 */
-  await clickVisible('p19', '.fx use:not(.fx-wash)', 0.9, 0.9);
-  await page.waitForTimeout(350);
-  const bloomed = await page.evaluate(() =>
-    document.querySelector('[data-id="p19"]').classList.contains('is-bloom')
-  );
-  check(bloomed, 'p19 点远处的彩纸也开花（热区罩住整片彩纸）');
-}
-
-/* p23：点月亮的可见中心就该灯变暗 */
+/* p23：点一片彩纸（不是恰好那朵花）就该开花 */
 {
   await page.evaluate(() => window.Book.goToId('p23'));
   await page.waitForTimeout(200);
-  await clickVisible('p23', '.prop-moon');
+  /* 只挑笔触，不挑底色场：底色场是第一个 .fx use，点它当然不会开花 */
+  await clickVisible('p23', '.fx use:not(.fx-wash)', 0.9, 0.9);
+  await page.waitForTimeout(350);
+  const bloomed = await page.evaluate(() =>
+    document.querySelector('[data-id="p23"]').classList.contains('is-bloom')
+  );
+  check(bloomed, 'p23 点远处的彩纸也开花（热区罩住整片彩纸）');
+}
+
+/* p27：点月亮的可见中心就该灯变暗 */
+{
+  await page.evaluate(() => window.Book.goToId('p27'));
+  await page.waitForTimeout(200);
+  await clickVisible('p27', '.prop-moon');
   await page.waitForTimeout(350);
   const dim = await page.evaluate(() =>
-    document.querySelector('[data-id="p23"]').classList.contains('is-dim')
+    document.querySelector('[data-id="p27"]').classList.contains('is-dim')
   );
-  check(dim, 'p23 点月亮的中心灯会变暗');
+  check(dim, 'p27 点月亮的中心灯会变暗');
 }
 
-/* p25：点噜啵的脸就该打哈欠（回到第一跨页） */
+/* p29：点噜啵的脸就该打哈欠（回到第一跨页） */
 {
-  await page.evaluate(() => window.Book.goToId('p25'));
+  await page.evaluate(() => window.Book.goToId('p29'));
   await page.waitForTimeout(200);
-  await clickVisible('p25', 'use[href="#pose-hungry"]', 0.45, 0.35);
+  await clickVisible('p29', 'use[href="#pose-hungry"]', 0.45, 0.35);
   await page.waitForTimeout(900);
-  check((await activeId()) === 'p05', `p25 点噜啵的脸会打哈欠回开头（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p05', `p29 点噜啵的脸会打哈欠回开头（实际 ${await activeId()}）`);
 }
 
-/* p16：点噜啵自己也要有反应（"拍一拍"）——它晃一下、叫一声，页照翻。
+/* p18：点噜啵自己也要有反应（"拍一拍"）——它晃一下、叫一声，页照翻。
    孩子最先戳的就是它；不回应的话，它在全书都只是一张贴图。 */
 {
-  await page.evaluate(() => window.Book.goToId('p16'));
+  await page.evaluate(() => window.Book.goToId('p18'));
   await page.waitForTimeout(200);
   const box = await page.evaluate(() => {
-    const r = document.querySelector('[data-id="p16"] .char').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p18"] .char').getBoundingClientRect();
     return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
   });
   await page.mouse.click(box.x, box.y);
   await page.waitForTimeout(120);
   const wobbled = await page.evaluate(() =>
-    document.querySelector('[data-id="p16"] .char')?.classList.contains('is-wobble')
+    document.querySelector('[data-id="p18"] .char')?.classList.contains('is-wobble')
   );
-  check(wobbled, 'p16 点噜啵自己会晃一下（拍一拍）');
+  check(wobbled, 'p18 点噜啵自己会晃一下（拍一拍）');
   await page.waitForTimeout(700);
-  check((await activeId()) === 'p17', `p16 拍完之后照样翻页（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p19', `p18 拍完之后照样翻页（实际 ${await activeId()}）`);
 }
 
-/* p31：数一数——点一个苹果，旁边的数字亮起来；数满三个才翻页 */
+/* p39：数一数——点一个苹果，旁边的数字亮起来；数满三个才翻页 */
 {
-  await page.evaluate(() => window.Book.goToId('p31'));
+  await page.evaluate(() => window.Book.goToId('p39'));
   await page.waitForTimeout(200);
   for (const i of [1, 2]) {
-    await page.click(`[data-id="p31"] .hotspot[data-index="${i}"]`);
+    await page.click(`[data-id="p39"] .hotspot[data-index="${i}"]`);
     await page.waitForTimeout(250);
   }
   const lit = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('[data-id="p31"] .number')).map((n) =>
+    Array.from(document.querySelectorAll('[data-id="p39"] .number')).map((n) =>
       n.classList.contains('is-on')
     )
   );
   check(
     lit[0] === true && lit[1] === true && lit[2] === false,
-    `p31 数了两个，数字亮两个（实际 ${JSON.stringify(lit)}）`
+    `p39 数了两个，数字亮两个（实际 ${JSON.stringify(lit)}）`
   );
-  check((await activeId()) === 'p31', `p31 没数满不翻页（实际 ${await activeId()}）`);
-  await page.click('[data-id="p31"] .hotspot[data-index="3"]');
+  check((await activeId()) === 'p39', `p39 没数满不翻页（实际 ${await activeId()}）`);
+  await page.click('[data-id="p39"] .hotspot[data-index="3"]');
   await page.waitForTimeout(900);
-  check((await activeId()) === 'p32', `p31 数满三个翻到 p32（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p40', `p39 数满三个翻到 p40（实际 ${await activeId()}）`);
 
   /* 回头重进：数字必须复位，否则第二次进来一碰就翻页 */
-  await page.evaluate(() => window.Book.goToId('p31'));
+  await page.evaluate(() => window.Book.goToId('p39'));
   await page.waitForTimeout(250);
   const again = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('[data-id="p31"] .number')).map((n) =>
+    Array.from(document.querySelectorAll('[data-id="p39"] .number')).map((n) =>
       n.classList.contains('is-on')
     )
   );
   check(
     again.every((v) => v === false),
-    `p31 重进后数字复位（实际 ${JSON.stringify(again)}）`
+    `p39 重进后数字复位（实际 ${JSON.stringify(again)}）`
   );
 }
 
-/* p20：点它，它横着飞过天空。
+/* p24：点它，它横着飞过天空。
    「彩纸把它送到天上啦」这句话就在这一页兑现——不另起一页，
    所以这一下要是没演出来，全书的伏笔就是句空话。 */
 {
-  await page.evaluate(() => window.Book.goToId('p20'));
+  await page.evaluate(() => window.Book.goToId('p24'));
   await page.waitForTimeout(200);
-  await page.click('[data-id="p20"] .hotspot[data-target="char"]');
+  await page.click('[data-id="p24"] .hotspot[data-target="char"]');
   await page.waitForTimeout(420);
   const flown = await page.evaluate(() => {
-    const el = document.querySelector('[data-id="p20"] .char');
+    const el = document.querySelector('[data-id="p24"] .char');
     return { now: el.getAttribute('transform'), base: el.getAttribute('data-base-transform') };
   });
-  check(flown.now !== flown.base, 'p20 点它之后角色真的飞走了（transform 变了）');
+  check(flown.now !== flown.base, 'p24 点它之后角色真的飞走了（transform 变了）');
   await page.waitForTimeout(900);
-  check((await activeId()) === 'p21', `p20 飞完翻到 p21（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p25', `p24 飞完翻到 p25（实际 ${await activeId()}）`);
 
-  /* 回头再进 p20：它得回到原来的位置，不能停在飞到一半的地方 */
-  await page.evaluate(() => window.Book.goToId('p20'));
+  /* 回头再进 p24：它得回到原来的位置，不能停在飞到一半的地方 */
+  await page.evaluate(() => window.Book.goToId('p24'));
   await page.waitForTimeout(200);
   const back = await page.evaluate(() => {
-    const el = document.querySelector('[data-id="p20"] .char');
+    const el = document.querySelector('[data-id="p24"] .char');
     return { now: el.getAttribute('transform'), base: el.getAttribute('data-base-transform') };
   });
-  check(back.now === back.base, 'p20 回头重进时角色回到原位');
+  check(back.now === back.base, 'p24 回头重进时角色回到原位');
 }
 
-/* p17：照着**画出来的那个螺旋**描一圈，螺旋要转起来、这一页要过得去。
+/* p21：照着**画出来的那个螺旋**描一圈，螺旋要转起来、这一页要过得去。
    提示写的是"在肚子上画个圈"，孩子描的自然就是屏幕上那个螺旋。
    以前旋转中心取的是热区中心（热区罩的是整块肚子，中心在螺旋上方 88 个单位处）：
    手指绕的是螺旋，量的却是另一个点，角度正负相消，净累计 0°，
    螺旋一格也不转，这一关永远过不去。 */
 {
-  await page.evaluate(() => window.Book.goToId('p17'));
+  await page.evaluate(() => window.Book.goToId('p21'));
   await page.waitForTimeout(250);
   const geo = await page.evaluate(() => {
-    const r = document.querySelector('[data-id="p17"] .spiral').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p21"] .spiral').getBoundingClientRect();
     return {
       x: r.x + r.width / 2,
       y: r.y + r.height / 2,
@@ -588,17 +588,17 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   await page.mouse.up();
   await page.waitForTimeout(250);
   const deg = await page.evaluate(() =>
-    document.querySelector('[data-id="p17"] .spiral')?.dataset.deg
+    document.querySelector('[data-id="p21"] .spiral')?.dataset.deg
   );
   check(
     Math.abs(parseFloat(deg || '0')) >= 300,
-    `p17 照着画出来的螺旋描一圈，螺旋转够了（累计 ${deg}°）`
+    `p21 照着画出来的螺旋描一圈，螺旋转够了（累计 ${deg}°）`
   );
   await page.waitForTimeout(700);
-  check((await activeId()) === 'p18', `p17 描完一圈翻到 p18（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p22', `p21 描完一圈翻到 p22（实际 ${await activeId()}）`);
 }
 
-/* p33：喊三声它才听见——点书外的空白**不能**把这一页跳过去。
+/* p43：喊三声它才听见——点书外的空白**不能**把这一页跳过去。
    以前这一页没标 trap：它的整页热区只罩住**书页**，书页之外的留白
    （手机上竖屏时书只占中间，上下都是空的）点下去就成了翻页——
    孩子一次也没喊，"它听见了"那一拍整段错过。
@@ -608,47 +608,47 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   const mp = await ctx.newPage();
   await mp.goto(url, { waitUntil: 'load' });
   await mp.evaluate(() => document.fonts.ready);
-  await mp.evaluate(() => window.Book.goToId('p33'));
+  await mp.evaluate(() => window.Book.goToId('p43'));
   await mp.waitForTimeout(300);
   /* 竖屏时书只占中间：上面那一截是留白 */
   const blank = await mp.evaluate(() => {
-    const r = document.querySelector('[data-id="p33"]').getBoundingClientRect();
+    const r = document.querySelector('[data-id="p43"]').getBoundingClientRect();
     return { y: Math.max(2, Math.floor(r.top / 2)), x: Math.floor(window.innerWidth / 2) };
   });
   await mp.mouse.click(blank.x, blank.y);
   await mp.waitForTimeout(600);
   const at = await mp.evaluate(() => document.querySelector('.page.is-active')?.dataset.id);
-  check(at === 'p33', `p33 点书外留白不翻页（实际 ${at}）`);
+  check(at === 'p43', `p43 点书外留白不翻页（实际 ${at}）`);
   await ctx.close();
 }
 
-/* p33：喊满三声它才听见——喊不够就翻页，"它听见了"这一拍就没了 */
+/* p43：喊满三声它才听见——喊不够就翻页，"它听见了"这一拍就没了 */
 {
-  await page.evaluate(() => window.Book.goToId('p33'));
+  await page.evaluate(() => window.Book.goToId('p43'));
   await page.waitForTimeout(200);
-  await page.click('[data-id="p33"] .hotspot');
+  await page.click('[data-id="p43"] .hotspot');
   await page.waitForTimeout(200);
-  check((await activeId()) === 'p33', 'p33 喊一声不翻页（还要继续喊）');
-  await page.click('[data-id="p33"] .hotspot');
-  await page.click('[data-id="p33"] .hotspot');
+  check((await activeId()) === 'p43', 'p43 喊一声不翻页（还要继续喊）');
+  await page.click('[data-id="p43"] .hotspot');
+  await page.click('[data-id="p43"] .hotspot');
   await page.waitForTimeout(1000);
-  check((await activeId()) === 'p34', `p33 喊满三声翻到 p34（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p44', `p43 喊满三声翻到 p44（实际 ${await activeId()}）`);
 }
 
-/* p34：点它，它蹦一下，然后翻页 */
+/* p46：点它，它蹦一下，然后翻页 */
 {
-  await page.evaluate(() => window.Book.goToId('p34'));
+  await page.evaluate(() => window.Book.goToId('p46'));
   await page.waitForTimeout(200);
-  await page.click('[data-id="p34"] .hotspot[data-target="char"]');
+  await page.click('[data-id="p46"] .hotspot[data-target="char"]');
   await page.waitForTimeout(1000);
-  check((await activeId()) === 'p35', `p34 点它翻到 p35（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p47', `p46 点它翻到 p47（实际 ${await activeId()}）`);
 }
 
-/* p35 / p37 / p39：三个亲子动作页，点它就自己演一遍再翻过去 */
+/* p49 / p51 / p53：三个亲子动作页，点它就自己演一遍再翻过去 */
 for (const [id, next] of [
-  ['p35', 'p36'],
-  ['p37', 'p38'],
-  ['p39', 'p40'],
+  ['p49', 'p50'],
+  ['p51', 'p52'],
+  ['p53', 'p54'],
 ]) {
   await page.evaluate((i) => window.Book.goToId(i), id);
   await page.waitForTimeout(200);
@@ -657,132 +657,148 @@ for (const [id, next] of [
   check((await activeId()) === next, `${id} 点它翻到 ${next}（实际 ${await activeId()}）`);
 }
 
-/* p39：跺脚要真的把角色砸下去（不是只翻页） */
-{
-  await page.evaluate(() => window.Book.goToId('p39'));
+/* 新增的四个互动（64 页版）：问名字 / 揉一揉 / 送颜色 / 困了。
+   每一个都得真的演一遍再翻过去——互动表里多了一个名字却没绑上，
+   孩子点它就只会翻页，"点它，它有反应"这件事就没了。 */
+for (const [id, next] of [
+  ['p07', 'p08'],
+  ['p19', 'p20'],
+  ['p47', 'p48'],
+  ['p55', 'p56'],
+]) {
+  await page.evaluate((i) => window.Book.goToId(i), id);
   await page.waitForTimeout(200);
-  await page.click('[data-id="p39"] .hotspot[data-target="char"]');
+  await page.click(`[data-id="${id}"] .hotspot`);
+  await page.waitForTimeout(1300);
+  check((await activeId()) === next, `${id} 点它翻到 ${next}（实际 ${await activeId()}）`);
+}
+
+/* p53：跺脚要真的把角色砸下去（不是只翻页） */
+{
+  await page.evaluate(() => window.Book.goToId('p53'));
+  await page.waitForTimeout(200);
+  await page.click('[data-id="p53"] .hotspot[data-target="char"]');
   await page.waitForTimeout(140);
   const dipped = await page.evaluate(() => {
-    const el = document.querySelector('[data-id="p39"] .char');
+    const el = document.querySelector('[data-id="p53"] .char');
     return { now: el.getAttribute('transform'), base: el.getAttribute('data-base-transform') };
   });
-  check(dipped.now !== dipped.base, 'p39 跺脚时角色真的往下沉了');
+  check(dipped.now !== dipped.base, 'p53 跺脚时角色真的往下沉了');
   await page.waitForTimeout(1000);
 }
 
-/* p42：点那个手绘大圆圈就该"再读一次"——全书最后一页唯一能点的按钮 */
+/* p62：点那个手绘大圆圈就该"再读一次"——全书最后一页唯一能点的按钮 */
 {
-  await page.evaluate(() => window.Book.goToId('p42'));
+  await page.evaluate(() => window.Book.goToId('p62'));
   await page.waitForTimeout(200);
-  await clickVisible('p42', '.prop-arrow', 0.45, 0.35);
+  await clickVisible('p62', '.prop-arrow', 0.45, 0.35);
   await page.waitForTimeout(900);
-  check((await activeId()) === 'p05', `p42 点大圆圈回到第一跨页（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p05', `p62 点大圆圈回到第一跨页（实际 ${await activeId()}）`);
 }
 
 /* 连着点错 5 下就放人走：这一页不能是死路 */
 {
-  await page.evaluate(() => window.Book.goToId('p27'));
+  await page.evaluate(() => window.Book.goToId('p31'));
   await page.waitForTimeout(200);
   for (let i = 0; i < 4; i++) {
     await page.mouse.click(450, 450);
     await page.waitForTimeout(220);
   }
   active = await activeId();
-  check(active === 'p27', `p27 点错 4 下还留在这一页（实际 ${active}）`);
+  check(active === 'p31', `p31 点错 4 下还留在这一页（实际 ${active}）`);
   await page.mouse.click(450, 450);
   await page.waitForTimeout(700);
   active = await activeId();
-  check(active === 'p28', `p27 连点错 5 下会放人走（实际 ${active}）`);
+  check(active === 'p32', `p31 连点错 5 下会放人走（实际 ${active}）`);
 }
 
 /* 点错不能把"按顺序点三样"的计数挤偏：
    孩子的第一次正确点击不能被当成"顺序错了"。 */
 {
-  await page.evaluate(() => window.Book.goToId('p13'));
+  await page.evaluate(() => window.Book.goToId('p15'));
   await page.waitForTimeout(200);
   await page.mouse.click(100, 900); // 点错一下（真正的空白）
   await page.waitForTimeout(400);
-  await page.click('[data-id="p13"] .hotspot[data-target="apple"]');
+  await page.click('[data-id="p15"] .hotspot[data-target="apple"]');
   await page.waitForTimeout(400);
   const fed = await page.evaluate(() =>
-    document.querySelector('[data-id="p13"] .prop-apple').classList.contains('is-flying')
+    document.querySelector('[data-id="p15"] .prop-apple').classList.contains('is-flying')
   );
-  check(fed, 'p13 点错一次之后，第一次点苹果仍然算数');
+  check(fed, 'p15 点错一次之后，第一次点苹果仍然算数');
 }
 
-/* p15：连喂三口，角色线性变大且不出画 */
-await page.evaluate(() => window.Book.goToId('p15'));
+/* p17：连喂三口，角色线性变大且不出画 */
+await page.evaluate(() => window.Book.goToId('p17'));
 await page.waitForTimeout(200);
 for (let i = 0; i < 3; i++) {
-  await page.click('[data-id="p15"] .hotspot[data-action="feed"]');
+  await page.click('[data-id="p17"] .hotspot[data-action="feed"]');
   await page.waitForTimeout(320);
 }
 const grow = await page.evaluate(() => {
-  const el = document.querySelector('[data-id="p15"] #grow-char');
+  const el = document.querySelector('[data-id="p17"] #grow-char');
   const m = (el?.getAttribute('transform') || '').match(/scale\(([\d.]+)\)/);
   const r = el?.getBoundingClientRect();
   return { scale: m ? parseFloat(m[1]) : null, bottom: r ? r.bottom : null, stage: document.querySelector('.stage').getBoundingClientRect().bottom };
 });
 check(
   grow.scale !== null && grow.scale <= 0.8,
-  `p15 喂三口后缩放是线性基准 ${grow.scale}（不应叠加放大）`
+  `p17 喂三口后缩放是线性基准 ${grow.scale}（不应叠加放大）`
 );
 check(
   grow.bottom === null || grow.stage === null || grow.bottom <= grow.stage + 1,
-  `p15 喂饱后角色没有溢出页面底边（bottom ${Math.round(grow.bottom)} / stage ${Math.round(grow.stage)}）`
+  `p17 喂饱后角色没有溢出页面底边（bottom ${Math.round(grow.bottom)} / stage ${Math.round(grow.stage)}）`
 );
 
-/* 残留计时器不能劫持导航：p15 的效果还在计时时翻到别的页，
+/* 残留计时器不能劫持导航：p17 的效果还在计时时翻到别的页，
    计时器到期后不该把读者从"正在看的这页"翻走。
-   （以前 p15 的计时器到期会调 next()，把 p25 翻成 p26。） */
-await page.evaluate(() => window.Book.goToId('p15'));
+   （以前 p17 的计时器到期会调 next()，把 p29 翻成 p30。） */
+await page.evaluate(() => window.Book.goToId('p17'));
 await page.waitForTimeout(200);
 for (let i = 0; i < 3; i++) {
-  await page.click('[data-id="p15"] .hotspot[data-action="feed"]');
+  await page.click('[data-id="p17"] .hotspot[data-action="feed"]');
 }
-await page.evaluate(() => window.Book.goToId('p25'));
+await page.evaluate(() => window.Book.goToId('p29'));
 await page.waitForTimeout(1200);
 active = await activeId();
-check(active === 'p25', `别页的残留计时器不会把当前页翻走（实际 ${active}）`);
+check(active === 'p29', `别页的残留计时器不会把当前页翻走（实际 ${active}）`);
 
 /* 效果没播完时再点一下：跳过应该走到这个效果本来的结局。
-   摸噜啵的结局是"回到 p05"，不是"翻到下一页 p26"。 */
-await page.evaluate(() => window.Book.goToId('p25'));
+   摸噜啵的结局是"回到 p05"，不是"翻到下一页 p30"。 */
+await page.evaluate(() => window.Book.goToId('p29'));
 await page.waitForTimeout(200);
-await page.click('[data-id="p25"] .hotspot');
+await page.click('[data-id="p29"] .hotspot');
 await page.waitForTimeout(120);
 await page.mouse.click(60, 60);
 await page.waitForTimeout(400);
 active = await activeId();
 check(active === 'p05', `效果没播完就跳过，走效果本来的结局 p05（实际 ${active}）`);
 
-/* p25：摸噜啵 → 回到 p05 */
-await page.evaluate(() => window.Book.goToId('p25'));
+/* p29：摸噜啵 → 回到 p05 */
+await page.evaluate(() => window.Book.goToId('p29'));
 await page.waitForTimeout(200);
-await page.click('[data-id="p25"] .hotspot');
+await page.click('[data-id="p29"] .hotspot');
 await page.waitForTimeout(1100);
 active = await activeId();
 check(active === 'p05', `摸噜啵后回到 p05（实际 ${active}）`);
 
-/* p42：点空白也有反应（最后一页翻不动了，不能毫无动静） */
+/* p62：点空白也有反应（最后一页翻不动了，不能毫无动静） */
 {
-  await page.evaluate(() => window.Book.goToId('p42'));
+  await page.evaluate(() => window.Book.goToId('p62'));
   await page.waitForTimeout(200);
   await page.mouse.click(60, 60);
   await page.waitForTimeout(300);
   const shook = await page.evaluate(() =>
-    document.querySelector('[data-id="p42"] .char')?.classList.contains('is-shake')
+    document.querySelector('[data-id="p62"] .char')?.classList.contains('is-shake')
   );
-  check(shook, 'p42 点空白摇了一下头（不是毫无反应）');
+  check(shook, 'p62 点空白摇了一下头（不是毫无反应）');
   active = await activeId();
-  check(active === 'p42', `p42 点空白没有乱翻页（实际 ${active}）`);
+  check(active === 'p62', `p62 点空白没有乱翻页（实际 ${active}）`);
 }
 
-/* p42：点圆圈 → 回到 p05 */
-await page.evaluate(() => window.Book.goToId('p42'));
+/* p62：点圆圈 → 回到 p05 */
+await page.evaluate(() => window.Book.goToId('p62'));
 await page.waitForTimeout(200);
-await page.click('[data-id="p42"] .hotspot');
+await page.click('[data-id="p62"] .hotspot');
 await page.waitForTimeout(700);
 active = await activeId();
 check(active === 'p05', `点再读一次回到 p05（实际 ${active}）`);
@@ -815,9 +831,9 @@ const screenIds = await page.evaluate(() =>
 );
 check(
   !screenIds.includes('p04') &&
-    !screenIds.includes('p41') &&
-    !screenIds.includes('p43') &&
-    !screenIds.includes('p44'),
+    !screenIds.includes('p61') &&
+    !screenIds.includes('p63') &&
+    !screenIds.includes('p64'),
   '屏幕版跳过版权/给大人的话/后环衬/封底'
 );
 check(screenIds.length === SCREEN_PAGES, `屏幕版 ${SCREEN_PAGES} 页（实际 ${screenIds.length}）`);

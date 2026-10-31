@@ -1,7 +1,7 @@
 /* S4 黄星星：吃完变黄，亮得不得了 */
 export default [
   {
-    id: 'p11',
+    id: 'p13',
     template: 't-food',
     sound: 'chomp',
     aria: '再吃一颗黄星星。噜啵，张嘴。啊呜！点一下黄星星。',
@@ -22,7 +22,7 @@ export default [
     hotspot: { action: 'feed', target: 'star', at: [297, 193], size: 352, label: '喂噜啵吃黄星星' },
   },
   {
-    id: 'p12',
+    id: 'p14',
     template: 't-color t-yellow',
     sound: 'sparkle',
     aria: '啊呜！噜啵变黄啦！闪闪闪！',

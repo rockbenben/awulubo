@@ -1,7 +1,7 @@
 /* S10 晚安：嘘——别吵醒它 */
 export default [
   {
-    id: 'p23',
+    id: 'p27',
     template: 't-night',
     sound: 'snore',
     aria: '晚安，噜啵。呼噜……呼噜……点一下月亮。',
@@ -9,7 +9,7 @@ export default [
     /* 月亮整个在页内：它是个圆，被页边切掉一刀就是一条笔直的竖边，
        像印刷出错（角色那边有同样的规矩，见 check-layout.mjs）。
        原来在 [620,80]，右缘伸到 1036，超出 36 个单位。
-       下一页 p24 用的是同一个月亮，放 [660,120] 就在页内——两页对不上。 */
+       下一页 p28 用的是同一个月亮，放 [660,120] 就在页内——两页对不上。 */
     props: [{ kind: 'moon', at: [544, 80], scale: 0.52, class: 'prop-moon' }],
     char: { pose: 'asleep', state: 'state-pale', at: [60, 420], scale: 0.56, spiral: true },
     text: {
@@ -22,7 +22,7 @@ export default [
     hotspot: { action: 'moon', target: 'moon', at: [653, 180], size: 320, label: '点一下月亮' },
   },
   {
-    id: 'p24',
+    id: 'p28',
     noSound: true,
     template: 't-night t-night-deep',
     aria: '嘘——别吵醒它。',

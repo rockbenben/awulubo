@@ -1,9 +1,9 @@
-/* S14 数一数：几个红苹果
+/* S18 数一数，有几个：点一个苹果，数字就冒出来
    —— 书里第一个"要数东西"的页。数数是 3–5 岁最该练的本事之一，
-   而且它纸上也成立：家长可以一起数。 */
+      而且它纸上也成立：家长可以一起数。 */
 export default [
   {
-    id: 'p31',
+    id: 'p39',
     template: 't-search',
     sound: 'chirp',
     aria: '数一数，有几个红苹果？点一点，数出来。',
@@ -42,24 +42,28 @@ export default [
     ],
   },
   {
-    id: 'p32',
-    template: 't-burst',
-    sound: 'ding',
-    aria: '三个红苹果！叮！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
+    id: 'p40',
+    template: 't-search',
+    sound: 'chirp',
+    aria: '数出来啦！三个！',
+    bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
     props: [
+      /* 苹果还在原位：孩子刚数过的那三个，位置不能动 */
       { kind: 'apple', at: [110, 190], scale: 0.26, class: 'prop-apple count-item' },
       { kind: 'apple', at: [640, 270], scale: 0.26, class: 'prop-apple count-item' },
       { kind: 'apple', at: [370, 520], scale: 0.26, class: 'prop-apple count-item' },
     ],
-    /* 答案：数字一开始就亮着 */
-    numbers: [{ text: '3', at: [120, 450], size: 28, on: true }],
-    char: { pose: 'happy', at: [600, 480], scale: 0.45, spiral: true },
+    /* 三个数字都亮着：上一页是孩子一个一个点出来的，
+       这一页把它们摆在一起——"1、2、3"是连着的 */
+    numbers: [
+      { text: '1', at: [215, 250], size: 12, on: true },
+      { text: '2', at: [745, 330], size: 12, on: true },
+      { text: '3', at: [475, 580], size: 12, on: true },
+    ],
+    char: { pose: 'happy', at: [640, 620], scale: 0.36 },
     text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '三个红苹果！' },
-      /* 「一二三！」在站酷快乐体里是六根横杠，看着像一地散落的彩纸；
-         这一页要的是"数对了"的铃铛声，不是数数本身。 */
-      sound: { text: '叮！', at: [70, 740], size: 14, rotate: -2 },
+      narration: { at: [60, 70], size: 3.4, width: 400, text: '数出来啦！' },
+      sound: { text: '三个！', at: [460, 80], size: 14, rotate: 3 },
     },
   },
 ];

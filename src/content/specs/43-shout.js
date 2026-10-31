@@ -1,11 +1,11 @@
-/* S15 它看见你：你喊它，它听见了
+/* S20 你大声喊它：你喊它，它听见了
    —— 全书唯一一次「它主动回应你」。
       到这一页之前，噜啵一直是动物：被喂、被找、被数、被摸。
       这一页把它翻过来——孩子喊一声，它从草丛里跳出来，
       而且它说的是「我看见你啦！」：看的人是它，被看的人是你。 */
 export default [
   {
-    id: 'p33',
+    id: 'p43',
     template: 't-dialog',
     sound: 'chirp',
     aria: '你大声喊它。啊呜——点一下，再喊一声。',
@@ -32,33 +32,30 @@ export default [
        以前它没标——可这一页的整页热区只罩住**书页**，书页之外的留白
        （手机上竖屏时书只占中间，上下都是空的）点下去就成了翻页：
        孩子一次也没喊，"它听见了"那一拍整段错过。
-       和 p13/p15/p17/p27/p31 一样：点空白只摇一下头。 */
+       和 p15/p17/p21/p31/p39 一样：点空白只摇一下头。 */
     trap: true,
     hotspot: { action: 'shout', target: 'sound', at: [0, 0], size: 1000, label: '大声喊它' },
   },
   {
-    id: 'p34',
+    id: 'p44',
     template: 't-dialog',
-    sound: 'giggle',
-    aria: '它看见你啦！我看见你啦！点它。',
-    /* 放射线：惊喜。它从草丛里跳出来，光从它身上射出去 */
-    bg: { kind: 'rays', colors: ['--yellow'], gap: '--paper', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [420, 320], scale: 0.58, spiral: true },
+    aria: '你喊它……它听见了吗？啊呜——！啊呜——！',
+    /* 底子跟上一页一样（同一片草地，同一个下午）：
+       孩子能看出场景没变——变的只是"喊出去的声音还没回来"。 */
+    bg: { kind: 'rays-tight', colors: ['--green'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-green' },
+    /* 回声：泡泡越走越小、越走越远 */
     props: [
-      /* 道具要躲开字：橙花原来压在「我」字上、星星压在「点它」上。
-         拟声词是这一页最大的一行字，不能被花挡住。 */
-      { kind: 'flower', at: [110, 470], scale: 0.16, style: '--flower: var(--orange); --flower-center: var(--yellow)' },
-      { kind: 'flower', at: [840, 240], scale: 0.14, rotate: 18, style: '--flower: var(--pink); --flower-center: var(--yellow)' },
-      { kind: 'star', at: [150, 660], scale: 0.13, rotate: 12 },
+      { kind: 'bubble', at: [190, 300], scale: 0.22 },
+      { kind: 'bubble', at: [420, 430], scale: 0.17 },
+      { kind: 'bubble', at: [640, 540], scale: 0.13 },
+      { kind: 'bubble', at: [820, 640], scale: 0.1 },
     ],
     text: {
-      narration: { at: [60, 70], size: 3.4, width: 320, text: '它看见你啦！' },
-      /* 旁白说"它看见你啦"，它自己说"我看见你啦"——一个转述，一个原话。
-         六个字放不进右上角那条窄带，所以另起一行放在旁白下面。 */
-      sound: { text: '我看见你啦！', at: [60, 250], size: 12, rotate: 2 },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '点它。' },
+      narration: { at: [60, 70], size: 3.4, width: 460, text: '你喊它……它听见了吗？' },
+      sound: { at: [110, 240], size: 11, rotate: 3, text: '啊呜——<br>啊呜——！' },
+      prompt: { at: [60, 870], size: 4, width: 340, text: '再喊一声。' },
     },
-    /* 热区罩住噜啵（渲染后可见框约 548–872 × 459–819） */
-    hotspot: { action: 'seen', target: 'char', at: [525, 430], size: 400, label: '点它' },
+    /* 这一页没有热区：喊够了就翻过去了（上一页喊满三声）。
+       它要干的事只有一件——等。 */
   },
 ];

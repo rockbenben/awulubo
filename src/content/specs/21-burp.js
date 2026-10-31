@@ -1,7 +1,7 @@
 /* S7 揉肚子：打个嗝，喷出彩纸 */
 export default [
   {
-    id: 'p17',
+    id: 'p21',
     template: 't-dialog',
     sound: 'gulu',
     aria: '揉一揉，顺一顺。在噜啵的肚子上，转个圈。咕噜——',
@@ -22,7 +22,7 @@ export default [
     hotspot: { action: 'rub', target: 'belly', at: [416, 608], size: 280, label: '在噜啵的肚子上画圈' },
   },
   {
-    id: 'p18',
+    id: 'p22',
     template: 't-burst',
     sound: 'burp',
     aria: '嗝——啵！！！彩纸喷出来啦！',

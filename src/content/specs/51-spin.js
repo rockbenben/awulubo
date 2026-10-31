@@ -3,7 +3,7 @@
       转到晕为止。 */
 export default [
   {
-    id: 'p37',
+    id: 'p51',
     template: 't-dialog',
     aria: '我们一起转圈！呼——点它，一起转。',
     /* 漩涡当背景：转圈这件事，画面上就该有个漩涡 */
@@ -17,7 +17,7 @@ export default [
     hotspot: { action: 'spin', target: 'char', at: [455, 350], size: 380, label: '和它一起转圈' },
   },
   {
-    id: 'p38',
+    id: 'p52',
     template: 't-dialog',
     sound: 'sigh',
     aria: '它转晕啦。晕……',

@@ -1,7 +1,7 @@
 /* S11 第二天：肚子又叫了 */
 export default [
   {
-    id: 'p25',
+    id: 'p29',
     template: 't-dialog',
     noSound: true,
     /* 朗读稿要说清这一页有两个出口：
@@ -31,7 +31,7 @@ export default [
     hotspot: { action: 'yawn', target: 'char', at: [423, 474], size: 437, label: '摸摸噜啵' },
   },
   {
-    id: 'p26',
+    id: 'p30',
     template: 't-dialog',
     noSound: true,
     aria: '今天，你喂噜啵吃什么？',

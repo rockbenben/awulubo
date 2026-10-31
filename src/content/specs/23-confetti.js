@@ -1,7 +1,7 @@
 /* S8 彩纸：把噜啵卷起来，送到天上 */
 export default [
   {
-    id: 'p19',
+    id: 'p23',
     template: 't-burst',
     sound: 'pop',
     aria: '好多颜色！红的、蓝的、黄的……点一片彩纸。',
@@ -23,7 +23,7 @@ export default [
     hotspot: { action: 'confetti', target: 'confetti', at: [0, 0], size: 1000, label: '点一片彩纸' },
   },
   {
-    id: 'p20',
+    id: 'p24',
     template: 't-dialog',
     sound: 'whoosh',
     aria: '彩纸把噜啵卷起来，送到天上啦！点它，看它飞过去。',

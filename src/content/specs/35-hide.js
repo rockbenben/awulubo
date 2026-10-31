@@ -1,8 +1,10 @@
-/* S13 躲猫猫：咦？噜啵去哪儿了
-   —— 参考书的"咦？不见了"。它不在这一页，它在下一页：翻过去就找到了。 */
+/* S16 咦？噜啵去哪儿了：它吃掉了三样东西，就不见了
+   —— 参考书的"咦？不见了"。它不在这一页，它在后面那页：翻过去就找到了。
+      原来「找」和「找到」挤在一跨页（2 页）里，中间没有停顿；
+      现在拆成两跨页，找的那两页要有**变化**，否则孩子翻过去发现是同一张图。 */
 export default [
   {
-    id: 'p29',
+    id: 'p35',
     template: 't-search',
     sound: 'poof',
     aria: '咦？噜啵去哪儿了？找找它藏在哪里。',
@@ -22,25 +24,20 @@ export default [
        不标 trap——trap 是给"要点好几下才过"的页用的，这里一下就该看到答案。 */
   },
   {
-    id: 'p30',
+    id: 'p36',
     template: 't-search',
-    sound: 'giggle',
-    aria: '找到我啦！嘿！',
+    noSound: true,
+    aria: '咦？苹果后面有东西！看那个小泡泡。',
     bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all', wash: '--wash-purple' },
     props: [
-      /* 苹果跟上一页同一个位置：它一直躲在苹果后面 */
+      /* 泡泡先画，苹果后画——苹果把它压住一半，只露出一个头。
+         顺序反了就成了一颗浮在苹果上方的泡泡，"藏在后面"读不出来了。 */
+      { kind: 'bubble', at: [340, 380], scale: 0.18 },
       { kind: 'apple', at: [120, 430], scale: 0.42, rotate: 14, class: 'prop-apple' },
-      { kind: 'fish', at: [690, 250], scale: 0.2, rotate: -12, class: 'prop-fish' },
-      { kind: 'star', at: [400, 640], scale: 0.18, rotate: 18, class: 'prop-star' },
     ],
-    /* 噜啵从苹果右边探出来：放在苹果正上方的话，
-       苹果的叶子会落在它肚子上，看着像它长了一片叶子 */
-    char: { pose: 'peek', at: [300, 240], scale: 0.52 },
     text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '找到我啦！' },
-      sound: { text: '嘿！', at: [300, 78], size: 16, rotate: 3 },
-      /* 这一页的动作就是"拍一拍"：点噜啵自己也有反应 */
-      prompt: { at: [60, 870], size: 4, width: 340, text: '你也拍拍它。' },
+      narration: { at: [60, 70], size: 3.4, width: 460, text: '咦？苹果后面有东西！' },
+      prompt: { at: [60, 870], size: 4, width: 380, text: '看那个小泡泡。' },
     },
   },
 ];
