@@ -6,7 +6,7 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "description": "一个要你喂的小怪物：喂它苹果、小鱼、黄星星，它就变成那个颜色，还会打嗝喷彩纸、跟你躲猫猫、数给你看。3–5 岁能自己翻自己点，屏幕里会叫，纸上也能玩 ｜ A hungry blob monster you feed, pat, hide and seek with, and count with.",
+  "description": "3–5 岁自己翻自己点的绘本：喂它苹果、小鱼、黄星星，它就变成那个颜色。离线，不注册。",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -22,7 +22,8 @@
     "smoke": "node tools/smoke.mjs",
     "chaos": "node tools/chaos.mjs",
     "pdf": "node tools/pdf.mjs",
-    "pdf:booklet": "node tools/pdf-booklet.mjs"
+    "pdf:booklet": "node tools/pdf-booklet.mjs",
+    "og": "node tools/make-og.mjs"
   },
   "devDependencies": {
     "@fontsource/lxgw-wenkai": "^5.3.0",

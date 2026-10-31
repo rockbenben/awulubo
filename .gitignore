@@ -12,4 +12,6 @@ src/fonts/.charset.txt
 *.log
 .DS_Store
 Thumbs.db
-docs/
+# 参考书与其提取产物（PDF / PNG / 联系表）不随项目分发：
+# 有版权，而且体积大。只挡这一支，docs/ 下的规格与图片照常进仓库。
+docs/reference/
