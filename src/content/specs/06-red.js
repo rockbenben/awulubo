@@ -13,7 +13,9 @@ export default [
       sound: { text: '啊呜！', at: [380, 560], size: 14, rotate: -3 },
       prompt: { text: '点一下红苹果。', at: [60, 870], size: 4, width: 300 },
     },
-    hotspot: { action: 'feed', target: 'apple', at: [350, 232], size: 300, label: '喂噜啵吃红苹果' },
+    /* 热区罩住红苹果的墨迹（345–653 × 212–488），
+       原来偏右下，苹果的左上角点不到 */
+    hotspot: { action: 'feed', target: 'apple', at: [337, 188], size: 324, label: '喂噜啵吃红苹果' },
   },
   {
     id: 'p08',

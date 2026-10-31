@@ -9,7 +9,7 @@ export default [
        想往下读 = 点空白处翻页——原来只有循环那个出口有提示，
        照着提示读会一遍遍循环，读不到后面的"找一找"和结局页。 */
     aria: '咕噜——咕噜——第二天，噜啵的肚子又叫了。摸摸噜啵。（摸它会从头再读一遍；想往下读，点空白处翻页。）',
-    bg: { kind: 'rays-corner', colors: ['--yellow', '--yellow-deep'], focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
+    bg: { kind: 'rays-corner', colors: ['--yellow', '--yellow-deep'], focus: [-40, 1040], cover: 'all', wash: '--wash-yellow' },
     char: { pose: 'hungry', at: [270, 300], scale: 0.74, spiral: true },
     text: {
       narration: {
@@ -23,10 +23,12 @@ export default [
       /* 小字是给大人看的：说清"摸它会从头再来"，孩子那边的大字旁白与拟声词不动 */
       prompt: { at: [60, 870], size: 4, width: 380, text: '摸摸噜啵，从头来。' },
     },
-    /* 热区罩住噜啵（渲染后可见框约 435–848 × 476–908）。
+    /* 热区罩住噜啵（渲染后可见框约 440–843 × 482–903）。
        原来的 [300,300] 压在角色上方空处——点噜啵的脸会直接翻页，
-       "摸摸噜啵"这条指令根本执行不到。 */
-    hotspot: { action: 'yawn', target: 'char', at: [430, 480], size: 340, label: '摸摸噜啵' },
+       "摸摸噜啵"这条指令根本执行不到。
+       现在连角色的右缘和两只脚都罩住了：原来 340 见方只罩到 770，
+       右边那条（770–843）点下去是"翻页"而不是"从头再来"。 */
+    hotspot: { action: 'yawn', target: 'char', at: [423, 474], size: 437, label: '摸摸噜啵' },
   },
   {
     id: 'p26',

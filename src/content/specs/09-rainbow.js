@@ -5,7 +5,7 @@ export default [
     template: 't-rainbow',
     sound: 'chomp',
     aria: '红苹果、蓝小鱼、黄星星。一、二、三——啊呜！按顺序点三样。',
-    bg: { kind: 'rays-corner', colors: ['--pink', '--pink-deep'], focus: [500, 500], cover: 'all', wash: '--wash-pink' },
+    bg: { kind: 'rays-corner', colors: ['--pink', '--pink-deep'], focus: [-40, 1040], cover: 'all', wash: '--wash-pink' },
     props: [
       { kind: 'apple', at: [120, 210], scale: 0.24, rotate: -10, class: 'prop-apple' },
       { kind: 'fish', at: [400, 200], scale: 0.24, rotate: 6, class: 'prop-fish' },
@@ -19,10 +19,16 @@ export default [
     },
     /* 点空白不翻页：这一页要按顺序点三样，戳一下空地不该把这一页跳过去 */
     trap: true,
+    /* 热区罩住各自的墨迹（苹果 158–368 × 204–399、小鱼 445–600 × 287–370、
+       星星 695–872 × 234–418），而且都不小于 250 个单位——
+       规格 §6.6：点按目标 ≥ 25% 页宽（屏幕上是 ≥ 120 × 120 CSS px 的下限）。
+       原来三个热区都偏下偏大，两头露了边：苹果的下缘、星星的上缘点不到。
+       三个热区左右分开（苹果止于 393、小鱼自 398 起、星星自 660 起），
+       不会互相吃点击。 */
     hotspot: [
-      { action: 'feed3', target: 'apple', at: [90, 260], size: 260, label: '喂红苹果' },
-      { action: 'feed3', target: 'fish', at: [360, 260], size: 300, label: '喂蓝小鱼' },
-      { action: 'feed3', target: 'star', at: [660, 260], size: 260, label: '喂黄星星' },
+      { action: 'feed3', target: 'apple', at: [143, 177], size: 250, label: '喂红苹果' },
+      { action: 'feed3', target: 'fish', at: [398, 244], size: 250, label: '喂蓝小鱼' },
+      { action: 'feed3', target: 'star', at: [660, 193], size: 250, label: '喂黄星星' },
     ],
   },
   {

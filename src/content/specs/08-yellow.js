@@ -5,7 +5,7 @@ export default [
     template: 't-food',
     sound: 'chomp',
     aria: '再吃一颗黄星星。噜啵，张嘴。啊呜！点一下黄星星。',
-    bg: { kind: 'rays-corner', colors: ['--purple'], focus: [500, 500], cover: 'all', wash: '--wash-purple' },
+    bg: { kind: 'rays-corner', colors: ['--purple'], focus: [-40, 1040], cover: 'all', wash: '--wash-purple' },
     props: [
       { kind: 'star', at: [300, 150], scale: 0.4, rotate: 10, class: 'prop-star' },
       /* 提示字压在深紫笔触上只有 2.2:1，垫一块手绘白底块（同 p08/p32 的手法） */
@@ -17,7 +17,9 @@ export default [
       sound: { text: '啊呜！', at: [380, 560], size: 14, rotate: -3 },
       prompt: { text: '点一下黄星星。', at: [60, 870], size: 4, width: 300 },
     },
-    hotspot: { action: 'feed', target: 'star', at: [330, 180], size: 300, label: '喂噜啵吃黄星星' },
+    /* 热区罩住黄星星的墨迹（311–634 × 201–537），
+       原来偏上，星星的下尖点不到 */
+    hotspot: { action: 'feed', target: 'star', at: [297, 193], size: 352, label: '喂噜啵吃黄星星' },
   },
   {
     id: 'p12',

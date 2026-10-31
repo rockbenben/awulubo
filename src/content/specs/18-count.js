@@ -30,10 +30,15 @@ export default [
     },
     /* 点空白不翻页：这一页要数三个才过，一戳空地就翻过去等于没数 */
     trap: true,
+    /* 热区罩住各自的苹果（第一个 128–350 × 213–413、第二个 658–880 × 293–493、
+       第三个 388–610 × 543–743），而且都不小于 250 个单位——
+       规格 §6.6：点按目标 ≥ 25% 页宽。
+       原来三个热区都偏左上，每个苹果的右下角都点不到——
+       "点一点，数出来"，可孩子点苹果的右下角什么也没发生。 */
     hotspot: [
-      { action: 'count', target: 'apple', index: 1, at: [90, 170], size: 230, label: '数第一个苹果' },
-      { action: 'count', target: 'apple', index: 2, at: [620, 250], size: 230, label: '数第二个苹果' },
-      { action: 'count', target: 'apple', index: 3, at: [350, 500], size: 230, label: '数第三个苹果' },
+      { action: 'count', target: 'apple', index: 1, at: [104, 188], size: 250, label: '数第一个苹果' },
+      { action: 'count', target: 'apple', index: 2, at: [634, 268], size: 250, label: '数第二个苹果' },
+      { action: 'count', target: 'apple', index: 3, at: [364, 518], size: 250, label: '数第三个苹果' },
     ],
   },
   {
