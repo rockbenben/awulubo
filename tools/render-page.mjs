@@ -149,6 +149,9 @@ function viewCharacter(char) {
     at1: char.at[1],
     scale: char.scale,
     spiral: Boolean(char.spiral),
+    /* 角色的原始位置：飞、转圈、跺脚都会改 transform 属性，
+       回头再进这一页要能原样放回去（见 interactions.js 的 reset）。 */
+    baseTransform: `translate(${num(char.at[0])},${num(char.at[1])}) scale(${num(char.scale)})`,
   };
 }
 

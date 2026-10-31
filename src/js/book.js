@@ -35,7 +35,7 @@
     if (id && location.hash.slice(1) !== id) {
       history.replaceState(null, '', '#' + id);
     }
-    /* 进入页面时把这一页的互动计数清零：读者会走回头路（p25 摸噜啵、p34 再读一次
+    /* 进入页面时把这一页的互动计数清零：读者会走回头路（p25 摸噜啵、p42 再读一次
        都会跳回 p05 重读），不清零的话第二遍读到"按顺序点三样"就会永远卡住。 */
     if (global.BookInteractions && global.BookInteractions.reset) {
       global.BookInteractions.reset(pages[current]);

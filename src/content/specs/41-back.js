@@ -2,7 +2,7 @@
    （前面多了「躲猫猫」「数一找」两个跨页，这四页的编号整体往后挪） */
 export default [
   {
-    id: 'p33',
+    id: 'p41',
     template: 't-plain',
     screen: false,
     noSound: true,
@@ -21,6 +21,8 @@ export default [
           '· 咕噜——咕噜——，可以一起念。',
           '· 孩子跳过哪页、倒着翻，都没关系。',
           '· 摸噜啵那页会从头再来一遍；想往下读，点空白处就好。',
+          '· 喊它那页：孩子喊三声，它才听见——别替他喊。',
+          '· 拍手、转圈、跺脚那三页：孩子动起来，你跟着动。',
           '· 同一本书读十遍，是正常的，不是读腻了。',
           '· 纸书版没有声音；屏幕版可以点、可以听。',
         ],
@@ -28,13 +30,13 @@ export default [
     },
   },
   {
-    id: 'p34',
+    id: 'p42',
     template: 't-again',
     sound: 'chirp',
     aria: '读完啦？再读一次。点圆圈，转回去。',
     bg: { kind: 'rays-tight', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [500, 700], cover: 'all', wash: '--yellow' },
     props: [{ kind: 'arrow', at: [120, 420], scale: 0.72, class: 'prop-arrow' }],
-    char: { pose: 'happy', at: [590, 450], scale: 0.54, spiral: true },
+    char: { pose: 'happy', at: [565, 450], scale: 0.54, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 300, text: '读完啦？' },
       sound: { at: [360, 70], size: 14, rotate: -2, text: '再读一次' },
@@ -52,7 +54,7 @@ export default [
     hotspot: { action: 'again', target: 'arrow', at: [250, 250], size: 420, label: '点圆圈，再读一次' },
   },
   {
-    id: 'p35',
+    id: 'p43',
     template: 't-endpaper',
     screen: false,
     noSound: true,
@@ -68,7 +70,7 @@ export default [
     ],
   },
   {
-    id: 'p36',
+    id: 'p44',
     template: 't-color',
     screen: false,
     sound: 'chirp',

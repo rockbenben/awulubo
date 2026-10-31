@@ -243,6 +243,32 @@
       }
     },
 
+    /* 咚：跺脚。低频正弦下滑 + 一下闷响（纸上是看不出来的，屏幕版才听得见） */
+    thud: function () {
+      var t = ctx.currentTime;
+      var o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(150, t);
+      o.frequency.exponentialRampToValueAtTime(45, t + 0.18);
+      envelope(o, t, 0.9, 0.26);
+      o.start(t);
+      o.stop(t + 0.28);
+
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.05);
+      var lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 400;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.4, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+      src.connect(lp);
+      lp.connect(g);
+      g.connect(master);
+      src.start(t);
+      src.stop(t + 0.06);
+    },
+
     /* 弹：弹簧/果冻。滑下去再弹回来 */
     boing: function () {
       var t = ctx.currentTime;

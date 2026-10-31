@@ -26,12 +26,17 @@ export default [
     id: 'p20',
     template: 't-dialog',
     sound: 'whoosh',
-    aria: '彩纸把噜啵卷起来，送到天上啦！',
+    aria: '彩纸把噜啵卷起来，送到天上啦！点它，看它飞过去。',
     bg: { kind: 'bands', colors: ['--orange', '--yellow'], focus: [500, 500], cover: 'all', wash: '--wash-cream' },
     char: { pose: 'happy', at: [360, 140], scale: 0.46, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 420, text: '彩纸把噜啵卷起来，<br>送到天上啦！' },
       sound: { text: '啊呜——', at: [540, 78], size: 16, rotate: 5 },
     },
+    /* 「送到天上啦」这句话的兑现就在这一页，不另起一页：
+       点它，它横着飞过天空（呼——）。
+       以前这一页没有热区，噜啵只是"在那儿"；
+       飞行是全书唯一的"它自己在动"，没有这一下，前面那句就是空话。 */
+    hotspot: { action: 'fly', target: 'char', at: [435, 225], size: 320, label: '看它飞过去' },
   },
 ];

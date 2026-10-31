@@ -4,7 +4,7 @@
   'use strict';
 
   /* 每页的临时计数（喂了三样、吃了几口、找到几个）。
-     读者会走回头路：p25 摸噜啵、p34 再读一次，都会跳回 p05 重读一遍。
+     读者会走回头路：p25 摸噜啵、p42 再读一次，都会跳回 p05 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
      计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。 */
   var counters = {};
@@ -38,7 +38,7 @@
   }
 
   /* 进入页面时把这一页的互动状态复位。
-     读者会走回头路：p25 摸噜啵、p34 再读一次，都会跳回 p05 重读一遍。
+     读者会走回头路：p25 摸噜啵、p42 再读一次，都会跳回 p05 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
      计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。
      同理，这一页"已经演出过的效果"也要复位：p23 的灯变暗、p19 的彩纸开花、
@@ -58,6 +58,15 @@
       spiral.dataset.deg = '0';
       spiral.style.transform = '';
       spiral.classList.remove('is-rubbing');
+    }
+
+    /* 飞、转圈、跺脚都会改角色的 transform 属性：
+       回头再进这一页，它得回到原来的位置——
+       不然它就停在"飞到一半"的地方，看着像坏了。
+       原始位置由渲染器写在 data-base-transform 上。 */
+    var based = page.querySelector('.char[data-base-transform]');
+    if (based) {
+      based.setAttribute('transform', based.getAttribute('data-base-transform'));
     }
 
     /* 越吃越圆：缩放回到基准值（基准写在 data-base-scale 上） */
@@ -255,6 +264,55 @@
     return 'chirp';
   }
 
+  /* —— 角色动起来的那几页（飞 / 转圈 / 跺脚 / 蹦一下）——
+     角色的位置写在 SVG 的 transform 属性上（translate + scale）。
+     CSS 的 transform 一设就把那个属性整个顶掉，角色会跳回原点，
+     所以这里改的是**属性本身**，而且逐帧改。 */
+
+  /* 系统开了"减少动态效果"就别做位移动画（一步到位到结果） */
+  function reducedMotion() {
+    return (
+      typeof global.matchMedia === 'function' &&
+      global.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
+
+  /* 角色的原始位置：translate + scale，从 data-base-transform 读 */
+  function charBase(char) {
+    var raw = char.getAttribute('data-base-transform') || '';
+    var m = raw.match(/translate\(([-\d.]+),\s*([-\d.]+)\)\s*scale\(([-\d.]+)\)/);
+    if (!m) return null;
+    return { tx: parseFloat(m[1]), ty: parseFloat(m[2]), sc: parseFloat(m[3]) };
+  }
+
+  /* 角色在自己那 1000×1000 的画布里，中心在哪儿。
+     旋转必须绕自己的中心转：绕页面原点转会把角色甩到角落里。 */
+  function charCenter(char) {
+    try {
+      var b = char.getBBox();
+      if (b && b.width > 0) return [b.x + b.width / 2, b.y + b.height / 2];
+    } catch (e) {
+      /* 页面还没显示时 getBBox 会抛，忽略 */
+    }
+    return [500, 500];
+  }
+
+  /* 逐帧改角色的 transform 属性 */
+  function tweenChar(char, duration, frame) {
+    if (reducedMotion()) {
+      frame(1);
+      return;
+    }
+    var start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / duration);
+      frame(t);
+      if (t < 1) global.requestAnimationFrame(step);
+    }
+    global.requestAnimationFrame(step);
+  }
+
   var actions = {
     /* 封面：解锁声音，进入本书 */
     start: function (page) {
@@ -417,6 +475,138 @@
           global.Book.next();
         }, page);
       }
+    },
+
+    /* 飞：彩纸把它送到天上以后，点它，它横着飞过天空。
+       全书唯一一次「它自己在动」——p20 那句"送到天上啦"就在这一页兑现，
+       不另起一页：另起一页的话，承诺和兑现之间还隔着"玩累了""晚安"，
+       孩子的注意力早就跟不上了。 */
+    fly: function (page) {
+      global.AudioBook.play('whoosh');
+      var char = page.querySelector('.char');
+      var base = char && charBase(char);
+      if (char && base) {
+        tweenChar(char, 900, function (t) {
+          var x = base.tx + 660 * t;
+          var y = base.ty - 210 * Math.sin(t * Math.PI);
+          char.setAttribute(
+            'transform',
+            'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ') scale(' + base.sc + ')'
+          );
+        });
+      }
+      global.Book.after(950, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 拍手：它拍一下手，啪一声。孩子跟着拍。 */
+    clap: function (page) {
+      global.AudioBook.play('clap');
+      wobble(page);
+      global.Book.after(800, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 转圈：它原地转一圈，呼—— */
+    spin: function (page) {
+      global.AudioBook.play('whoosh');
+      var char = page.querySelector('.char');
+      var base = char && charBase(char);
+      if (char && base) {
+        var c = charCenter(char);
+        tweenChar(char, 800, function (t) {
+          var deg = (360 * t).toFixed(1);
+          char.setAttribute(
+            'transform',
+            'translate(' + base.tx + ',' + base.ty + ') scale(' + base.sc + ') rotate(' + deg + ',' + c[0] + ',' + c[1] + ')'
+          );
+        });
+      }
+      global.Book.after(850, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 跺脚：它往下一沉，地面跟着颤一下。
+       纸上是看不出震的，屏幕版才有——所以这一页一定要在屏幕上试。 */
+    stomp: function (page) {
+      global.AudioBook.play('thud');
+      var char = page.querySelector('.char');
+      var base = char && charBase(char);
+      if (char && base) {
+        tweenChar(char, 420, function (t) {
+          /* 前 35% 砸下去，之后弹回来 */
+          var dip = t < 0.35 ? t / 0.35 : 1 - (t - 0.35) / 0.65;
+          var y = base.ty + 70 * dip;
+          var sc = base.sc * (1 + 0.12 * dip);
+          char.setAttribute(
+            'transform',
+            'translate(' + base.tx + ',' + y.toFixed(1) + ') scale(' + sc.toFixed(3) + ')'
+          );
+        });
+      }
+      if (!reducedMotion() && typeof page.animate === 'function') {
+        page.animate(
+          [
+            { translate: '0 0' },
+            { translate: '7px -5px' },
+            { translate: '-6px 4px' },
+            { translate: '3px -2px' },
+            { translate: '0 0' },
+          ],
+          { duration: 340, easing: 'ease-in-out' }
+        );
+      }
+      global.Book.after(820, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 喊它：喊一声，回声荡开；喊满三声，它才听见。
+       喊不够就不翻页：翻过去就错过了"它听见了"这一拍。 */
+    shout: function (page) {
+      var n = bump(page);
+      global.AudioBook.play('chirp');
+      clearMisses(page);
+      /* 回声：拟声词放大又淡出去——孩子要看见自己的声音有回音 */
+      var s = page.querySelector('.sound');
+      if (s && !reducedMotion() && typeof s.animate === 'function') {
+        s.animate(
+          [
+            { opacity: 1, scale: 1 },
+            { opacity: 0.2, scale: 1.7 },
+          ],
+          { duration: 700, easing: 'ease-out' }
+        );
+      }
+      if (n >= 3) {
+        global.Book.after(700, function () {
+          global.Book.next();
+        }, page);
+      }
+    },
+
+    /* 它看见你：它蹦一下，笑着说。 */
+    seen: function (page) {
+      global.AudioBook.play('giggle');
+      var char = page.querySelector('.char');
+      var base = char && charBase(char);
+      if (char && base) {
+        tweenChar(char, 600, function (t) {
+          var hop = Math.sin(t * Math.PI);
+          var y = base.ty - 90 * hop;
+          var sc = base.sc * (1 + 0.1 * hop);
+          char.setAttribute(
+            'transform',
+            'translate(' + base.tx + ',' + y.toFixed(1) + ') scale(' + sc.toFixed(3) + ')'
+          );
+        });
+      }
+      global.Book.after(800, function () {
+        global.Book.next();
+      }, page);
     },
 
     /* 再读一次：转回第一跨页 */
