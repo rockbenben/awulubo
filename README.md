@@ -17,9 +17,9 @@
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | M0 风格样张 | 骨架、令牌、角色零件与姿态、笔触特效层、授权核验 | ✅ 完成 |
-| M1 全部页面 | **36 页全部落地**、14 个跨页、11 套模板、13 种互动 | ✅ 完成 |
+| M1 全部页面 | **44 页全部落地**、18 个跨页、11 套模板、18 种互动 | ✅ 完成 |
 | M2 互动 | 彩纸飞行动画、找一找反馈、减少动效、设备测试 | 部分（基础反馈已有） |
-| M3 印刷 | PDF 管线已通（36 页 / 216 mm / 字体内嵌）+ A4 骑马钉拼版；布局检查、300 dpi 逐页检查、实物打样 | 部分 |
+| M3 印刷 | PDF 管线已通（44 页 / 216 mm / 字体内嵌）+ A4/A3 骑马钉拼版；布局检查、300 dpi 逐页检查、实物打样 | 部分 |
 | M4 共读测试 | **「幼儿乱读」自动化压力测试已落地**（`npm run chaos`）；真人试读 | 部分（自动化已覆盖，待真人试读） |
 
 ## 命令
@@ -30,11 +30,11 @@ npm run fonts        # 按全书实际用字切字体子集（src/fonts/*.woff2�
 npm run fx           # 重新生成笔触特效 + 几何表（改了 gen-effects.py 才需要跑）
 npm run build        # vite build → dist/index.html、print.html、proof.html、booklet.html
 npm run dev          # 开发服务器（改页面数据即时刷新）
-npm run check        # 页面数据检查（36/32 页强校验 + 页数必须是 4 的倍数）+ 版式检查（含热点是否罩住道具）+ 字体授权闸门 + 字体覆盖检查
+npm run check        # 页面数据检查（44/40 页强校验 + 页数必须是 4 的倍数）+ 版式检查（含热点是否罩住道具与角色、角色有没有被页面边缘切掉）+ 字体授权闸门 + 字体覆盖检查
 npm run shots        # 逐页截图 + 联系表（见下方「出图」）
 npm run check:shots  # 截图闸门：每页都得真的画出来，且背景要铺满四条边
 npm run check:contrast # 文字对比度闸门：按真实像素量文字底下是什么颜色（正文 ≥ 4.5:1，大字 ≥ 3:1）
-npm run smoke        # 交互冒烟（Playwright，62 项断言，含"每个音色都得有声"）
+npm run smoke        # 交互冒烟（Playwright，71 项断言，含"每个音色都得有声"）
 npm run chaos        # 幼儿乱读压力测试（Playwright，随机种子可复现）
 npm run pdf          # 导出 dist/book.pdf（216 mm 单页，交给印厂）
 npm run pdf:booklet  # 导出 dist/book-a4-duplex.pdf（A4 双面拼版，对折即成书；加 --a3 出 A3 版）
@@ -77,7 +77,7 @@ src/
   content/
     book.json          # 书名与副标题（页面清单在 specs/ 里）
     specs/*.js         # 页面数据：每页的背景/角色/道具/文字/热点（框架的输入）
-                       #  01-front…19-back 按书的顺序编号，一页文件对应一个跨页
+                       #  01-front…41-back 按书的顺序编号，一页文件对应一个跨页
   components/
     character.svg      # 噜啵的零件与姿态（idle/hungry/chomp/happy/peek/full/burp/asleep/rainbow）
     props.svg          # 苹果 / 小鱼 / 星星 / 白底块 / 月亮 / 圆箭头 / 气泡
@@ -92,7 +92,7 @@ src/
     templates.css      # 模板底色 + 文字默认样式（位置与字号由页面数据给）
   js/
     boot.js            # 入口：按顺序引入下面三个
-    audio.js           # Web Audio 合成音效（24 个音色）
+    audio.js           # Web Audio 合成音效（25 个音色）
     interactions.js    # 热点 → 反馈 → 翻页
     book.js            # 翻页状态机、导航、朗读播报
   fonts/               # 字体子集（woff2，构建产物；**提交进仓库**，clone 后不必装 Python 也能构建）
@@ -114,7 +114,7 @@ tools/
   layout-constants.mjs # 页宽/边距/页数等共用常量
   vite-pages.mjs       # Vite 插件：注入页面与 SVG 组件
   build-fonts.mjs      # 字体子集
-  check-pages.mjs      # 页面数据检查（--full 强校验 36/32 页 + 页数是 4 的倍数）
+  check-pages.mjs      # 页面数据检查（--full 强校验 44/40 页 + 页数是 4 的倍数）
   check-layout.mjs     # 版式检查（Playwright 量墨迹：重叠 / 越界 / 裁切 / 热点是否罩住道具）
   check-licenses.mjs   # 字体授权闸门
   check-text.py        # 字体覆盖检查（漏字会退回系统字体）
@@ -132,8 +132,8 @@ tools/
   shot-fx.mjs          # 单独渲染一个笔触特效（查笔触本身的问题时用）
   contact_sheet.py     # 联系表
 dist/
-  index.html           # 屏幕互动版（单文件，离线双击可读，32 页）
-  print.html           # 印刷版（单文件，216 × 216 mm 出血页，36 页）
+  index.html           # 屏幕互动版（单文件，离线双击可读，40 页）
+  print.html           # 印刷版（单文件，216 × 216 mm 出血页，44 页）
   booklet.html         # A4 双面拼版入口（每面并排两个书页，对折即成书）
   proof.html           # 拼版（全部页面平铺，供截图）
   book.pdf             # 印刷 PDF
@@ -291,6 +291,20 @@ deploy/                # 部署用的现成配置（nginx / Caddy / Docker / 一
     绘本常用的场景声音（翻页沙沙、拍手、铃铛、笑声、风、叹气、动物叫）也在库里，
     见设计规格 §14.6。
 
+22. **角色的位置写在 SVG 的 transform 属性上，CSS 的 transform 会把它顶掉。**
+    道具动画用 CSS 的 `translate` 而不是 `transform`（数一数那页的苹果就是这么做的），
+    角色也一样。飞、转圈、跺脚都是逐帧改**属性本身**：
+    `translate(x,y) scale(s) rotate(deg, cx, cy)`——`rotate` 的后两个参数是旋转中心，
+    必须用角色自己的中心（`getBBox()` 量），绕页面原点转会把角色甩到角落里。
+    回头再进这一页要复位：渲染器把原始位置写在 `data-base-transform` 上。
+
+23. **版式闸门以前只查道具热区，角色热区没人管。**
+    p25「摸摸噜啵」的热区压在角色上方空处——点它的脸点不到，而闸门全绿。
+    现在补了三条：角色的热区必须罩住角色中心；角色不能被页面**左右**边缘裁掉
+    （p40/p42 的角色被切出一条竖直直边，像被门夹了一下）；
+    上下出血不算错——"喂东西"那三页是特写，角色大到出画，读起来是"凑得很近"。
+    > 新闸门要有牙齿才算闸门：写完先**故意把热区挪歪**，确认它报错，再改回去。
+
 ## 出图
 
 ```bash
@@ -308,7 +322,7 @@ python tools/contact_sheet.py "dist/shots/p*.png" -o dist/shots/contact.png --co
 
 | 文件 | 纸张 | 用途 |
 |---|---|---|
-| `dist/book.pdf` | 216 × 216 mm 单页，36 页 | 交给印厂（按 210 × 210 裁切） |
+| `dist/book.pdf` | 216 × 216 mm 单页，44 页 | 交给印厂（按 210 × 210 裁切） |
 | `dist/book-a4-duplex.pdf` | A4 横放，每个面并排两页，18 个面 | **自家打印机**：双面打 + 对折即成书 |
 | `dist/book-a3-duplex.pdf` | A3 横放，成品 210 × 210 mm | 同上，不缩小的版本（`--a3`） |
 
