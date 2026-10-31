@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "description": "《啊呜噜啵！》3-5 岁互动绘本 —— 屏幕互动版与印刷 PDF 同源",
   "scripts": {
     "dev": "vite",
@@ -10,13 +13,16 @@
     "clean": "node tools/clean.mjs",
     "preview": "vite preview",
     "fonts": "node tools/build-fonts.mjs",
-    "check": "node tools/check-pages.mjs --full && node tools/check-layout.mjs && node tools/check-licenses.mjs && python tools/check-text.py",
+    "fx": "python tools/gen-effects.py",
+    "check": "node tools/build-fonts.mjs --check && node tools/check-pages.mjs --full && node tools/check-layout.mjs && node tools/check-licenses.mjs && python tools/check-text.py",
     "check:shots": "python tools/check-shots.py",
+    "check:contrast": "node tools/check-contrast.mjs",
     "shots": "node tools/shots.mjs",
     "shots:print": "node tools/shots.mjs --print",
     "smoke": "node tools/smoke.mjs",
     "chaos": "node tools/chaos.mjs",
-    "pdf": "node tools/pdf.mjs"
+    "pdf": "node tools/pdf.mjs",
+    "pdf:booklet": "node tools/pdf-booklet.mjs"
   },
   "devDependencies": {
     "@fontsource/lxgw-wenkai": "^5.3.0",

@@ -1,0 +1,72 @@
+# 部署：构建产物推到 gh-pages 分支，EdgeOne Pages 从那个分支取。
+#
+# 跟兄弟项目同一个模式（022-onepage / 025-kuafu / 039-text2handwriting / 046-gdp-map）：
+#   · 构建产物推到 gh-pages 分支
+#   · EdgeOne Pages 的 Git 集成指向这个仓的这个分支（**不构建**，分支里已经是产物）
+#   · 缓存与安全响应头由产物里的 edgeone.json 决定（public/edgeone.json → dist/）
+#
+# ⚠️ **CNAME 要跟着分支走**：EdgeOne 是从分支里的 CNAME 文件认出「这个分支该绑哪个域名」的，
+#    每次部署覆盖分支时如果没带上，绑定就掉了。
+#    所以 CNAME 由下面的 cname: 参数写进分支，不再放在 public/ 里。
+#    没有自定义域名就整行删掉。
+#
+# ⚠️ **不转发 head commit message**：任意提交正文里的 shell 元字符（引号、$、!、反引号）
+#    会破坏动作内部的 git commit -m 调用（exit 129）——025-kuafu / 039 都记了这条。
+#    动作默认的静态提交信息足矣，规范历史保留在 main。
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# 同一分支连推两次时取消上一次，别排队跑一堆注定要覆盖的构建
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# 推分支要写权限（CI 那个 job 只读，这里要写）
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Build & push to gh-pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # 获取完整历史，供部署动作生成稳定提交
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # 门禁：坏构建不发布。版式检查与字体覆盖检查要 Python 与浏览器，
+      # 装齐了才跑得动——这也是"依赖检查"不能省的道理。
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run check
+
+      - run: npm run build
+
+      - name: Push to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist
+          clean: true # 每次先清空分支，别让旧文件留在上面
+          # cname: awulubo.newzone.top

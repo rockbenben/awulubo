@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import { bookPages } from './tools/vite-pages.mjs';
 
-/* 构建：三个入口（屏幕版 / 印刷版 / 拼版），每个都产出**单文件** HTML——
+/* 构建：四个入口（屏幕版 / 印刷版 / 拼版 / A4 双面拼版），每个都产出**单文件** HTML——
    CSS、JS、字体子集全部内联，双击就能看，离线可用。 */
 export default defineConfig({
   plugins: [bookPages(), viteSingleFile({ removeViteModuleLoader: true })],
@@ -18,6 +18,7 @@ export default defineConfig({
         index: 'index.html',
         print: 'print.html',
         proof: 'proof.html',
+        booklet: 'booklet.html',
       },
     },
   },

@@ -1,0 +1,70 @@
+/* A4 双面骑马钉拼版专用样式。
+   单独一个文件（booklet.html 才引）：@page 的纸张尺寸没法按 body 的类区分，
+   拼版必须有自己的 @page，否则会沿用印刷版的 216mm 方形页面，
+   内容被排进一个更窄的版心里，缩得比预期小。
+
+   而且不能直接写 `@page { size: … }`——构建时四个入口共用一份 CSS
+   （vite 的 cssCodeSplit: false），裸 @page 会把印刷版也改成 A4 横排，
+   印刷 PDF 直接变成 72 页。所以用**具名页面**：只有拼版的 .sheet 声明
+   `page: booklet`，具名规则才不会影响别的入口。 */
+@media print {
+  @page booklet {
+    size: 297mm 210mm;
+    margin: 0;
+  }
+}
+
+/* 变量（--sheet-w 等）由 tools/pdf-booklet.mjs 在打印时按纸张改写，
+   所以同一份 HTML 能出 A4 与 A3 两种拼版。 */
+body.booklet {
+  --sheet-w: 297mm;
+  --sheet-h: 210mm;
+  --cell-w: 148.5mm;
+  --booklet-scale: 0.6875;
+}
+
+body.booklet .stage {
+  width: auto;
+  height: auto;
+  overflow: visible;
+}
+
+body.booklet .sheet {
+  width: var(--sheet-w);
+  height: var(--sheet-h);
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  background: var(--paper);
+  break-after: page;
+  page-break-after: always;
+  /* 具名页面：这一页用 297×210 的纸张，别的入口不受影响 */
+  page: booklet;
+}
+
+body.booklet .sheet:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+body.booklet .cell {
+  width: var(--cell-w);
+  height: var(--sheet-h);
+  overflow: hidden;
+  position: relative;
+}
+
+/* 书页缩进格子：整页等比缩小，位置居中。
+   用 transform 而不是改尺寸——里面的文字、SVG 都是按 216mm 排的，
+   缩放整页最省事，也不会把版式算错。 */
+body.booklet .cell > .page {
+  position: absolute;
+  left: 0;
+  top: calc((var(--sheet-h) - 216mm * var(--booklet-scale)) / 2);
+  width: 216mm;
+  height: 216mm;
+  transform: scale(var(--booklet-scale));
+  transform-origin: top left;
+  break-after: auto;
+  page-break-after: auto;
+}

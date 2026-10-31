@@ -1,0 +1,13 @@
+# 《啊呜噜啵！》—— Caddy 自动 HTTPS（只要域名解析到这台机器就行）
+# 用法：cp deploy/Caddyfile /etc/caddy/Caddyfile && caddy reload
+
+book.example.com {
+	root * /var/www/awulubo
+	file_server
+
+	# 改版后别让浏览器卡在旧版
+	header Cache-Control "no-cache" /index.html
+
+	# PDF 的类型要对，浏览器才能翻页预览而不是强制下载
+	header Content-Type application/pdf *.pdf
+}

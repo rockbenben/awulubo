@@ -38,13 +38,35 @@ export function bookPages() {
     async transformIndexHtml(html, ctx) {
       if (!specs) specs = await loadSpecs();
       const file = ctx.path || '';
-      /* 屏幕版只出 28 页；印刷版与拼版出全部 32 页 */
-      const scope = /print|proof/.test(file) ? 'print' : 'screen';
+      /* 屏幕版只出 28 页；印刷版与拼版出全部页面 */
+      const scope = /print|proof|booklet/.test(file) ? 'print' : 'screen';
       const pages = specs.filter((p) => scope === 'print' || p.screen !== false);
-      const markup = pages.map((p) => renderPage(p, scope)).join('\n\n');
+      const markup = /booklet/.test(file)
+        ? bookletSheets(pages, scope)
+        : pages.map((p) => renderPage(p, scope)).join('\n\n');
       return html
         .replace('<!--BOOK_DEFS-->', buildDefs())
         .replace('<!--BOOK_PAGES-->', markup);
     },
   };
+}
+
+/* A4 双面骑马钉拼版：一张纸的两面，每面并排两个书页，对折就是书。
+   页序按骑马钉来——最外一张是封面与封底，往里依次往中间收。
+   （每帖 4 页，N 页的书要 N/4 张纸、双面印，一共 N/2 个 A4 面。） */
+function bookletSheets(pages, scope) {
+  const n = pages.length;
+  const sides = [];
+  for (let k = 1; k <= n / 4; k++) {
+    sides.push([n - 2 * (k - 1), 2 * k - 1]); /* 这一帖的正面 */
+    sides.push([2 * k, n - 2 * (k - 1) - 1]); /* 它的背面 */
+  }
+  return sides
+    .map((side) => {
+      const cells = side
+        .map((i) => `      <div class="cell">${renderPage(pages[i - 1], scope)}</div>`)
+        .join('\n');
+      return `    <div class="sheet">\n${cells}\n    </div>`;
+    })
+    .join('\n');
 }

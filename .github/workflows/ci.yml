@@ -1,0 +1,87 @@
+# CI：检查 → 构建 → 浏览器级验收。
+#
+# ── 为什么 node-version 写死 '24' ──
+#
+# 不写 `node-version-file: package.json`，也不写成 `^24`：setup-node 会按范围装
+# **最新满足的**那个版本，写范围等于把 CI 交给未来的自己 ——
+# 哪天 Node 26 出来，CI 会悄悄跑到 26 上，而那次红可能跟代码无关。
+# 写死一条线，CI 跑的就是我们本地在跑的那条线。
+#
+# ── 为什么还要 Python ──
+#
+# `npm run check` 里有两步要 Python：字体覆盖检查（tools/check-text.py 读子集的 cmap）。
+# 子集本身是**提交进仓库**的（src/fonts/*.woff2），CI 不用重新切字，
+# 但要核对"子集有没有覆盖当前用字"——这一步就是漏字退回系统字体的那道闸门。
+#
+# ── 为什么浏览器要单独装 ──
+#
+# 版式检查、交互冒烟、乱读压力测试都要真浏览器（Playwright 自带的 chromium）。
+# `--with-deps` 会带上系统依赖，否则 Ubuntu runner 上会缺字体和共享库，
+# 页面能开但字全是方块。
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# 同一个分支/PR 连推几次，把前面还在跑的取消掉。
+# ⚠️ **main 上不取消**：那几次跑的是**已经合进去**的提交，取消掉等于那个提交
+#    从来没被验过。
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# 这个 workflow 只读代码：不发包、不写分支、不碰 issue。
+# 默认令牌的权限比这大得多，收窄是白拿的。
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: check · build · 浏览器验收
+    runs-on: ubuntu-latest
+    # 本地全套跑完几分钟，25 分钟已经宽得离谱——真超了就是卡死，不是慢。
+    timeout-minutes: 25
+    steps:
+      # 这两个 action 都是**第一方 `actions/*`**，钉在大版本标签上。
+      # 不钉 commit SHA——第一方 + 大版本标签是这类 workflow 的通行做法，
+      # SHA 钉死换来的那点供应链收益，代价是每次升级都要手动改哈希。
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      # Python 只为字体那两步
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 浏览器：版式检查、冒烟、压力测试都要它
+      - run: npx playwright install --with-deps chromium
+
+      # 结构 / 版式 / 授权 / 字体覆盖 + 子集是不是最新
+      - run: npm run check
+
+      # 构建产物（屏幕互动版 + 印刷版页面 + 拼版页面）
+      - run: npm run build
+
+      # 印刷 PDF 也要验：页数必须是 4 的倍数（骑马钉排得出帖）、
+      # 字体只能是那两套授权子集（漏字会混进未授权的系统字体）
+      - run: npm run pdf
+
+      # 交互冒烟（Playwright，几十项断言）
+      - run: npm run smoke
+
+      # 幼儿乱读压力测试：随机种子可复现
+      - run: npm run chaos -- --seed 1 --steps 400
