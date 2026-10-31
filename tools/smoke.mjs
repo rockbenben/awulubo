@@ -160,7 +160,7 @@ await page.waitForTimeout(900);
 active = await activeId();
 check(active === 'p28', `p27 找齐三个后翻到 p28（实际 ${active}）`);
 
-/* p13 走回头路后必须还能玩：p25 摸噜啵、p34 再读一次都会跳回 p05 重读。
+/* p13 走回头路后必须还能玩：p25 摸噜啵、p42 再读一次都会跳回 p05 重读。
    如果进入页面不清零计数，第二遍读到这里会永远卡住。 */
 await page.evaluate(() => window.Book.goToId('p13'));
 await page.waitForTimeout(200);
@@ -534,13 +534,88 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   );
 }
 
-/* p34：点那个手绘大圆圈就该"再读一次"——全书最后一页唯一能点的按钮 */
+/* p20：点它，它横着飞过天空。
+   「彩纸把它送到天上啦」这句话就在这一页兑现——不另起一页，
+   所以这一下要是没演出来，全书的伏笔就是句空话。 */
+{
+  await page.evaluate(() => window.Book.goToId('p20'));
+  await page.waitForTimeout(200);
+  await page.click('[data-id="p20"] .hotspot[data-target="char"]');
+  await page.waitForTimeout(420);
+  const flown = await page.evaluate(() => {
+    const el = document.querySelector('[data-id="p20"] .char');
+    return { now: el.getAttribute('transform'), base: el.getAttribute('data-base-transform') };
+  });
+  check(flown.now !== flown.base, 'p20 点它之后角色真的飞走了（transform 变了）');
+  await page.waitForTimeout(900);
+  check((await activeId()) === 'p21', `p20 飞完翻到 p21（实际 ${await activeId()}）`);
+
+  /* 回头再进 p20：它得回到原来的位置，不能停在飞到一半的地方 */
+  await page.evaluate(() => window.Book.goToId('p20'));
+  await page.waitForTimeout(200);
+  const back = await page.evaluate(() => {
+    const el = document.querySelector('[data-id="p20"] .char');
+    return { now: el.getAttribute('transform'), base: el.getAttribute('data-base-transform') };
+  });
+  check(back.now === back.base, 'p20 回头重进时角色回到原位');
+}
+
+/* p33：喊满三声它才听见——喊不够就翻页，"它听见了"这一拍就没了 */
+{
+  await page.evaluate(() => window.Book.goToId('p33'));
+  await page.waitForTimeout(200);
+  await page.click('[data-id="p33"] .hotspot');
+  await page.waitForTimeout(200);
+  check((await activeId()) === 'p33', 'p33 喊一声不翻页（还要继续喊）');
+  await page.click('[data-id="p33"] .hotspot');
+  await page.click('[data-id="p33"] .hotspot');
+  await page.waitForTimeout(1000);
+  check((await activeId()) === 'p34', `p33 喊满三声翻到 p34（实际 ${await activeId()}）`);
+}
+
+/* p34：点它，它蹦一下，然后翻页 */
 {
   await page.evaluate(() => window.Book.goToId('p34'));
   await page.waitForTimeout(200);
-  await clickVisible('p34', '.prop-arrow', 0.45, 0.35);
+  await page.click('[data-id="p34"] .hotspot[data-target="char"]');
+  await page.waitForTimeout(1000);
+  check((await activeId()) === 'p35', `p34 点它翻到 p35（实际 ${await activeId()}）`);
+}
+
+/* p35 / p37 / p39：三个亲子动作页，点它就自己演一遍再翻过去 */
+for (const [id, next] of [
+  ['p35', 'p36'],
+  ['p37', 'p38'],
+  ['p39', 'p40'],
+]) {
+  await page.evaluate((i) => window.Book.goToId(i), id);
+  await page.waitForTimeout(200);
+  await page.click(`[data-id="${id}"] .hotspot[data-target="char"]`);
+  await page.waitForTimeout(1100);
+  check((await activeId()) === next, `${id} 点它翻到 ${next}（实际 ${await activeId()}）`);
+}
+
+/* p39：跺脚要真的把角色砸下去（不是只翻页） */
+{
+  await page.evaluate(() => window.Book.goToId('p39'));
+  await page.waitForTimeout(200);
+  await page.click('[data-id="p39"] .hotspot[data-target="char"]');
+  await page.waitForTimeout(140);
+  const dipped = await page.evaluate(() => {
+    const el = document.querySelector('[data-id="p39"] .char');
+    return { now: el.getAttribute('transform'), base: el.getAttribute('data-base-transform') };
+  });
+  check(dipped.now !== dipped.base, 'p39 跺脚时角色真的往下沉了');
+  await page.waitForTimeout(1000);
+}
+
+/* p42：点那个手绘大圆圈就该"再读一次"——全书最后一页唯一能点的按钮 */
+{
+  await page.evaluate(() => window.Book.goToId('p42'));
+  await page.waitForTimeout(200);
+  await clickVisible('p42', '.prop-arrow', 0.45, 0.35);
   await page.waitForTimeout(900);
-  check((await activeId()) === 'p05', `p34 点大圆圈回到第一跨页（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p05', `p42 点大圆圈回到第一跨页（实际 ${await activeId()}）`);
 }
 
 /* 连着点错 5 下就放人走：这一页不能是死路 */
@@ -628,24 +703,24 @@ await page.waitForTimeout(1100);
 active = await activeId();
 check(active === 'p05', `摸噜啵后回到 p05（实际 ${active}）`);
 
-/* p34：点空白也有反应（最后一页翻不动了，不能毫无动静） */
+/* p42：点空白也有反应（最后一页翻不动了，不能毫无动静） */
 {
-  await page.evaluate(() => window.Book.goToId('p34'));
+  await page.evaluate(() => window.Book.goToId('p42'));
   await page.waitForTimeout(200);
   await page.mouse.click(60, 60);
   await page.waitForTimeout(300);
   const shook = await page.evaluate(() =>
-    document.querySelector('[data-id="p34"] .char')?.classList.contains('is-shake')
+    document.querySelector('[data-id="p42"] .char')?.classList.contains('is-shake')
   );
-  check(shook, 'p34 点空白摇了一下头（不是毫无反应）');
+  check(shook, 'p42 点空白摇了一下头（不是毫无反应）');
   active = await activeId();
-  check(active === 'p34', `p34 点空白没有乱翻页（实际 ${active}）`);
+  check(active === 'p42', `p42 点空白没有乱翻页（实际 ${active}）`);
 }
 
-/* p34：点圆圈 → 回到 p05 */
-await page.evaluate(() => window.Book.goToId('p34'));
+/* p42：点圆圈 → 回到 p05 */
+await page.evaluate(() => window.Book.goToId('p42'));
 await page.waitForTimeout(200);
-await page.click('[data-id="p34"] .hotspot');
+await page.click('[data-id="p42"] .hotspot');
 await page.waitForTimeout(700);
 active = await activeId();
 check(active === 'p05', `点再读一次回到 p05（实际 ${active}）`);
@@ -678,9 +753,9 @@ const screenIds = await page.evaluate(() =>
 );
 check(
   !screenIds.includes('p04') &&
-    !screenIds.includes('p33') &&
-    !screenIds.includes('p35') &&
-    !screenIds.includes('p36'),
+    !screenIds.includes('p41') &&
+    !screenIds.includes('p43') &&
+    !screenIds.includes('p44'),
   '屏幕版跳过版权/给大人的话/后环衬/封底'
 );
 check(screenIds.length === SCREEN_PAGES, `屏幕版 ${SCREEN_PAGES} 页（实际 ${screenIds.length}）`);

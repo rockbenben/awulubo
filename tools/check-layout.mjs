@@ -101,7 +101,19 @@ for (const spec of pages) {
         height: hr.height,
       };
     });
-    return { width: box.width, height: box.height, texts, hotspots, propCenters };
+    /* 角色的可见框。
+       以前只查道具（class 以 prop- 开头），角色（class="char"）没人管：
+       p25「摸摸噜啵」的热区就压在角色上方空处——点它的脸点不到，
+       那条指令根本执行不到，而且闸门全绿。 */
+    let charBox = null;
+    const charEl = el.querySelector('.char');
+    if (charEl) {
+      const cr = charEl.getBoundingClientRect();
+      if (cr.width > 0 && cr.height > 0) {
+        charBox = { x: cr.x - box.x, y: cr.y - box.y, width: cr.width, height: cr.height };
+      }
+    }
+    return { width: box.width, height: box.height, texts, hotspots, propCenters, charBox };
   }, spec.id);
 
   if (!data) {
@@ -188,6 +200,40 @@ for (const spec of pages) {
             `（可点位置在 ${Math.round(cx / UNIT)},${Math.round(cy / UNIT)}）`
         );
       }
+    }
+  }
+
+  /* 5. 角色的热区要罩住角色本身（角色中心必须在热区里） */
+  const charHs = data.hotspots.filter((h) => h.target === 'char');
+  if (charHs.length && data.charBox) {
+    const cx = data.charBox.x + data.charBox.width / 2;
+    const cy = data.charBox.y + data.charBox.height / 2;
+    if (!charHs.some((h) => covers(h, cx, cy))) {
+      problems.push(
+        `[${spec.id}] 角色的热区没罩住角色` +
+          `（角色中心在 ${Math.round(cx / UNIT)},${Math.round(cy / UNIT)}，` +
+          `热区是 ${charHs
+            .map((h) => `${Math.round(h.x / UNIT)},${Math.round(h.y / UNIT)} 起 ${Math.round(h.width / UNIT)} 见方`)
+            .join(' / ')}）`
+      );
+    }
+  }
+
+  /* 6. 角色不能被页面左右边缘切掉。
+     角色画在自己那 1000×1000 的画布里，摆在 at + scale 之后，
+     画到画布外就会被页面裁出一条直边——看着像角色被门夹了一下。
+     上下出血不算错：那三页"喂东西"就是特写，角色大到出画，
+     读起来是"凑得很近"（p07/p09/p11）。
+     左右出血才算错：一个圆滚滚的身体被竖直切一刀，很明显是摆歪了。 */
+  if (data.charBox) {
+    const b = data.charBox;
+    const over = [];
+    if (b.x < -1) over.push(`左边超出 ${Math.round(-b.x / UNIT)}`);
+    if (b.x + b.width > data.width + 1) {
+      over.push(`右边超出 ${Math.round((b.x + b.width - data.width) / UNIT)}`);
+    }
+    if (over.length) {
+      problems.push(`[${spec.id}] 角色被页面边缘裁掉了（${over.join('、')}）`);
     }
   }
 }
