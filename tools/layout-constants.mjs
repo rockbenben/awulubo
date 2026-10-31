@@ -17,9 +17,11 @@ export const STATIC_PAGE = 720;
 /** 拼版单元 = STATIC_PAGE / PAGE */
 export const UNIT = STATIC_PAGE / PAGE;
 
-/** 全书页数：印刷版 / 屏幕版（屏幕版跳过版权、给大人的话、后环衬、封底） */
-export const PRINT_PAGES = 32;
-export const SCREEN_PAGES = 28;
+/** 全书页数：印刷版 / 屏幕版（屏幕版跳过版权页、给大人的话、后环衬、封底）
+    印刷版是 36 页 = 4 的倍数：骑马钉对折后 18 张纸、9 帖，双面打印排得开；
+    页数不是 4 的倍数就排不出完整的帖，书脊那一帖会缺一面。 */
+export const PRINT_PAGES = 36;
+export const SCREEN_PAGES = 32;
 
 /** 目录里最新的文件修改时间（毫秒）。
     量产物之前用它比一比：源文件比产物新，说明量的是上一版。 */
