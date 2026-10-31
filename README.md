@@ -11,31 +11,37 @@
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | M0 风格样张 | 骨架、令牌、角色零件与姿态、笔触特效层、授权核验 | ✅ 完成 |
-| M1 全部页面 | **32 页全部落地**、12 个跨页、11 套模板、11 种互动 | ✅ 完成 |
+| M1 全部页面 | **36 页全部落地**、14 个跨页、11 套模板、13 种互动 | ✅ 完成 |
 | M2 互动 | 彩纸飞行动画、找一找反馈、减少动效、设备测试 | 部分（基础反馈已有） |
-| M3 印刷 | PDF 管线已通（32 页 / 216 mm / 字体内嵌）；布局检查、300 dpi 逐页检查、实物打样 | 部分 |
+| M3 印刷 | PDF 管线已通（36 页 / 216 mm / 字体内嵌）+ A4 骑马钉拼版；布局检查、300 dpi 逐页检查、实物打样 | 部分 |
 | M4 共读测试 | **「幼儿乱读」自动化压力测试已落地**（`npm run chaos`）；真人试读 | 部分（自动化已覆盖，待真人试读） |
 
 ## 命令
 
 ```bash
 npm install          # 依赖：vite、vite-plugin-singlefile、playwright、两个字体包
-npm run fonts        # 按全书实际用字切字体子集（src/fonts/*.woff2）
-npm run build        # vite build → dist/index.html、dist/print.html、dist/proof.html
+npm run fonts        # 按全书实际用字切字体子集（src/fonts/*.woff2）——**改了正文文字必须先跑这个**
+npm run fx           # 重新生成笔触特效 + 几何表（改了 gen-effects.py 才需要跑）
+npm run build        # vite build → dist/index.html、print.html、proof.html、booklet.html
 npm run dev          # 开发服务器（改页面数据即时刷新）
-npm run check        # 页面数据检查（32/28 页强校验）+ 版式检查（含热点是否罩住道具）+ 字体授权闸门 + 字体覆盖检查
-npm run check:shots  # 截图闸门：每页都得真的画出来（不能是白板）
-npm run smoke        # 交互冒烟（Playwright，43 项断言）
-npm run chaos        # 幼儿乱读压力测试（Playwright，随机种子可复现）
+npm run check        # 页面数据检查（36/32 页强校验 + 页数必须是 4 的倍数）+ 版式检查（含热点是否罩住道具）+ 字体授权闸门 + 字体覆盖检查
 npm run shots        # 逐页截图 + 联系表（见下方「出图」）
-npm run pdf          # 导出 dist/book.pdf
+npm run check:shots  # 截图闸门：每页都得真的画出来，且背景要铺满四条边
+npm run check:contrast # 文字对比度闸门：按真实像素量文字底下是什么颜色（正文 ≥ 4.5:1，大字 ≥ 3:1）
+npm run smoke        # 交互冒烟（Playwright，62 项断言，含"每个音色都得有声"）
+npm run chaos        # 幼儿乱读压力测试（Playwright，随机种子可复现）
+npm run pdf          # 导出 dist/book.pdf（216 mm 单页，交给印厂）
+npm run pdf:booklet  # 导出 dist/book-a4-duplex.pdf（A4 双面拼版，对折即成书；加 --a3 出 A3 版）
 ```
 
 > **`npm run check` 查不出"图坏了"**：它量的是版式与结构，不是像素。
 > 曾经有一次把"书页居中"的 CSS 写成了 `body.screen`，拼版（`body.screen.static`）
 > 也吃到了这条规则，32 页全叠到一起——结构 / 版式 / 冒烟 / 压力测试**全部通过**，
 > 只有人眼看联系表才发现整本白板。
-> 所以出图之后要跟一步 `npm run check:shots`（每页墨迹占比不能低于 1%）。
+> 所以出图之后要跟两步：`npm run check:shots`（每页墨迹占比不能低于 1%，
+> 且声明了满版底色场的页，四条边的主色不能还是纸白）
+> 与 `npm run check:contrast`（文字压到什么颜色上，就得跟它对比度够）。
+
 
 **工具链**（都是成熟依赖，不自造轮子）：
 
@@ -43,15 +49,15 @@ npm run pdf          # 导出 dist/book.pdf
 |---|---|
 | 打包 / 压缩 / 内联 / 开发服务器 | **Vite** + **vite-plugin-singlefile**（产出单文件 HTML） |
 | 页面模板 | **Handlebars**（`src/templates/page.hbs`，模板里不写逻辑） |
-| 背景自动出血 / 拟声词逐字微转 | `tools/render-page.mjs`（本书特有的画法规则，没有现成库） |
+| 背景满版与笔触摆位 / 拟声词逐字微转 | `tools/render-page.mjs`（本书特有的画法规则，没有现成库） |
 | 字体子集 | **fontTools**（`pyftsubset`） |
 | 字体覆盖检查 | **fontTools**（读 cmap） |
 | 印刷 PDF | **Playwright**（Chromium 打印） |
 | 逐页截图 | **html-shot** 技能 |
 | 交互冒烟 | **Playwright** |
 
-> 页面框架的自研部分只剩两件事：**背景放大倍数的计算**和**拟声词逐字微转**——
-> 前者保证笔触布满全局，后者让每个字歪一点点。两者算完交给 Handlebars 模板，
+> 页面框架的自研部分只剩两件事：**背景的满版底色与笔触摆位**和**拟声词逐字微转**——
+> 前者保证背景铺满整页（含出血），后者让每个字歪一点点。两者算完交给 Handlebars 模板，
 > 模板本身不含逻辑，改版式只改模板或数据。
 
 > `npm run check` 里的 **字体授权闸门** 会逐个核对字体包的 LICENSE：不在白名单
@@ -65,50 +71,68 @@ src/
   content/
     book.json          # 书名与副标题（页面清单在 specs/ 里）
     specs/*.js         # 页面数据：每页的背景/角色/道具/文字/热点（框架的输入）
+                       #  01-front…19-back 按书的顺序编号，一页文件对应一个跨页
   components/
     character.svg      # 噜啵的零件与姿态（idle/hungry/chomp/happy/peek/full/burp/asleep/rainbow）
     props.svg          # 苹果 / 小鱼 / 星星 / 白底块 / 月亮 / 圆箭头 / 气泡
-    effects.svg        # 笔触特效层（放射线/色带/漩涡/色盘/彩纸/彩虹条/星星）
+    effects.svg        # 笔触特效层（满版底色场/放射线/色带/漩涡/色盘/彩纸/彩虹条/星星）
+    effects.json       # 每种特效的几何（圆心/半径），与图形同源，渲染器据此算放大倍数
     rainbow.svg        # 彩虹身体的六条色带
   css/
     tokens.css         # 色板、字阶、角色颜色状态
     fonts.css          # 字体子集的 @font-face（Vite 负责内联）
     book.css           # 舞台、可点目标、动画、打印规则
+    booklet.css        # A4 拼版专用（自己的 @page 纸张尺寸与格子）
     templates.css      # 模板底色 + 文字默认样式（位置与字号由页面数据给）
   js/
     boot.js            # 入口：按顺序引入下面三个
-    audio.js           # Web Audio 合成音效
+    audio.js           # Web Audio 合成音效（24 个音色）
     interactions.js    # 热点 → 反馈 → 翻页
     book.js            # 翻页状态机、导航、朗读播报
-  fonts/               # 字体子集（woff2，构建产物）
+  fonts/               # 字体子集（woff2，构建产物；**提交进仓库**，clone 后不必装 Python 也能构建）
+public/
+  edgeone.json         # 随产物走的 EdgeOne 配置（只管缓存与安全响应头）
+.github/workflows/
+  ci.yml               # 推 main / 提 PR：全套闸门
+  deploy.yml           # 推 main：构建产物推到 gh-pages 分支，EdgeOne 从那里取
+deploy/                # 部署速查 + nginx / Caddy / Docker / 一条命令等现成配置
+requirements.txt       # Python 侧依赖（只有字体那两步要）
 index.html             # 屏幕版入口
 print.html             # 印刷版入口
 proof.html             # 拼版入口（供截图）
-vite.config.js         # 三个入口 + 单文件输出
+booklet.html           # A4 双面拼版入口
+vite.config.js         # 四个入口 + 单文件输出
 tools/
-  render-page.mjs      # 页面数据 → HTML（含背景自动出血计算、拟声词逐字微转）
+  render-page.mjs      # 页面数据 → HTML（含背景满版与笔触摆位、拟声词逐字微转）
   load-specs.mjs       # 读取全部页面数据
   layout-constants.mjs # 页宽/边距/页数等共用常量
   vite-pages.mjs       # Vite 插件：注入页面与 SVG 组件
   build-fonts.mjs      # 字体子集
-  check-pages.mjs      # 页面数据检查（--full 强校验 32/28 页）
+  check-pages.mjs      # 页面数据检查（--full 强校验 36/32 页 + 页数是 4 的倍数）
   check-layout.mjs     # 版式检查（Playwright 量墨迹：重叠 / 越界 / 裁切 / 热点是否罩住道具）
   check-licenses.mjs   # 字体授权闸门
   check-text.py        # 字体覆盖检查（漏字会退回系统字体）
+  check-shots.py       # 截图闸门（每页有内容 + 背景铺满四条边）
+  check-contrast.mjs   # 文字对比度闸门（按真实像素量底色）
   dump-text.mjs        # 逐页导出全书文字与字数
   gen-paths.py         # 手绘路径生成器（身体、螺旋、苹果、星星、白底块）
-  gen-effects.py       # 笔触特效生成器（射线、色带、漩涡、色盘、彩纸、彩虹）
+  gen-effects.py       # 笔触特效生成器（满版底色场、射线、色带、漩涡、色盘、彩纸、彩虹）+ 几何表
   smoke.mjs            # 交互冒烟
   chaos.mjs            # 幼儿乱读压力测试（乱点/连点/乱翻/乱划/乱敲键盘）
-  pdf.mjs              # 导出印刷 PDF
+  pdf.mjs              # 导出印刷 PDF（单页，216 mm）
+  pdf-booklet.mjs      # 导出 A4/A3 双面骑马钉拼版 PDF（家用打印用）
   shots.mjs            # 逐页截图（调用 html-shot 技能）
+  shot-one.mjs         # 重截单页（调版式时用）
+  shot-fx.mjs          # 单独渲染一个笔触特效（查笔触本身的问题时用）
   contact_sheet.py     # 联系表
 dist/
-  index.html           # 屏幕互动版（单文件，离线双击可读，28 页）
-  print.html           # 印刷版（单文件，216 × 216 mm 出血页，32 页）
+  index.html           # 屏幕互动版（单文件，离线双击可读，32 页）
+  print.html           # 印刷版（单文件，216 × 216 mm 出血页，36 页）
+  booklet.html         # A4 双面拼版入口（每面并排两个书页，对折即成书）
   proof.html           # 拼版（全部页面平铺，供截图）
   book.pdf             # 印刷 PDF
-  shots/               # 逐页 1440 × 1440 截图 + 联系表
+  shots/               # 逐页 1440 × 1440 截图 + 联系表 + manifest.json
+deploy/                # 部署用的现成配置（nginx / Caddy / Docker / 一条命令）
 ```
 
 ## 页面框架：改版式只改框架，不改 32 份文件
@@ -121,7 +145,7 @@ dist/
   template: 't-dialog',
   sound: 'gulu',                       // 音效名
   aria: '咕噜，咕噜。谁的肚子在叫？',
-  bg: { kind: 'bands', colors: ['--yellow', '--yellow-deep'], focus: [500, 500] },
+  bg: { kind: 'bands', colors: ['--yellow', '--yellow-deep'], focus: [500, 500], wash: '--wash-yellow' },
   char: { pose: 'hungry', at: [190, 200], scale: 0.62, spiral: true },
   props: [{ kind: 'apple', at: [320, 180], scale: 0.36 }],
   text: {
@@ -133,8 +157,13 @@ dist/
 ```
 
 - **坐标单位是页宽千分比**（0–1000），跟画布的 viewBox 一致。
-- **背景自动布满全局**：放大倍数由「焦点到页面最远角的距离 ÷ 特效半径」算出，
-  所以背景永远盖满整页并溢出出血，不用逐页手调。`cover: 'x' | 'y' | 'all' | 'none'` 可控方向。
+- **背景是两层：满版底色场 + 笔触。**
+  - 底色场（`bg.wash`）铺满整页含出血——色块长在页面上，不是浮在白纸上的孤岛。
+    它的半径大于页面对角线的一半，所以"铺满"是几何保证，不靠逐页手调放大倍数。
+  - 笔触按各特效**自己的几何**摆位：放大倍数由「焦点到页面最远角的距离 ÷ 特效半径」算出，
+    笔触永远冲出画外。`cover: 'x' | 'y' | 'all' | 'none'` 可控方向。
+  - 每种特效的圆心与半径来自 `src/components/effects.json`，与图形同源生成
+    （以前两边各抄一份半径表，改了图形忘了改表，背景就盖不满）。
 - **热点可以给一个或一组**（p13 的三样、p27 的三个道具各是三个热点）。
 - 页面清单只有这一份来源：构建、检查、字体子集、截图都从 `specs/` 读。
 
@@ -210,6 +239,52 @@ dist/
     `pointerup/pointercancel` 挂到 document 上统一收尾（手势在热区外结束也要清状态，
     不然鼠标只是在肚子上晃也会累加角度）。
 
+15. **背景是「满版底色场 + 笔触」两层，底色场是几何保证。**
+    以前只靠"把笔触放大到最远角"，可笔触有的是环（漩涡）、有的是散点（彩纸）、
+    有的是从页外角冲进来的爆发（角落爆闪）——按圆盘假设去算，16 页的背景是
+    **浮在白纸上的孤岛**，不是满版。
+    现在底色场（`fx-wash`）铺满整页含出血（半径 > 页面对角线的一半），
+    笔触画在它上面；每页必须在数据里声明 `bg.wash`（底色场的颜色），
+    `check-pages.mjs` 会拦下漏声明的页，`check-shots.py` 会量每条边的主色是不是它。
+
+16. **文字压在什么颜色上，就得跟那个颜色对比度够。**
+    满版底色场一铺开，"黑字 + 深色笔触"这种原来被白纸托着的组合就露馅了
+    （p11 的提示字压在深紫笔触上只有 2.2:1）。`npm run check:contrast`
+    按**真实像素**量文字底下的颜色（不是页面底色——p08 的旁白其实落在白色气泡上），
+    正文 ≥ 4.5:1、大字 ≥ 3:1。改完底色场要重跑这道闸门。
+
+17. **改了正文文字，先 `npm run fonts`，再构建。**
+    子集漏字时浏览器会拿系统字体顶上（STKaiti/SimSun…），**那些字体没有商用授权**。
+    页面上完全看不出来，只有把 PDF 的字体清单拉出来才知道——
+    真实发生过：改完编者说没重切子集，印刷 PDF 里就多了一套 STKaiti。
+    现在两道闸门拦着：`npm run check` 会查子集是不是最新（`build-fonts.mjs --check`），
+    `npm run pdf` 会查 PDF 里除了自己那两套子集还有没有别的字体。
+
+18. **点角色要有反应，而且不靠逐页摆热区。**
+    孩子最先戳的就是它。规则是"点看得见的东西它有反应，点空白才翻页"——
+    点到角色（`event.target.closest('.char')`）就晃一下、叫一声，然后照样翻页。
+    不逐页摆热区是因为热区要靠猜角色的可见框（锚点 ≠ 可见中心），
+    而事件目标直接告诉我们点在谁身上。
+    `trap` 页除外：那些页在等一个特定动作，点哪儿都不该翻过去。
+
+19. **拼版的纸张尺寸要用具名页面隔开。**
+    四个入口共用一份 CSS（vite 的 `cssCodeSplit: false`），
+    裸 `@page { size: … }` 会把印刷版也改成 A4 横排——印刷 PDF 直接变成 72 页。
+    所以拼版用 `@page booklet` + `page: booklet`，
+    只有拼版的 `.sheet` 用它；`npm run pdf` 会查 PDF 页面是不是 612×612 pt。
+
+20. **音色接错节点不会报错，只是没声音。**
+    `AudioBook.play` 原来把异常整个吞掉（音频出错也不该挡住翻页，这没错），
+    但音色写错了就永远没人知道——页面上只是"没声音"。
+    现在异常会 `console.warn`，并且 `AudioBook.probe(name)` 能量出这个音色的峰值，
+    `npm run smoke` 逐个音色量一遍：静音的音色一律判失败。
+
+21. **每样东西有自己的声音。**
+    孩子点的是那个东西，响的就该是那个东西的声音：苹果咔嚓、小鱼哗啦、星星叮一声。
+    统一的"啊呜"只留给噜啵自己（页面拟声词）。
+    绘本常用的场景声音（翻页沙沙、拍手、铃铛、笑声、风、叹气、动物叫）也在库里，
+    见设计规格 §14.6。
+
 ## 出图
 
 ```bash
@@ -223,11 +298,94 @@ python tools/contact_sheet.py "dist/shots/p*.png" -o dist/shots/contact.png --co
 
 ## 打印
 
-`dist/book.pdf` 的页面是 **216 × 216 mm**（210 mm 正文 + 3 mm 出血），交给印厂时按 210 × 210 裁切。
+有两份 PDF，用途不同：
 
-家用打印机直接打的话：页面比 A4（210 mm 宽）宽 6 mm，请在打印对话框里选
+| 文件 | 纸张 | 用途 |
+|---|---|---|
+| `dist/book.pdf` | 216 × 216 mm 单页，36 页 | 交给印厂（按 210 × 210 裁切） |
+| `dist/book-a4-duplex.pdf` | A4 横放，每个面并排两页，18 个面 | **自家打印机**：双面打 + 对折即成书 |
+| `dist/book-a3-duplex.pdf` | A3 横放，成品 210 × 210 mm | 同上，不缩小的版本（`--a3`） |
+
+**页数 36 = 4 的倍数**：骑马钉对折后是 18 张纸、9 帖，每帖 4 页。
+页数不是 4 的倍数就排不出完整的帖，书脊那一帖会缺一面——
+所以 `npm run check` 会拦下这种页数。
+
+**双面打印**（自家打印机）：
+
+- 选「**双面打印**」，翻页方式选「**翻转长边**」（竖着翻、像翻书）。
+  方形页面的「长边/短边」由驱动决定，翻错了背面会上下颠倒——先打一张试。
+- 拼版 PDF 的页序已经按骑马钉排好：最外一张是封面与封底，往里依次往中间收。
+  印完沿中缝对折、中间订一下，就是一本。
+- A4 版成品是 148.5 × 148.5 mm（缩到 69%）；想要 210 mm 的原尺寸，用 A3 版。
+- 打印机若不支持自动双面，就印两份：一份正序、一份倒序，手动翻面叠回去。
+
+家用打印机直接打单页 PDF 的话：页面比 A4（210 mm 宽）宽 6 mm，请在打印对话框里选
 **「适应纸张大小 / Fit to page」**（多数驱动也会自动缩到可打印区），
 打出来就是裁掉出血后的 210 mm 成品。
+
+## 部署
+
+**它本来就是纯静态的**：没有后端、没有账号、没有统计（这是规格里的非目标），
+屏幕互动版是一个 **430 KB 的单文件**（CSS、JS、字体子集全部内联），
+扔进任何能发静态文件的地方就能用。
+
+### EdgeOne Pages（本项目默认目标）
+
+模式跟兄弟项目一样（022-onepage / 025-kuafu / 039-text2handwriting / 046-gdp-map）：
+
+```
+main 分支（源码）──CI 验过──▶ gh-pages 分支（构建产物）──▶ EdgeOne Pages 直接取这个分支
+```
+
+**EdgeOne 只发布、不构建**，所以它的 Git 集成这样填：分支 = **`gh-pages`**、
+构建命令 = **留空**、输出目录 = `/`。
+
+**缓存与安全响应头**由产物里的 `edgeone.json` 决定（`public/edgeone.json` → 进 `dist/` → 随分支走）：
+
+```json
+{
+  "name": "awulubo",
+  "headers": [
+    { "source": "**/*.html", "headers": [{ "key": "Cache-Control", "value": "no-store" }] },
+    { "source": "**/*.pdf",  "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }] },
+    { "source": "/**", "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "interest-cohort=(), browsing-topics=()" }
+    ] }
+  ]
+}
+```
+
+**两个 workflow**（`.github/workflows/`）：`ci.yml`（推 main / 提 PR 时跑全套闸门）、
+`deploy.yml`（推 main 时把 `dist/` 推到 gh-pages 分支）。
+CI 需要 Node 24 + Python（`requirements.txt`：fonttools、brotli，只为字体那两步）+ Playwright chromium。
+
+干净构建的产物只有 5 个文件、合计 1.7 MB：`index.html`（屏幕互动版）、
+`print.html`、`proof.html`（全部页面平铺）、`booklet.html`（A4 拼版）、`edgeone.json`。
+`shots/` 与三个 PDF 是本地产物，构建机不生成、也不会被上传 ✓。
+
+详见 [`deploy/README.md`](deploy/README.md)（还有 nginx / Caddy / Docker / 一条命令 / 对象存储五套）。
+
+### 自己的服务器
+
+`dist/` 传到站点根目录：
+
+```nginx
+root /var/www/awulubo;        # dist/ 的内容直接放这层
+location = /index.html { add_header Cache-Control "no-cache"; }   # 改版后别卡在旧版
+location ~ \.pdf$ { default_type application/pdf; }                # 类型要对才能翻页预览
+```
+
+**三件要注意的事**：
+
+1. **手机/平板要用 http(s) 打开，别用 `file://`**——`file://` 下音频与字体会被浏览器限制
+   （iPad 尤其明显）。实测 http 下一切正常。
+2. **PDF 的 Content-Type 要对**，否则浏览器只会强制下载。
+3. **公开 = 公开**：屏幕版公开只是"孩子能读"；印刷 PDF 公开意味着任何人拿到链接都能下载打印成品。
+
+**要传多少**：`dist/` 整个目录是 18.9 MB，其中 17 MB 是 `shots/`（逐页截图，只是给人看的）。
+真要上架，传 `index.html` + 三个 PDF 就够了（约 2.9 MB）；截图留给印厂或自己存档。
 
 ## 授权
 
