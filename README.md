@@ -1,6 +1,12 @@
 # 《啊呜噜啵！》
 
-3–5 岁互动绘本。一套 HTML 源码，同时产出**屏幕互动版**与**印刷 PDF**；画面全部由 HTML / CSS / SVG 构成，不用一张位图插画。
+一个要你喂的小怪物：喂它苹果、小鱼、黄星星，它就变成那个颜色，还会打嗝喷彩纸、跟你躲猫猫、数给你看。
+
+**3–5 岁能自己翻、自己点**：屏幕里会叫，纸上也玩得起来（打印出来照样能一起玩）。
+画面全部由 HTML / CSS / SVG 构成，不依赖位图插画——所以文字、声音、互动都在一个文件里，
+改一句话就能重印一版。
+
+*A hungry blob monster you feed, pat, hide and seek with, and count with.*
 
 - 角色、文本、桥段全部原创。画风承接参考书（埃尔维·杜莱）的"白纸 + 粗黑线 + 饱和平涂 + 手写字入画"这套类型语法，不复制其角色、咒语、构图。
 - 设计规格：[docs/superpowers/specs/2026-10-30-awulubo-picture-book-design.md](docs/superpowers/specs/2026-10-30-awulubo-picture-book-design.md)
