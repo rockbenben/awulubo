@@ -598,6 +598,30 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   check((await activeId()) === 'p18', `p17 描完一圈翻到 p18（实际 ${await activeId()}）`);
 }
 
+/* p33：喊三声它才听见——点书外的空白**不能**把这一页跳过去。
+   以前这一页没标 trap：它的整页热区只罩住**书页**，书页之外的留白
+   （手机上竖屏时书只占中间，上下都是空的）点下去就成了翻页——
+   孩子一次也没喊，"它听见了"那一拍整段错过。
+   要竖屏才测得到：横屏时书占满整屏，根本没有"书外的空白"。 */
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const mp = await ctx.newPage();
+  await mp.goto(url, { waitUntil: 'load' });
+  await mp.evaluate(() => document.fonts.ready);
+  await mp.evaluate(() => window.Book.goToId('p33'));
+  await mp.waitForTimeout(300);
+  /* 竖屏时书只占中间：上面那一截是留白 */
+  const blank = await mp.evaluate(() => {
+    const r = document.querySelector('[data-id="p33"]').getBoundingClientRect();
+    return { y: Math.max(2, Math.floor(r.top / 2)), x: Math.floor(window.innerWidth / 2) };
+  });
+  await mp.mouse.click(blank.x, blank.y);
+  await mp.waitForTimeout(600);
+  const at = await mp.evaluate(() => document.querySelector('.page.is-active')?.dataset.id);
+  check(at === 'p33', `p33 点书外留白不翻页（实际 ${at}）`);
+  await ctx.close();
+}
+
 /* p33：喊满三声它才听见——喊不够就翻页，"它听见了"这一拍就没了 */
 {
   await page.evaluate(() => window.Book.goToId('p33'));
