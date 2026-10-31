@@ -189,7 +189,19 @@ async function main() {
       : [];
     for (const h of hotspots) {
       if (!h.label) fail(`[${page.id}] 热点缺少 label`);
-      if (h.size < 120) fail(`[${page.id}] 热点尺寸 ${h.size} 小于 120`);
+      /* 尺寸必须是数，而且不能小于 120（规格 §6.6 的最小可点目标）。
+         以前写 `h.size < 120`：size 写漏了（undefined）时这个比较是 false，
+         检查放行，渲染器却算出 `width:NaN%`——热区变成一条无效 CSS，
+         点不动，而闸门全绿。 */
+      if (typeof h.size !== 'number' || !Number.isFinite(h.size)) {
+        fail(`[${page.id}] 热点缺少可用的 size（现在写的是 ${JSON.stringify(h.size)}）`);
+      } else if (h.size < 120) {
+        fail(`[${page.id}] 热点尺寸 ${h.size} 小于 120`);
+      }
+      /* 位置同理：at 必须是两个数，否则 left/top 也是 NaN% */
+      if (!Array.isArray(h.at) || h.at.length !== 2 || h.at.some((v) => typeof v !== 'number' || !Number.isFinite(v))) {
+        fail(`[${page.id}] 热点缺少可用的 at（现在写的是 ${JSON.stringify(h.at)}）`);
+      }
       if (!h.action) fail(`[${page.id}] 热点缺少 action`);
       else if (!actions.has(h.action)) {
         fail(
@@ -197,6 +209,26 @@ async function main() {
             `（可用的：${[...actions].join(', ')}）`
         );
       }
+    }
+
+    /* 颜色令牌：bg.colors / bg.gap / text.*.color 都要是 tokens.css 里定义过的。
+       以前只查了 bg.wash：颜色令牌写错不会报错，只会让颜色悄悄回退成默认色，
+       截图上一眼看不出来（"这页怎么是这个颜色？"），闸门全绿。 */
+    const checkToken = (value, where) => {
+      if (value === undefined || value === null) return;
+      if (typeof value !== 'string' || !value.startsWith('--')) {
+        fail(`[${page.id}] ${where} 不是色板令牌：${JSON.stringify(value)}`);
+      } else if (!tokens.has(value)) {
+        fail(`[${page.id}] ${where} 引用了未定义的色板令牌：${value}`);
+      }
+    };
+    if (page.bg) {
+      (page.bg.colors || []).forEach((c, i) => checkToken(c, `背景颜色 colors[${i}]`));
+      checkToken(page.bg.gap, '背景间隙 gap');
+      checkToken(page.bg.wash, '底色场 wash');
+    }
+    for (const [key, t] of Object.entries(page.text || {})) {
+      if (t && typeof t === 'object') checkToken(t.color, `文字 ${key} 的 color`);
     }
   }
 
