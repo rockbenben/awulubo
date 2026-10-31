@@ -149,6 +149,39 @@ body.screen .page.is-active {
    零件被 <use> 引用后落在影子树里，文档 CSS 选择器不生效；
    颜色与线宽一律走 CSS 变量（变量可穿透影子树）。这里只管页面层的行为。 */
 
+/* 数一数：数字一开始藏着，数到一个才在那个苹果旁边冒出来。
+   数字用霞鹜文楷，不用站酷快乐体——后者的「3」写成了「三」的样子，
+   数数页上「一」和「1」混在一起，孩子学的是阿拉伯数字，不是汉字。 */
+.number {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  font-family: 'LXGW WenKai', serif;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  opacity: 0;
+  scale: 0.5;
+  transition: opacity 260ms ease, scale 260ms ease;
+}
+
+.number.is-on {
+  opacity: 1;
+  scale: 1;
+}
+
+/* 数过的苹果弹一下。
+   用 translate 而不是 transform：道具的位置写在 SVG 的 transform 属性上，
+   用 transform 做动画会把那个属性整个顶掉，苹果会跳回原点。 */
+.count-item.is-counted {
+  animation: count-bounce 520ms ease;
+}
+
+@keyframes count-bounce {
+  0%, 100% { translate: 0 0; }
+  40% { translate: 0 -18%; }
+}
+
 /* 螺旋：屏幕上慢转，印刷与减少动效时不动 */
 .spiral {
   transform-origin: 50% 67%;
@@ -219,7 +252,8 @@ body.screen .page.is-active {
   transition: opacity 420ms ease;
 }
 
-.page.is-bloom .fx use {
+/* 彩纸开花：彩纸淡出，底色场不动（底色场是页面本身，不该跟着淡） */
+.page.is-bloom .fx use:not(.fx-wash) {
   opacity: 0.22;
 }
 

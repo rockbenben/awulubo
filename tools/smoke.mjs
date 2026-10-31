@@ -4,6 +4,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SCREEN_PAGES } from './layout-constants.mjs';
+import { loadSpecs } from './load-specs.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const url = 'file:///' + path.join(root, 'dist/index.html').replace(/\\/g, '/');
@@ -159,7 +160,7 @@ await page.waitForTimeout(900);
 active = await activeId();
 check(active === 'p28', `p27 找齐三个后翻到 p28（实际 ${active}）`);
 
-/* p13 走回头路后必须还能玩：p25 摸噜啵、p30 再读一次都会跳回 p05 重读。
+/* p13 走回头路后必须还能玩：p25 摸噜啵、p34 再读一次都会跳回 p05 重读。
    如果进入页面不清零计数，第二遍读到这里会永远卡住。 */
 await page.evaluate(() => window.Book.goToId('p13'));
 await page.waitForTimeout(200);
@@ -448,7 +449,8 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
 {
   await page.evaluate(() => window.Book.goToId('p19'));
   await page.waitForTimeout(200);
-  await clickVisible('p19', '.fx use', 0.9, 0.9);
+  /* 只挑笔触，不挑底色场：底色场是第一个 .fx use，点它当然不会开花 */
+  await clickVisible('p19', '.fx use:not(.fx-wash)', 0.9, 0.9);
   await page.waitForTimeout(350);
   const bloomed = await page.evaluate(() =>
     document.querySelector('[data-id="p19"]').classList.contains('is-bloom')
@@ -477,13 +479,68 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   check((await activeId()) === 'p05', `p25 点噜啵的脸会打哈欠回开头（实际 ${await activeId()}）`);
 }
 
-/* p30：点那个手绘大圆圈就该"再读一次"——全书最后一页唯一能点的按钮 */
+/* p16：点噜啵自己也要有反应（"拍一拍"）——它晃一下、叫一声，页照翻。
+   孩子最先戳的就是它；不回应的话，它在全书都只是一张贴图。 */
 {
-  await page.evaluate(() => window.Book.goToId('p30'));
+  await page.evaluate(() => window.Book.goToId('p16'));
   await page.waitForTimeout(200);
-  await clickVisible('p30', '.prop-arrow', 0.45, 0.35);
+  const box = await page.evaluate(() => {
+    const r = document.querySelector('[data-id="p16"] .char').getBoundingClientRect();
+    return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+  });
+  await page.mouse.click(box.x, box.y);
+  await page.waitForTimeout(120);
+  const wobbled = await page.evaluate(() =>
+    document.querySelector('[data-id="p16"] .char')?.classList.contains('is-wobble')
+  );
+  check(wobbled, 'p16 点噜啵自己会晃一下（拍一拍）');
+  await page.waitForTimeout(700);
+  check((await activeId()) === 'p17', `p16 拍完之后照样翻页（实际 ${await activeId()}）`);
+}
+
+/* p31：数一数——点一个苹果，旁边的数字亮起来；数满三个才翻页 */
+{
+  await page.evaluate(() => window.Book.goToId('p31'));
+  await page.waitForTimeout(200);
+  for (const i of [1, 2]) {
+    await page.click(`[data-id="p31"] .hotspot[data-index="${i}"]`);
+    await page.waitForTimeout(250);
+  }
+  const lit = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[data-id="p31"] .number')).map((n) =>
+      n.classList.contains('is-on')
+    )
+  );
+  check(
+    lit[0] === true && lit[1] === true && lit[2] === false,
+    `p31 数了两个，数字亮两个（实际 ${JSON.stringify(lit)}）`
+  );
+  check((await activeId()) === 'p31', `p31 没数满不翻页（实际 ${await activeId()}）`);
+  await page.click('[data-id="p31"] .hotspot[data-index="3"]');
   await page.waitForTimeout(900);
-  check((await activeId()) === 'p05', `p30 点大圆圈回到第一跨页（实际 ${await activeId()}）`);
+  check((await activeId()) === 'p32', `p31 数满三个翻到 p32（实际 ${await activeId()}）`);
+
+  /* 回头重进：数字必须复位，否则第二次进来一碰就翻页 */
+  await page.evaluate(() => window.Book.goToId('p31'));
+  await page.waitForTimeout(250);
+  const again = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('[data-id="p31"] .number')).map((n) =>
+      n.classList.contains('is-on')
+    )
+  );
+  check(
+    again.every((v) => v === false),
+    `p31 重进后数字复位（实际 ${JSON.stringify(again)}）`
+  );
+}
+
+/* p34：点那个手绘大圆圈就该"再读一次"——全书最后一页唯一能点的按钮 */
+{
+  await page.evaluate(() => window.Book.goToId('p34'));
+  await page.waitForTimeout(200);
+  await clickVisible('p34', '.prop-arrow', 0.45, 0.35);
+  await page.waitForTimeout(900);
+  check((await activeId()) === 'p05', `p34 点大圆圈回到第一跨页（实际 ${await activeId()}）`);
 }
 
 /* 连着点错 5 下就放人走：这一页不能是死路 */
@@ -571,24 +628,24 @@ await page.waitForTimeout(1100);
 active = await activeId();
 check(active === 'p05', `摸噜啵后回到 p05（实际 ${active}）`);
 
-/* p30：点空白也有反应（最后一页翻不动了，不能毫无动静） */
+/* p34：点空白也有反应（最后一页翻不动了，不能毫无动静） */
 {
-  await page.evaluate(() => window.Book.goToId('p30'));
+  await page.evaluate(() => window.Book.goToId('p34'));
   await page.waitForTimeout(200);
   await page.mouse.click(60, 60);
   await page.waitForTimeout(300);
   const shook = await page.evaluate(() =>
-    document.querySelector('[data-id="p30"] .char')?.classList.contains('is-shake')
+    document.querySelector('[data-id="p34"] .char')?.classList.contains('is-shake')
   );
-  check(shook, 'p30 点空白摇了一下头（不是毫无反应）');
+  check(shook, 'p34 点空白摇了一下头（不是毫无反应）');
   active = await activeId();
-  check(active === 'p30', `p30 点空白没有乱翻页（实际 ${active}）`);
+  check(active === 'p34', `p34 点空白没有乱翻页（实际 ${active}）`);
 }
 
-/* p30：点圆圈 → 回到 p05 */
-await page.evaluate(() => window.Book.goToId('p30'));
+/* p34：点圆圈 → 回到 p05 */
+await page.evaluate(() => window.Book.goToId('p34'));
 await page.waitForTimeout(200);
-await page.click('[data-id="p30"] .hotspot');
+await page.click('[data-id="p34"] .hotspot');
 await page.waitForTimeout(700);
 active = await activeId();
 check(active === 'p05', `点再读一次回到 p05（实际 ${active}）`);
@@ -599,18 +656,77 @@ const muted = await page.evaluate(() => window.AudioBook.isMuted());
 check(muted === true, 'M 键静音生效');
 await page.keyboard.press('m');
 
+/* 每个音色都要真的有声音。
+   音色接错节点时**不会报错**，只是没声音——页面上听不出来，
+   只有量峰值才量得到：静音的音色峰值是 0。 */
+{
+  const names = await page.evaluate(() => window.AudioBook.names());
+  const silent = [];
+  for (const n of names) {
+    const peak = await page.evaluate((name) => window.AudioBook.probe(name, 300), n);
+    if (!(peak > 0.001)) silent.push(n);
+  }
+  check(
+    silent.length === 0,
+    `${names.length} 个音色都有声音${silent.length ? '（哑的：' + silent.join(', ') + '）' : ''}`
+  );
+}
+
 /* 屏幕版页数与印刷专属页 */
 const screenIds = await page.evaluate(() =>
   Array.from(document.querySelectorAll('.page')).map((p) => p.dataset.id)
 );
 check(
   !screenIds.includes('p04') &&
-    !screenIds.includes('p29') &&
-    !screenIds.includes('p31') &&
-    !screenIds.includes('p32'),
+    !screenIds.includes('p33') &&
+    !screenIds.includes('p35') &&
+    !screenIds.includes('p36'),
   '屏幕版跳过版权/给大人的话/后环衬/封底'
 );
 check(screenIds.length === SCREEN_PAGES, `屏幕版 ${SCREEN_PAGES} 页（实际 ${screenIds.length}）`);
+
+/* 背景必须"布满全局"：满版底色场的**实际渲染范围**要盖住整页。
+   量 SVG 里 <use class="fx-wash"> 的渲染包围盒——
+   角色身体是纸白的，常常压在页边，用像素统计会被它带偏，用几何量就不会。 */
+const specs = await loadSpecs();
+const washIds = specs.filter((s) => s.bg && s.bg.wash).map((s) => s.id);
+const proof = await browser.newPage({ viewport: { width: 1200, height: 1200 } });
+await proof.goto(
+  'file:///' + path.join(root, 'dist/proof.html').replace(/\\/g, '/'),
+  { waitUntil: 'load' }
+);
+const washes = await proof.evaluate(() =>
+  Array.from(document.querySelectorAll('.page')).map((sec) => {
+    const wash = sec.querySelector('.fx-wash');
+    if (!wash) return { id: sec.dataset.id, hasWash: false, covers: false };
+    const svg = sec.querySelector('.art > svg');
+    const sr = svg.getBoundingClientRect();
+    const wr = wash.getBoundingClientRect();
+    const pad = 0.5;
+    return {
+      id: sec.dataset.id,
+      hasWash: true,
+      covers:
+        wr.left <= sr.left + pad &&
+        wr.top <= sr.top + pad &&
+        wr.right >= sr.right - pad &&
+        wr.bottom >= sr.bottom - pad,
+    };
+  })
+);
+const rendered = washes.filter((w) => w.hasWash).map((w) => w.id);
+const missing = washIds.filter((id) => !rendered.includes(id));
+const extra = rendered.filter((id) => !washIds.includes(id));
+const notCovered = washes.filter((w) => w.hasWash && !w.covers).map((w) => w.id);
+check(
+  missing.length === 0 && extra.length === 0,
+  `满版底色场页数对得上（该有 ${washIds.length} 页；缺 ${missing.join(',') || '无'}；多 ${extra.join(',') || '无'}）`
+);
+check(
+  notCovered.length === 0,
+  `底色场盖住整页（没盖住：${notCovered.join(',') || '无'}）`
+);
+await proof.close();
 
 /* 无外部请求 */
 const requests = [];

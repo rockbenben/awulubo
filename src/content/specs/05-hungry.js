@@ -5,7 +5,7 @@ export default [
     template: 't-dialog',
     sound: 'gulu',
     aria: '咕噜，咕噜。谁的肚子在叫？点一下噜啵的肚子。',
-    bg: { kind: 'bands', colors: ['--yellow', '--yellow-deep'], focus: [500, 500] },
+    bg: { kind: 'bands', colors: ['--yellow', '--yellow-deep'], focus: [500, 500], wash: '--wash-yellow' },
     char: { pose: 'hungry', at: [190, 200], scale: 0.62, spiral: true },
     text: {
       sound: { text: '咕噜——<br>咕噜——', at: [70, 82], size: 11, rotate: -2 },
@@ -19,7 +19,7 @@ export default [
     template: 't-dialog',
     sound: 'chirp',
     aria: '是我，噜啵。我饿了！咦？我看见你啦！你喂我，好不好？',
-    bg: { kind: 'swirl', colors: ['--pink', '--pink-deep'], focus: [720, 540] },
+    bg: { kind: 'swirl', colors: ['--pink', '--pink-deep'], focus: [720, 540], wash: '--wash-pink' },
     char: { pose: 'idle', at: [350, 310], scale: 0.72, spiral: true },
     text: {
       narration: {

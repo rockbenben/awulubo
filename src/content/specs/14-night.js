@@ -5,7 +5,7 @@ export default [
     template: 't-night',
     sound: 'snore',
     aria: '晚安，噜啵。呼噜……呼噜……点一下月亮。',
-    bg: { kind: 'stars', focus: [500, 500], cover: 'all' },
+    bg: { kind: 'stars', focus: [500, 500], cover: 'all', wash: '--night' },
     props: [{ kind: 'moon', at: [620, 80], scale: 0.52, class: 'prop-moon' }],
     char: { pose: 'asleep', state: 'state-pale', at: [60, 420], scale: 0.56, spiral: true },
     text: {
@@ -22,7 +22,7 @@ export default [
     noSound: true,
     template: 't-night t-night-deep',
     aria: '嘘——别吵醒它。',
-    bg: { kind: 'stars', focus: [500, 300], cover: 'all' },
+    bg: { kind: 'stars', focus: [500, 300], cover: 'all', wash: '--night-deep' },
     props: [{ kind: 'moon', at: [660, 120], scale: 0.42 }],
     char: { pose: 'asleep', state: 'state-pale', at: [150, 420], scale: 0.56, spiral: true },
     text: {

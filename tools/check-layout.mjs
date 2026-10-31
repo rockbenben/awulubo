@@ -75,30 +75,33 @@ for (const spec of pages) {
     });
     /* 带 target 的热点：道具的可点位置必须落在热区里。
        道具是按组件自己的几何渲染的，页面里写的锚点不等于它在页面上的位置；
-       热区没罩住的话，"点一下那条鱼"点不到鱼——书直接翻页过去。 */
+       热区没罩住的话，"点一下那条鱼"点不到鱼——书直接翻页过去。
+       同一个 target 可能对应**多个**道具（数一数那页三个苹果），
+       所以要按"一组"来比：热区罩住其中任意一个就算数。 */
+    const propCenters = {};
+    for (const p of el.querySelectorAll('[class*="prop-"]')) {
+      const cls = p.getAttribute('class') || '';
+      const kind = cls.split(/\s+/).find((c) => c.startsWith('prop-'));
+      if (!kind) continue;
+      const pr = p.getBoundingClientRect();
+      if (!pr.width) continue;
+      const key = kind.slice(5);
+      (propCenters[key] = propCenters[key] || []).push([
+        pr.x + pr.width / 2 - box.x,
+        pr.y + pr.height / 2 - box.y,
+      ]);
+    }
     const hotspots = [...el.querySelectorAll('.hotspot[data-target]')].map((h) => {
       const hr = h.getBoundingClientRect();
-      const prop = el.querySelector('.prop-' + h.dataset.target);
-      let cx = null;
-      let cy = null;
-      if (prop) {
-        const pr = prop.getBoundingClientRect();
-        if (pr.width) {
-          cx = pr.x + pr.width / 2 - box.x;
-          cy = pr.y + pr.height / 2 - box.y;
-        }
-      }
       return {
         target: h.dataset.target,
         x: hr.x - box.x,
         y: hr.y - box.y,
         width: hr.width,
         height: hr.height,
-        cx,
-        cy,
       };
     });
-    return { width: box.width, height: box.height, texts, hotspots };
+    return { width: box.width, height: box.height, texts, hotspots, propCenters };
   }, spec.id);
 
   if (!data) {
@@ -144,8 +147,12 @@ for (const spec of pages) {
 
   /* 4. 热点没罩住道具 */
   const propKinds = new Set((spec.props || []).map((p) => p.kind));
+  const covers = (h, cx, cy) =>
+    cx >= h.x && cx <= h.x + h.width && cy >= h.y && cy <= h.y + h.height;
+
   for (const h of data.hotspots) {
-    if (h.cx === null) {
+    const centers = data.propCenters[h.target] || [];
+    if (!centers.length) {
       /* 页面数据里声明了这个道具，DOM 里却没有对应的 class：
          道具一改名/漏 class，运行时 fly() 找不到元素就静默不反应
          （声音照响、页照翻），这条检查也会跟着一起失效——所以要报错，不能跳过。 */
@@ -157,14 +164,30 @@ for (const spec of pages) {
       }
       continue; /* 目标本来就不是道具（角色的肚子、彩纸背景），不查 */
     }
-    const inside =
-      h.cx >= h.x && h.cx <= h.x + h.width && h.cy >= h.y && h.cy <= h.y + h.height;
-    if (!inside) {
+    if (!centers.some(([cx, cy]) => covers(h, cx, cy))) {
       problems.push(
         `[${spec.id}] 热点没罩住道具「${h.target}」的可点位置` +
-          `（道具中心在 ${Math.round(h.cx / UNIT)},${Math.round(h.cy / UNIT)}，` +
+          `（道具的可点位置在 ${centers
+            .map(([cx, cy]) => `${Math.round(cx / UNIT)},${Math.round(cy / UNIT)}`)
+            .join(' / ')}，` +
           `热区是 ${Math.round(h.x / UNIT)},${Math.round(h.y / UNIT)} 起 ${Math.round(h.width / UNIT)} 见方）`
       );
+    }
+  }
+
+  /* 反过来也要查：每个道具都得有热区罩住它。
+     多个同款道具时（数一数的三个苹果），每个都要被某个热区罩住——
+     少一个，那个苹果就点不动。 */
+  for (const [target, centers] of Object.entries(data.propCenters || {})) {
+    const hs = data.hotspots.filter((h) => h.target === target);
+    if (!hs.length) continue; /* 没有热区指向它：不查（有些道具本来就不点） */
+    for (const [cx, cy] of centers) {
+      if (!hs.some((h) => covers(h, cx, cy))) {
+        problems.push(
+          `[${spec.id}] 道具「${target}」没有热区罩住它` +
+            `（可点位置在 ${Math.round(cx / UNIT)},${Math.round(cy / UNIT)}）`
+        );
+      }
     }
   }
 }

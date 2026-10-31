@@ -5,7 +5,7 @@ export default [
     template: 't-food',
     sound: 'chomp',
     aria: '先吃一个红苹果。噜啵，张嘴。啊呜！点一下红苹果。',
-    bg: { kind: 'disc', colors: ['--blue'], focus: [500, 940], cover: 'x' },
+    bg: { kind: 'disc', colors: ['--blue'], focus: [500, 940], cover: 'x', wash: '--wash-blue' },
     props: [{ kind: 'apple', at: [320, 180], scale: 0.36, class: 'prop-apple' }],
     char: { pose: 'peek', at: [280, 620], scale: 0.5 },
     text: {
@@ -20,7 +20,7 @@ export default [
     template: 't-color',
     sound: 'burp',
     aria: '啊呜！噜啵变红啦！嗝——',
-    bg: { kind: 'rays', colors: ['--red-deep', '--red'], gap: '--red', focus: [500, 680] },
+    bg: { kind: 'rays', colors: ['--red-deep', '--red'], gap: '--red', focus: [500, 680], wash: '--red' },
     props: [{ kind: 'blob', at: [2.5, -138.5], scale: 0.5 }],
     char: { pose: 'happy', state: 'on-color state-red', at: [120, 300], scale: 0.76, spiral: true },
     text: {

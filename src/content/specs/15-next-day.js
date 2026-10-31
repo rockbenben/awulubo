@@ -9,7 +9,7 @@ export default [
        想往下读 = 点空白处翻页——原来只有循环那个出口有提示，
        照着提示读会一遍遍循环，读不到后面的"找一找"和结局页。 */
     aria: '咕噜——咕噜——第二天，噜啵的肚子又叫了。摸摸噜啵。（摸它会从头再读一遍；想往下读，点空白处翻页。）',
-    bg: { kind: 'rays-corner', colors: ['--yellow', '--yellow-deep'], focus: [500, 500], cover: 'all' },
+    bg: { kind: 'rays-corner', colors: ['--yellow', '--yellow-deep'], focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
     char: { pose: 'hungry', at: [270, 300], scale: 0.74, spiral: true },
     text: {
       narration: {
@@ -33,7 +33,7 @@ export default [
     template: 't-dialog',
     noSound: true,
     aria: '今天，你喂噜啵吃什么？',
-    bg: { kind: 'rays-tight', colors: ['--green'], gap: '--paper', focus: [500, 620], cover: 'all' },
+    bg: { kind: 'rays-tight', colors: ['--green'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-green' },
     props: [
       { kind: 'apple', at: [150, 230], scale: 0.22, rotate: -14, class: 'prop-apple' },
       { kind: 'fish', at: [420, 200], scale: 0.24, rotate: 10, class: 'prop-fish' },

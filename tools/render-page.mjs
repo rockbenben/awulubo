@@ -1,7 +1,8 @@
 /* 页面渲染：页面数据 → HTML。
  *
  * 模板用 Handlebars（src/templates/page.hbs），这里只做两件模板不擅长的事：
- *   1. 背景的放大倍数——按「焦点到页面最远角的距离」算，保证笔触布满全局并溢出出血；
+ *   1. 背景——分两层：**满版底色场**（保证铺满整页含出血）+ **笔触**；
+ *      笔触的放大倍数按「焦点到页面最远角的距离」算，保证笔触冲出画外；
  *   2. 拟声词的逐字微转——每个字歪 ±3°、位移 ±1%，由字序确定性生成。
  * 这两件事算完就以现成的字符串交给模板，模板本身不含逻辑。
  */
@@ -13,34 +14,27 @@ import { PAGE, MARGIN } from './layout-constants.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = path.join(HERE, '..', 'src', 'templates', 'page.hbs');
+const GEOMETRY = path.join(HERE, '..', 'src', 'components', 'effects.json');
 
-/* 每种特效在 1000 × 1000 坐标系里能覆盖到的半径 */
-export const EFFECT_RADIUS = {
-  rays: 880,
-  'rays-tight': 600,
-  'rays-corner': 1500,
-  bands: 1200,
-  swirl: 600,
-  disc: 430,
-  confetti: 1000,
-  sprinkle: 1000,
-  rainbow: 1200,
-  stars: 1000,
-};
+/* 每种特效的几何（圆心与外半径）。
+   由 tools/gen-effects.py 和图形一起生成——以前这里另抄了一份半径表，
+   改了图形忘了改表，"自动放大"就按错的半径算，背景盖不满整页。 */
+function loadGeometry() {
+  if (!fs.existsSync(GEOMETRY)) {
+    throw new Error(`缺少 ${GEOMETRY}：先跑 python tools/gen-effects.py 生成特效与几何表`);
+  }
+  return JSON.parse(fs.readFileSync(GEOMETRY, 'utf8'));
+}
 
-const EFFECT_ID = {
-  rays: 'fx-rays',
-  'rays-tight': 'fx-rays-tight',
-  'rays-corner': 'fx-rays-corner',
-  bands: 'fx-bands',
-  swirl: 'fx-swirl',
-  disc: 'fx-disc',
-  confetti: 'fx-confetti',
-  sprinkle: 'fx-sprinkle',
-  rainbow: 'fx-rainbow',
-  stars: 'fx-stars',
-};
-export { EFFECT_ID };
+const GEOM = loadGeometry();
+
+/** 背景种类 → 组件符号 id */
+export const EFFECT_ID = Object.fromEntries(
+  Object.entries(GEOM).map(([kind, g]) => [kind, g.symbol])
+);
+
+/** 背景种类 → { symbol, cx, cy, r } */
+export const EFFECT_GEOM = GEOM;
 
 const PROP_ID = {
   apple: 'prop-apple',
@@ -104,7 +98,9 @@ function jitter(text) {
 
 function viewBackground(bg) {
   if (!bg || !bg.kind || bg.kind === 'none') return null;
-  const radius = EFFECT_RADIUS[bg.kind] || 1000;
+  const geom = EFFECT_GEOM[bg.kind];
+  if (!geom) throw new Error(`未知的背景种类：${bg.kind}`);
+  const radius = geom.r;
   const focus = bg.focus || [500, 500];
   const zoom = Math.max(bg.zoom || 1, requiredSpan(focus, bg.cover || 'all') / radius);
   const tx = focus[0] - 500 * zoom;
@@ -115,13 +111,32 @@ function viewBackground(bg) {
   if (bg.colors && bg.colors[1]) vars.push(`--ray2: var(${bg.colors[1]})`);
   else if (bg.colors && bg.colors[0]) vars.push(`--ray2: var(${bg.colors[0]})`);
   if (bg.gap) vars.push(`--ray-gap: var(${bg.gap})`);
+  /* 色盘组件用的是 --disc（不是 --ray） */
   if (bg.kind === 'disc' && bg.colors && bg.colors[0]) vars.push(`--disc: var(${bg.colors[0]})`);
 
-  return {
+  const out = {
     symbol: EFFECT_ID[bg.kind],
     transform: `translate(${num(tx)},${num(ty)}) scale(${num(zoom)})`,
     vars: vars.join('; '),
+    wash: null,
   };
+
+  /* 满版底色场：色块不再是"浮在白纸上的孤岛"，而是**页面本身**。
+     它的半径大于页面对角线的一半，所以"铺满整页（含出血）"是几何保证，
+     不靠逐页手调放大倍数——这正是之前没做到的那件事。 */
+  if (bg.wash) {
+    const w = EFFECT_GEOM.wash;
+    const wzoom = Math.max(1, requiredSpan([500, 500], 'all') / w.r);
+    const wtx = 500 - 500 * wzoom;
+    const wty = 500 - 500 * wzoom;
+    vars.push(`--wash: var(${bg.wash})`);
+    out.vars = vars.join('; ');
+    out.wash = {
+      symbol: EFFECT_ID.wash,
+      transform: `translate(${num(wtx)},${num(wty)}) scale(${num(wzoom)})`,
+    };
+  }
+  return out;
 }
 
 function viewCharacter(char) {
@@ -213,6 +228,7 @@ function viewHotspots(hotspot) {
   return list.map((h) => ({
     action: h.action,
     target: h.target || '',
+    index: h.index || 0,
     left: pct(h.at[0]),
     top: pct(h.at[1]),
     width: pct(h.size),
@@ -221,18 +237,43 @@ function viewHotspots(hotspot) {
   }));
 }
 
+/* 数字：数一数那页用。一开始藏起来，数到一个才在那个苹果旁边冒出来。 */
+function viewNumbers(numbers) {
+  if (!numbers || !numbers.length) return [];
+  return numbers.map((n, i) => {
+    const style = [`left:${pct(n.at[0])}`, `top:${pct(n.at[1])}`];
+    if (n.width) style.push(`width:${pct(n.width)}`);
+    if (n.align) style.push(`text-align:${n.align}`);
+    if (n.size) style.push(`font-size:calc(var(--u) * ${num(n.size)})`);
+    if (n.rotate) style.push(`transform:rotate(${num(n.rotate)}deg)`);
+    return {
+      cls: `num-${i + 1}${n.on ? ' is-on' : ''}`,
+      style: style.join('; '),
+      text: n.text,
+    };
+  });
+}
+
 /* 整页。scope = 'screen' | 'print'：印刷版可以用自己的文案 */
 export function renderPage(spec, scope = 'screen') {
+  const hotspots = viewHotspots(spec.hotspot);
+  /* 「拍一拍」：这一页能不能点角色就有反应。
+     角色自己就是互动目标时（摸噜啵那张脸）不算——那一下该干别的事。 */
+  const pat = Boolean(
+    spec.char && !hotspots.some((h) => h.target === 'char')
+  );
   return template()({
     id: spec.id,
     template: spec.template || 't-dialog',
     sound: spec.sound || '',
     trap: Boolean(spec.trap),
+    pat,
     aria: spec.aria || '',
     bg: viewBackground(spec.bg),
     char: viewCharacter(spec.char),
     props: viewProps(spec.props),
     texts: viewTexts(spec.text, scope),
-    hotspots: viewHotspots(spec.hotspot),
+    numbers: viewNumbers(spec.numbers),
+    hotspots,
   });
 }

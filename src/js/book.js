@@ -35,7 +35,7 @@
     if (id && location.hash.slice(1) !== id) {
       history.replaceState(null, '', '#' + id);
     }
-    /* 进入页面时把这一页的互动计数清零：读者会走回头路（p25 摸噜啵、p30 再读一次
+    /* 进入页面时把这一页的互动计数清零：读者会走回头路（p25 摸噜啵、p34 再读一次
        都会跳回 p05 重读），不清零的话第二遍读到"按顺序点三样"就会永远卡住。 */
     if (global.BookInteractions && global.BookInteractions.reset) {
       global.BookInteractions.reset(pages[current]);
@@ -172,12 +172,29 @@
 
     document.addEventListener('click', function (ev) {
       if (ev.target.closest('.hotspot, button, a')) return;
+      var cur = pages[current];
+      /* 拍一拍：点在噜啵身上，它晃一下、叫一声，然后照样翻页。
+         不用逐页摆热区——点在角色上这件事，事件目标自己会告诉我们
+         （点到的就是 SVG 里角色的那个 <use>），不用猜它的可见框在哪。
+         多步互动的页面（trap）除外：那些页在等一个特定动作，
+         点哪儿都不该翻过去。 */
+      if (
+        cur &&
+        cur.getAttribute('data-pat') === '1' &&
+        !cur.hasAttribute('data-trap') &&
+        ev.target.closest &&
+        ev.target.closest('.char') &&
+        global.BookInteractions &&
+        global.BookInteractions.pat
+      ) {
+        global.BookInteractions.pat(cur);
+        return;
+      }
       /* 多步互动的页面（按顺序点三样 / 再喂一口 / 揉肚子 / 找一找）：
          点空白不翻页，摇一下头让孩子接着来。
          以前一戳就跳页——"找一找"还会跳到"你都找到了吗？"，
          孩子一个都没找到，书却问他找到了没有。
          书页之外的留白也算（手机竖屏时书只占中间，上下都是空的）。 */
-      var cur = pages[current];
       if (cur && cur.hasAttribute('data-trap')) {
         if (global.BookInteractions && global.BookInteractions.wrong) {
           global.BookInteractions.wrong(cur);
@@ -243,6 +260,8 @@
            有就让它演完（"摸噜啵回到开头"不能被一次滑动顶掉）。
            往后滑是明确的"回去看"，不跳过。 */
         if (dx < 0) {
+          /* 滑过去的动静：真的书翻页是沙沙一声（点着翻页不响，手指翻才响） */
+          global.AudioBook.play('paper');
           withLock(skipPending(currentPageId()) || next);
         } else {
           withLock(prev);

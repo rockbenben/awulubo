@@ -5,7 +5,7 @@ export default [
     template: 't-dialog',
     sound: 'chomp',
     aria: '还要！还要！啊呜、啊呜、啊呜……再喂一口！',
-    bg: { kind: 'rays-corner', colors: ['--orange'], focus: [0, 1000], cover: 'all' },
+    bg: { kind: 'rays-corner', colors: ['--orange'], focus: [500, 500], cover: 'all', wash: '--wash-orange' },
     props: [
       { kind: 'apple', at: [680, 560], scale: 0.2, rotate: 16, class: 'prop-apple' },
       { kind: 'star', at: [780, 300], scale: 0.15, rotate: -12, class: 'prop-star' },
@@ -25,7 +25,7 @@ export default [
     template: 't-dialog',
     sound: 'gulu',
     aria: '哎呀……噜啵吃太多，动不了了。帮帮我——点点它的肚子。',
-    bg: { kind: 'rays-tight', colors: ['--pink', '--pink-deep'], focus: [500, 640], cover: 'all' },
+    bg: { kind: 'rays-tight', colors: ['--pink', '--pink-deep'], focus: [500, 640], cover: 'all', wash: '--wash-pink' },
     char: { pose: 'full', at: [120, 250], scale: 0.82, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 400, text: '哎呀……噜啵吃太多，<br>动不了了。帮帮我——' },

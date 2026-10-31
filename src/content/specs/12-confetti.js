@@ -5,7 +5,7 @@ export default [
     template: 't-burst',
     sound: 'pop',
     aria: '好多颜色！红的、蓝的、黄的……点一片彩纸。',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all' },
+    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-cream' },
     char: { pose: 'happy', at: [300, 380], scale: 0.6, spiral: true },
     props: [
       { kind: 'flower', class: 'confetti-flower', at: [110, 210], scale: 0.22, rotate: -12, style: '--flower: var(--pink); --flower-center: var(--yellow)' },
@@ -25,9 +25,9 @@ export default [
   {
     id: 'p20',
     template: 't-dialog',
-    sound: 'chirp',
+    sound: 'whoosh',
     aria: '彩纸把噜啵卷起来，送到天上啦！',
-    bg: { kind: 'bands', colors: ['--orange', '--yellow'], focus: [500, 500], cover: 'all' },
+    bg: { kind: 'bands', colors: ['--orange', '--yellow'], focus: [500, 500], cover: 'all', wash: '--wash-cream' },
     char: { pose: 'happy', at: [360, 140], scale: 0.46, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 420, text: '彩纸把噜啵卷起来，<br>送到天上啦！' },

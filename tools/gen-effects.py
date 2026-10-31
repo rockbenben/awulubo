@@ -5,6 +5,7 @@
 沿中心线生成带宽度变化、两端平切的闭合填充路径，再在笔画里嵌几条细的飞白。
 
 词汇表（每页换一种，别老是射线）：
+  fx-wash        满版底色场：铺满整页（含出血），所有页面的背景底子
   fx-rays        放射线：角色身后的爆发
   fx-rays-corner 角落爆闪：从页面一角冲进来，直接冲出画外
   fx-bands       斜向色带：整页铺满，不留白岛
@@ -12,9 +13,12 @@
   fx-disc        实心圆盘：可缩放出血，压住页面边缘
   fx-confetti    彩纸：96 片，位置固定（规格 §7.8）
 
-产物：src/components/effects.svg（确定性，可重跑覆盖）
+产物：
+  src/components/effects.svg   图形（确定性，可重跑覆盖）
+  src/components/effects.json  几何（圆心/半径），渲染器据此自动算放大倍数
 用法：python tools/gen-effects.py
 """
+import json
 import math
 import os
 import random
@@ -205,6 +209,39 @@ def disc_shapes(cx, cy, r, seed, width=26):
     return [(main, strokes, "--disc")]
 
 
+def wash_shapes(seed, cx=500, cy=500, r=900, count=26):
+    """满版底色场：一整块毛边色块 + 几道飞白。
+
+    半径 900 > 页面对角线的一半（707），所以这块色场**天然盖住整页**——
+    "底色铺满全页"是几何保证，不靠逐页手调放大倍数。
+    边缘的毛躁永远落在画外，看不见；页面上的质感来自里面的飞白。
+    """
+    rnd = random.Random(seed)
+    pts = []
+    for i in range(count):
+        ang = math.tau * i / count
+        rr = r * (1 + rnd.uniform(-0.06, 0.06))
+        pts.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang)))
+    main = catmull_path(pts, move=True) + " Z"
+
+    strokes = []
+    for _ in range(10):
+        ang = rnd.uniform(0, math.tau)
+        x0 = cx + math.cos(ang) * rnd.uniform(60, 520)
+        y0 = cy + math.sin(ang) * rnd.uniform(60, 520)
+        length = rnd.uniform(0.35, 0.95) * r
+        seg, w = [], []
+        for k in range(6):
+            t = k / 5
+            seg.append((x0 + math.cos(ang) * length * t + rnd.uniform(-16, 16),
+                        y0 + math.sin(ang) * length * t + rnd.uniform(-16, 16)))
+            w.append(rnd.uniform(7, 26))
+        w[0] *= 0.35
+        w[-1] *= 0.35
+        strokes.append(ribbon(seg, w))
+    return [(main, strokes, "--wash")]
+
+
 def rainbow_body_shapes(seed, cx=500, cy=515, rx=266, ry=260, count=6):
     """彩虹身体：六条波浪色带，贴着身体轮廓（轮廓线由 character.svg 盖在上面）。"""
     rnd = random.Random(seed)
@@ -343,6 +380,12 @@ def emit(symbol_id, shapes, note, gap_opacity=0.4):
 def main():
     blocks = [
         emit(
+            "fx-wash",
+            wash_shapes(seed=11),
+            "满版底色场：铺满整页（含出血），页面背景的底子",
+            gap_opacity=0.16,
+        ),
+        emit(
             "fx-rays",
             rays_shapes(500, 500, 130, 880, 11, seed=17, w_in=54, w_out=104),
             "放射线：角色身后的爆发",
@@ -427,6 +470,28 @@ def main():
     with open(out2, "w", encoding="utf-8") as f:
         f.write(rainbow_header + "\n\n".join(rainbow_blocks) + "\n\n</svg>\n")
     print(f"✓ {os.path.normpath(out2)}")
+
+    # 几何表：每种特效的圆心与外半径。
+    # 渲染器靠它算"放大到刚好冲出页面最远角"，所以这张表必须和图形同源——
+    # 以前两边各写一份，改了图形忘了改表，背景就盖不满（这是真实发生过的 bug）。
+    geometry = {
+        "wash": {"symbol": "fx-wash", "cx": 500, "cy": 500, "r": 900},
+        "rays": {"symbol": "fx-rays", "cx": 500, "cy": 500, "r": 880},
+        "rays-tight": {"symbol": "fx-rays-tight", "cx": 500, "cy": 500, "r": 600},
+        "rays-corner": {"symbol": "fx-rays-corner", "cx": -40, "cy": 1040, "r": 1500},
+        "bands": {"symbol": "fx-bands", "cx": 500, "cy": 500, "r": 1200},
+        "swirl": {"symbol": "fx-swirl", "cx": 500, "cy": 500, "r": 650},
+        "disc": {"symbol": "fx-disc", "cx": 500, "cy": 500, "r": 430},
+        "rainbow": {"symbol": "fx-rainbow", "cx": 500, "cy": 500, "r": 1200},
+        "stars": {"symbol": "fx-stars", "cx": 500, "cy": 500, "r": 1000},
+        "confetti": {"symbol": "fx-confetti", "cx": 500, "cy": 500, "r": 1000},
+        "sprinkle": {"symbol": "fx-sprinkle", "cx": 500, "cy": 500, "r": 1000},
+    }
+    out3 = os.path.join(HERE, "..", "src", "components", "effects.json")
+    with open(out3, "w", encoding="utf-8") as f:
+        json.dump(geometry, f, ensure_ascii=False, indent=2, sort_keys=True)
+        f.write("\n")
+    print(f"✓ {os.path.normpath(out3)}")
 
 
 if __name__ == "__main__":

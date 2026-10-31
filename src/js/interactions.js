@@ -4,7 +4,7 @@
   'use strict';
 
   /* 每页的临时计数（喂了三样、吃了几口、找到几个）。
-     读者会走回头路：p25 摸噜啵、p30 再读一次，都会跳回 p05 重读一遍。
+     读者会走回头路：p25 摸噜啵、p34 再读一次，都会跳回 p05 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
      计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。 */
   var counters = {};
@@ -38,7 +38,7 @@
   }
 
   /* 进入页面时把这一页的互动状态复位。
-     读者会走回头路：p25 摸噜啵、p30 再读一次，都会跳回 p05 重读一遍。
+     读者会走回头路：p25 摸噜啵、p34 再读一次，都会跳回 p05 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
      计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。
      同理，这一页"已经演出过的效果"也要复位：p23 的灯变暗、p19 的彩纸开花、
@@ -78,6 +78,17 @@
       flown[f].classList.remove('is-flying');
     }
 
+    /* 数一数：数字与"数过了"的痕迹都要复位。
+       不复位的话，回头再进这一页，数字已经全亮着——数一遍就翻页，没法再数。 */
+    var nums = page.querySelectorAll('.number.is-on');
+    for (var n2 = 0; n2 < nums.length; n2++) {
+      nums[n2].classList.remove('is-on');
+    }
+    var counted = page.querySelectorAll('.count-item.is-counted');
+    for (var c = 0; c < counted.length; c++) {
+      counted[c].classList.remove('is-counted');
+    }
+
     /* 揉肚子的手势在进页面时就绑好。
        以前是第一次 click 才绑——那一击的 pointerdown/pointerup 已经过去了，
        所以第一下点完什么都没发生，孩子要戳第二下才看到螺旋转。 */
@@ -105,7 +116,19 @@
     global.Book.next();
   }
 
-  global.BookInteractions = { reset: reset, wrong: wrong };
+  /* 拍一拍：点在噜啵身上 → 它晃一下、叫一声 → 照样翻页。
+     孩子最先戳的就是它。不回应的话，它在全书都只是一张贴图——
+     "点它有反应"这件事，只在喂食那几页成立。
+     翻页照旧：点了有反应、页也翻了，孩子不会觉得卡住。 */
+  function pat(page) {
+    global.AudioBook.play('boing');
+    wobble(page);
+    global.Book.after(450, function () {
+      global.Book.next();
+    }, page);
+  }
+
+  global.BookInteractions = { reset: reset, wrong: wrong, pat: pat };
 
   function wobble(page) {
     var char = page.querySelector('.char');
@@ -222,6 +245,16 @@
     document.addEventListener('pointercancel', endGesture);
   }
 
+  /* 每样东西有自己的声音：苹果咔嚓、小鱼哗啦、星星叮一声。
+     喂食、找一找、点三样都用它——孩子点的是那个东西，
+     响的就该是那个东西的声音，不是统一的"啊呜"。 */
+  function thingSound(target) {
+    if (target === 'apple') return 'crunch';
+    if (target === 'fish') return 'splash';
+    if (target === 'star') return 'ding';
+    return 'chirp';
+  }
+
   var actions = {
     /* 封面：解锁声音，进入本书 */
     start: function (page) {
@@ -232,16 +265,22 @@
 
     /* 点肚子：咕噜声 + 噜啵晃一下 → 翻页 */
     belly: function (page) {
-      global.AudioBook.play('gulu');
+      /* 同一套动作，两种声音：
+         p05 是"肚子饿了"的咕噜；p16 是"越吃越圆"，身子弹一下（果冻声）。 */
+      if (page.getAttribute('data-id') === 'p16') {
+        global.AudioBook.play('boing');
+      } else {
+        global.AudioBook.play('gulu');
+      }
       wobble(page);
       global.Book.after(750, function () {
         global.Book.next();
       }, page);
     },
 
-    /* 点食物：啊呜声 + 食物飞进嘴 → 翻页 */
+    /* 点食物：食物自己的声音 + 飞进嘴 → 翻页 */
     feed: function (page, target) {
-      global.AudioBook.play('chomp');
+      global.AudioBook.play(thingSound(target));
       fly(page, target);
       clearMisses(page);
       var n = bump(page);
@@ -280,7 +319,7 @@
         global.AudioBook.play('pop');
         return;
       }
-      global.AudioBook.play('chomp');
+      global.AudioBook.play(thingSound(target));
       fly(page, target);
       clearMisses(page);
       bump(page);
@@ -337,12 +376,43 @@
         global.AudioBook.play('pop');
         return;
       }
-      global.AudioBook.play('chirp');
+      global.AudioBook.play(thingSound(target));
       clearMisses(page);
       found.push(target);
       page.setAttribute('data-found', found.join(','));
       fly(page, target);
       if (found.length >= 3) {
+        global.Book.after(700, function () {
+          global.Book.next();
+        }, page);
+      }
+    },
+
+    /* 数一数：点一个苹果，旁边的数字就冒出来；数满三个才翻页。
+       数字藏在这个数的位置上（num-1/num-2/num-3），不是一张统一的字条——
+       这样"数到第三个"在画面上是看得见的。 */
+    count: function (page, target, btn) {
+      var index = btn ? parseInt(btn.getAttribute('data-index') || '0', 10) : 0;
+      if (!index) return;
+      var num = page.querySelector('.num-' + index);
+      if (num && num.classList.contains('is-on')) {
+        /* 已经数过这个了：再点一下不重复数（否则数字会跳着来） */
+        global.AudioBook.play('pop');
+        return;
+      }
+      var n = bump(page);
+      clearMisses(page);
+      global.AudioBook.play('chirp');
+      if (num) num.classList.add('is-on');
+      var item = page.querySelectorAll('.count-item')[index - 1];
+      if (item) {
+        item.classList.remove('is-counted');
+        void item.getBoundingClientRect();
+        item.classList.add('is-counted');
+      }
+      if (n >= 3) {
+        /* 数对了：鼓个掌——给的是大人的鼓励声，不是机器人的 */
+        global.AudioBook.play('clap');
         global.Book.after(700, function () {
           global.Book.next();
         }, page);
@@ -384,7 +454,7 @@
       return;
     }
     if (action === 'rub') bindRub(page, btn);
-    fn(page, target);
+    fn(page, target, btn);
   }
 
   function bind() {

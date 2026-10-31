@@ -186,6 +186,322 @@
         o.start(t + i * 0.11);
         o.stop(t + i * 0.11 + 0.18);
       }
+    },
+
+    /* ——— 绘本常用音色 ———
+       噜啵自己的动静在上面；这一组是"场景的声音"：
+       翻页、拍手、铃铛、笑声、风、叹气、水花、还有动物叫。
+       全部短、软、不刺耳——三岁小孩是贴着耳朵听的。 */
+
+    /* 沙沙：翻页。噪声过带通，增益快速抖一下 */
+    paper: function () {
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.22);
+      var bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 2400;
+      bp.Q.value = 0.7;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.45, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      /* 纸声不是一条直线，要抖 */
+      var lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 24;
+      var lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.14;
+      lfo.connect(lfoGain);
+      lfoGain.connect(g.gain);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(master);
+      src.start(t);
+      lfo.start(t);
+      lfo.stop(t + 0.24);
+    },
+
+    /* 啪：拍手。两下极短的宽带噪声 */
+    clap: function () {
+      var t = ctx.currentTime;
+      for (var i = 0; i < 2; i++) {
+        var at = t + i * 0.055;
+        var s = ctx.createBufferSource();
+        s.buffer = noiseBuffer(0.035);
+        var hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 1100;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0.55, at);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.035);
+        s.connect(hp);
+        hp.connect(g);
+        g.connect(master);
+        s.start(at);
+        s.stop(at + 0.045);
+      }
+    },
+
+    /* 弹：弹簧/果冻。滑下去再弹回来 */
+    boing: function () {
+      var t = ctx.currentTime;
+      var o = ctx.createOscillator();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(520, t);
+      o.frequency.exponentialRampToValueAtTime(120, t + 0.12);
+      o.frequency.exponentialRampToValueAtTime(430, t + 0.32);
+      envelope(o, t, 0.5, 0.34);
+      o.start(t);
+      o.stop(t + 0.36);
+    },
+
+    /* 呼：一阵风。带通中心频率扫上去再扫下来 */
+    whoosh: function () {
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.5);
+      var bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.Q.value = 1.4;
+      bp.frequency.setValueAtTime(400, t);
+      bp.frequency.exponentialRampToValueAtTime(2200, t + 0.18);
+      bp.frequency.exponentialRampToValueAtTime(300, t + 0.5);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.38, t + 0.16);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(master);
+      src.start(t);
+    },
+
+    /* 噗：魔法消失。低通噪声一路下滑 */
+    poof: function () {
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.25);
+      var lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(1800, t);
+      lp.frequency.exponentialRampToValueAtTime(220, t + 0.25);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+      src.connect(lp);
+      lp.connect(g);
+      g.connect(master);
+      src.start(t);
+    },
+
+    /* 叮：铃铛。基频加两个泛音，尾巴拖长 */
+    ding: function () {
+      var t = ctx.currentTime;
+      var partials = [1046, 2093, 3139];
+      for (var i = 0; i < partials.length; i++) {
+        var o = ctx.createOscillator();
+        o.type = 'sine';
+        o.frequency.value = partials[i];
+        envelope(o, t, 0.5 / (i + 1), 1.1 - i * 0.25);
+        o.start(t);
+        o.stop(t + 1.2);
+      }
+    },
+
+    /* 咯咯笑：四声短"哈"，一个比一个高 */
+    giggle: function () {
+      var t = ctx.currentTime;
+      for (var i = 0; i < 4; i++) {
+        var at = t + i * 0.07;
+        var o = ctx.createOscillator();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(300 + i * 45, at);
+        envelope(o, at, 0.18, 0.06);
+        o.start(at);
+        o.stop(at + 0.08);
+      }
+    },
+
+    /* 叹气：气往下走 */
+    sigh: function () {
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.7);
+      var lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.setValueAtTime(900, t);
+      lp.frequency.exponentialRampToValueAtTime(220, t + 0.7);
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.26, t + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
+      src.connect(lp);
+      lp.connect(g);
+      g.connect(master);
+      src.start(t);
+    },
+
+    /* 吸溜：吸一口。音高上滑 + 一点气声 */
+    slurp: function () {
+      var t = ctx.currentTime;
+      var o = ctx.createOscillator();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(180, t);
+      o.frequency.exponentialRampToValueAtTime(620, t + 0.28);
+      envelope(o, t, 0.38, 0.3);
+      o.start(t);
+      o.stop(t + 0.32);
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.3);
+      var bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 900;
+      bp.Q.value = 2;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.16, t + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(master);
+      src.start(t);
+    },
+
+    /* 咔嚓：咬一口。三声越来越亮的碎响 */
+    crunch: function () {
+      var t = ctx.currentTime;
+      for (var i = 0; i < 3; i++) {
+        var at = t + i * 0.045;
+        var s = ctx.createBufferSource();
+        s.buffer = noiseBuffer(0.03);
+        var bp = ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 1800 + i * 700;
+        bp.Q.value = 3;
+        var g = ctx.createGain();
+        g.gain.setValueAtTime(0.45, at);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.03);
+        s.connect(bp);
+        bp.connect(g);
+        g.connect(master);
+        s.start(at);
+        s.stop(at + 0.04);
+      }
+    },
+
+    /* 哗啦：水花。高通噪声 + 抖动的增益 */
+    splash: function () {
+      var t = ctx.currentTime;
+      var src = ctx.createBufferSource();
+      src.buffer = noiseBuffer(0.4);
+      var hp = ctx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 700;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.4, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+      var lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 18;
+      var lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.12;
+      lfo.connect(lfoGain);
+      lfoGain.connect(g.gain);
+      src.connect(hp);
+      hp.connect(g);
+      g.connect(master);
+      src.start(t);
+      lfo.start(t);
+      lfo.stop(t + 0.42);
+    },
+
+    /* 吱：小玩具/小老鼠。高一点的滑音 */
+    squeak: function () {
+      var t = ctx.currentTime;
+      var o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(900, t);
+      o.frequency.exponentialRampToValueAtTime(1600, t + 0.08);
+      o.frequency.exponentialRampToValueAtTime(700, t + 0.2);
+      var lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 2600;
+      o.connect(lp);
+      envelope(lp, t, 0.3, 0.22);
+      o.start(t);
+      o.stop(t + 0.24);
+    },
+
+    /* 喵：猫。两段滑音 + 一点颤 */
+    meow: function () {
+      var t = ctx.currentTime;
+      var o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(520, t);
+      o.frequency.linearRampToValueAtTime(760, t + 0.12);
+      o.frequency.linearRampToValueAtTime(430, t + 0.42);
+      var lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 22;
+      var lfoGain = ctx.createGain();
+      lfoGain.gain.value = 40;
+      lfo.connect(lfoGain);
+      lfoGain.connect(o.frequency);
+      var lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 2200;
+      o.connect(lp);
+      envelope(lp, t, 0.32, 0.45);
+      o.start(t);
+      o.stop(t + 0.47);
+      lfo.start(t);
+      lfo.stop(t + 0.47);
+    },
+
+    /* 汪：狗。两声短促的下滑 */
+    woof: function () {
+      var t = ctx.currentTime;
+      for (var i = 0; i < 2; i++) {
+        var at = t + i * 0.16;
+        var o = ctx.createOscillator();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(320, at);
+        o.frequency.exponentialRampToValueAtTime(150, at + 0.13);
+        var lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.frequency.value = 1400;
+        o.connect(lp);
+        envelope(lp, at, 0.38, 0.14);
+        o.start(at);
+        o.stop(at + 0.16);
+      }
+    },
+
+    /* 哞：牛。长音，带颤 */
+    moo: function () {
+      var t = ctx.currentTime;
+      var o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(150, t);
+      o.frequency.linearRampToValueAtTime(132, t + 0.5);
+      var lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 5;
+      var lfoGain = ctx.createGain();
+      lfoGain.gain.value = 8;
+      lfo.connect(lfoGain);
+      lfoGain.connect(o.frequency);
+      var lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 900;
+      o.connect(lp);
+      envelope(lp, t, 0.34, 0.75);
+      o.start(t);
+      o.stop(t + 0.78);
+      lfo.start(t);
+      lfo.stop(t + 0.78);
     }
   };
 
@@ -199,8 +515,56 @@
       try {
         fn();
       } catch (e) {
-        /* 音频出问题也不该挡住翻页 */
+        /* 音频出问题也不该挡住翻页——但要留个痕，
+           否则音色写错了永远没人知道（页面上只是"没声音"）。 */
+        if (global.console && console.warn) console.warn('音效出错：' + name, e);
       }
+    },
+    /* 测试用：放一个音色，量它的峰值。
+       音色有可能接错节点而"不报错、只是没声音"——
+       页面上听不出来，但这里量得到：静音的音色峰值是 0。 */
+    probe: function (name, ms) {
+      if (!ensure()) return Promise.resolve(0);
+      var fn = recipes[name];
+      if (!fn) return Promise.resolve(0);
+      var analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+      master.connect(analyser);
+      analyser.connect(ctx.destination);
+      var buf = new Float32Array(analyser.fftSize);
+      var peak = 0;
+      var started = Date.now();
+      var windowMs = ms || 300;
+      try {
+        fn();
+      } catch (e) {
+        return Promise.resolve(0);
+      }
+      return new Promise(function (resolve) {
+        function tick() {
+          analyser.getFloatTimeDomainData(buf);
+          for (var i = 0; i < buf.length; i++) {
+            var v = buf[i] < 0 ? -buf[i] : buf[i];
+            if (v > peak) peak = v;
+          }
+          if (Date.now() - started < windowMs) {
+            setTimeout(tick, 25);
+          } else {
+            try {
+              master.disconnect(analyser);
+              analyser.disconnect();
+            } catch (e) {
+              /* 断开失败不影响结论 */
+            }
+            resolve(peak);
+          }
+        }
+        tick();
+      });
+    },
+    /* 音色清单（测试与文档用） */
+    names: function () {
+      return Object.keys(recipes);
     },
     toggleMute: function () {
       muted = !muted;

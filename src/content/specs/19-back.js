@@ -1,7 +1,8 @@
-/* 给大人的话 / 再读一次 / 后环衬 / 封底 */
+/* 给大人的话 / 再读一次 / 后环衬 / 封底
+   （前面多了「躲猫猫」「数一找」两个跨页，这四页的编号整体往后挪） */
 export default [
   {
-    id: 'p29',
+    id: 'p33',
     template: 't-plain',
     screen: false,
     noSound: true,
@@ -27,11 +28,11 @@ export default [
     },
   },
   {
-    id: 'p30',
+    id: 'p34',
     template: 't-again',
     sound: 'chirp',
     aria: '读完啦？再读一次。点圆圈，转回去。',
-    bg: { kind: 'rays-tight', colors: ['--yellow', '--yellow-deep'], focus: [500, 700], cover: 'all' },
+    bg: { kind: 'rays-tight', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [500, 700], cover: 'all', wash: '--yellow' },
     props: [{ kind: 'arrow', at: [120, 420], scale: 0.72, class: 'prop-arrow' }],
     char: { pose: 'happy', at: [590, 450], scale: 0.54, spiral: true },
     text: {
@@ -51,7 +52,7 @@ export default [
     hotspot: { action: 'again', target: 'arrow', at: [250, 250], size: 420, label: '点圆圈，再读一次' },
   },
   {
-    id: 'p31',
+    id: 'p35',
     template: 't-endpaper',
     screen: false,
     noSound: true,
@@ -67,16 +68,18 @@ export default [
     ],
   },
   {
-    id: 'p32',
+    id: 'p36',
     template: 't-color',
     screen: false,
     sound: 'chirp',
     aria: '《啊呜噜啵！》啊呜！',
-    bg: { kind: 'rays', colors: ['--red-deep', '--red'], gap: '--red', focus: [500, 680], cover: 'all' },
+    bg: { kind: 'rays', colors: ['--red-deep', '--red'], gap: '--red', focus: [500, 680], cover: 'all', wash: '--red' },
+    /* 封底标题压在一块手绘白底块上：黑字直接放红底只有 4.3:1，达不到正文的 4.5:1 */
+    props: [{ kind: 'blob', at: [240, -132], scale: 0.5 }],
     char: { pose: 'happy', state: 'on-color state-red', at: [260, 420], scale: 0.58, spiral: true },
     text: {
       narration: { at: [60, 90], size: 3.4, align: 'center', width: 1000, text: '《啊呜噜啵！》' },
-      sound: { at: [60, 170], size: 16, align: 'center', width: 1000, color: '--paper', text: '啊呜！' },
+      sound: { at: [60, 205], size: 16, align: 'center', width: 1000, color: '--paper', text: '啊呜！' },
     },
   },
 ];

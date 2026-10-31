@@ -1,5 +1,7 @@
 /* 字体子集：按全书实际用字，从 @fontsource 的源文件切出 woff2 子集。
-   用法：node tools/build-fonts.mjs        （字符集没变且产物比源新时自动跳过）
+   用法：
+     node tools/build-fonts.mjs           切子集（字符集没变且产物比源新时自动跳过）
+     node tools/build-fonts.mjs --check   只检查子集是不是最新的（过期就报错退出）
    产物：src/fonts/*.woff2，构建时以 base64 内联进单文件 HTML。 */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -58,6 +60,28 @@ async function main() {
   fs.writeFileSync(textFile, chars, 'utf8');
 
   console.log(`字符集：${[...chars].length} 个字符`);
+
+  /* 只检查：子集是不是按当前字符集切的。
+     子集漏字 → 浏览器拿系统字体顶上（STKaiti/SimSun…），那些字体没有商用授权。
+     真实发生过：改完文案没重切子集，PDF 里就混进了一套 STKaiti，
+     而页面截图上完全看不出来。 */
+  if (process.argv.includes('--check')) {
+    const hash = crypto.createHash('sha1').update(chars).digest('hex');
+    const stale = [];
+    for (const source of SOURCES) {
+      const stampFile = path.join(fontsDir, `.${source.out}.stamp`);
+      const stamp = fs.existsSync(stampFile) ? fs.readFileSync(stampFile, 'utf8') : '';
+      if (!stamp.startsWith(hash)) stale.push(source.out);
+    }
+    fs.rmSync(textFile, { force: true });
+    if (stale.length) {
+      console.error(`✗ 字体子集过期：${stale.join('、')}`);
+      console.error('  改了正文文字必须重切：npm run fonts（否则漏字会退回未授权的系统字体）');
+      process.exit(1);
+    }
+    console.log('✓ 字体子集与当前用字一致');
+    return;
+  }
 
   for (const source of SOURCES) {
     if (!fs.existsSync(source.file)) {

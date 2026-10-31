@@ -5,8 +5,12 @@ export default [
     template: 't-food',
     sound: 'chomp',
     aria: '再吃一颗黄星星。噜啵，张嘴。啊呜！点一下黄星星。',
-    bg: { kind: 'rays-corner', colors: ['--purple'], focus: [500, 500], cover: 'all' },
-    props: [{ kind: 'star', at: [300, 150], scale: 0.4, rotate: 10, class: 'prop-star' }],
+    bg: { kind: 'rays-corner', colors: ['--purple'], focus: [500, 500], cover: 'all', wash: '--wash-purple' },
+    props: [
+      { kind: 'star', at: [300, 150], scale: 0.4, rotate: 10, class: 'prop-star' },
+      /* 提示字压在深紫笔触上只有 2.2:1，垫一块手绘白底块（同 p08/p32 的手法） */
+      { kind: 'blob', at: [6, 688], scale: 0.4 },
+    ],
     char: { pose: 'peek', at: [280, 620], scale: 0.5 },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 420, text: '再吃一颗黄星星。<br>噜啵，张嘴——' },
@@ -20,12 +24,13 @@ export default [
     template: 't-color t-yellow',
     sound: 'sparkle',
     aria: '啊呜！噜啵变黄啦！闪闪闪！',
-    bg: { kind: 'rays', colors: ['--yellow-deep', '--yellow'], gap: '--yellow', focus: [500, 680] },
+    bg: { kind: 'rays', colors: ['--yellow-deep', '--yellow'], gap: '--yellow', focus: [500, 680], wash: '--yellow' },
     props: [{ kind: 'blob', at: [2.5, -138.5], scale: 0.5 }],
     char: { pose: 'happy', state: 'on-color state-yellow', at: [120, 300], scale: 0.76, spiral: true },
     text: {
       narration: { text: '啊呜！噜啵变黄啦！', at: [90, 75], size: 3.4, width: 360 },
-      sound: { text: '闪闪闪！', at: [490, 70], size: 12, rotate: 3, color: '--paper' },
+      /* 黄底白字只有 1.3:1，读不了；文字色交给模板的规则定（黄底黑字） */
+      sound: { text: '闪闪闪！', at: [490, 70], size: 12, rotate: 3 },
     },
   },
 ];

@@ -5,7 +5,7 @@ export default [
     template: 't-rainbow',
     sound: 'chomp',
     aria: '红苹果、蓝小鱼、黄星星。一、二、三——啊呜！按顺序点三样。',
-    bg: { kind: 'rays-corner', colors: ['--pink', '--pink-deep'], focus: [500, 500], cover: 'all' },
+    bg: { kind: 'rays-corner', colors: ['--pink', '--pink-deep'], focus: [500, 500], cover: 'all', wash: '--wash-pink' },
     props: [
       { kind: 'apple', at: [120, 210], scale: 0.24, rotate: -10, class: 'prop-apple' },
       { kind: 'fish', at: [400, 200], scale: 0.24, rotate: 6, class: 'prop-fish' },
@@ -30,7 +30,7 @@ export default [
     template: 't-rainbow',
     sound: 'rainbow',
     aria: '噜啵变成彩虹啦！彩虹！',
-    bg: { kind: 'rainbow', focus: [500, 500], cover: 'all' },
+    bg: { kind: 'rainbow', focus: [500, 500], cover: 'all', wash: '--wash-cream' },
     props: [{ kind: 'blob', at: [2.5, -138.5], scale: 0.5 }],
     char: { pose: 'rainbow', at: [180, 300], scale: 0.68, spiral: true },
     text: {

@@ -1,17 +1,25 @@
-"""截图检查：每一页都得真的画出来，不能是白板。
+"""截图检查：每一页都得真的画出来，背景还必须铺满整页。
 
 为什么要这道闸门：有一次把「书页居中」的 CSS 写成了 body.screen，
 拼版（proof.html 的 body 是 screen static）也吃到了这条规则，
-32 页全叠到了一起——**结构检查、版式检查、交互冒烟、乱读压力测试全都通过**，
+全书页面全叠到了一起——**结构检查、版式检查、交互冒烟、乱读压力测试全都通过**，
 只有人眼看联系表才发现整本截图是白板。
 
-所以：图不是靠闸门保证的，得让闸门自己看一眼。
+后来又发现另一半：背景的"自动放大"算法只对少数几种笔触成立，
+其余的页色块是**浮在白纸上的孤岛**，没铺满全局。
+
+所以这张闸门管两件事：
+  1. 每页有内容（不是白板）；
+  2. 声明了满版底色场的页，背景必须**触到四条边**——色块要长在页面上。
+
+页数不写死：tools/shots.mjs 渲染时写出 manifest.json，这里照着它核对。
 
 用法：python tools/check-shots.py [--min 0.01]
 失败即退出码 1。
 """
 import argparse
 import glob
+import json
 import os
 import sys
 
@@ -39,10 +47,49 @@ def ink_ratio(path):
     return ink / float(g.width * g.height)
 
 
+def edge_cover(path):
+    """每条边的**主色**是不是底色场（而不是纸白）。
+
+    为什么量主色而不是"有没有非白像素"：角色的身体是纸白的，
+    它常常压在页边（p07/p09/p11/p34 都是这样），按像素算会把
+    "角色挡住了边"误判成"背景没铺满"。背景铺满时，边上的主色
+    必然是底色场本身——这才是要检查的量。
+    """
+    im = Image.open(path).convert("RGB")
+    w, h = im.size
+    band = max(2, int(round(min(w, h) * 0.02)))
+
+    def dominant(box):
+        crop = im.crop(box)
+        colors = crop.getcolors(maxcolors=1 << 20) or []
+        if not colors:
+            return (255, 255, 255)
+        return max(colors)[1]
+
+    def off_white(c):
+        return max(255 - c[0], 255 - c[1], 255 - c[2]) > 4
+
+    edges = {
+        "top": (0, 0, w, band),
+        "bottom": (0, h - band, w, h),
+        "left": (0, 0, band, h),
+        "right": (w - band, 0, w, h),
+    }
+    return {name: off_white(dominant(box)) for name, box in edges.items()}
+
+
+def read_manifest(shots_dir):
+    path = os.path.join(shots_dir, "manifest.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--min", type=float, default=0.01, help="每页最少要有多少墨迹")
-    ap.add_argument("--expect", type=int, default=32, help="应该有多少页截图")
+    ap.add_argument("--expect", type=int, default=0, help="应该有多少页截图（0 = 以 manifest 为准）")
     ap.add_argument("--shots", default=SHOTS, help="截图目录")
     args = ap.parse_args()
 
@@ -50,9 +97,14 @@ def main():
     if not files:
         print("✗ 没有截图 —— 先跑 npm run shots")
         return 1
-    if len(files) != args.expect:
-        print(f"✗ 截图只有 {len(files)} 张，应为 {args.expect} 张")
+
+    manifest = read_manifest(args.shots)
+    expected = args.expect or (len(manifest) if manifest else 0)
+    if expected and len(files) != expected:
+        print(f"✗ 截图只有 {len(files)} 张，应为 {expected} 张")
         return 1
+    if not manifest:
+        print("· 没有 manifest.json，跳过背景铺满检查（先跑 npm run shots）")
 
     problems = []
     ratios = []
@@ -66,6 +118,26 @@ def main():
         ratios.append((r, name))
         if r < args.min:
             problems.append(f"{name} 几乎是白板（墨迹占比 {r:.3%}，低于 {args.min:.1%}）")
+
+    # 背景铺满：声明了满版底色场的页，四条边都得有颜色
+    if manifest:
+        by_id = {m["id"]: m for m in manifest}
+        for f in files:
+            name = os.path.basename(f)
+            page_id = os.path.splitext(name)[0]
+            meta = by_id.get(page_id)
+            if not meta or not meta.get("wash"):
+                continue
+            try:
+                cov = edge_cover(f)
+            except Exception as exc:
+                problems.append(f"{name} 量不了边缘：{exc}")
+                continue
+            bad = [edge for edge, ok in cov.items() if not ok]
+            if bad:
+                problems.append(
+                    f"{name} 背景没铺满全局（{'、'.join(bad)} 边的主色还是纸白）"
+                )
 
     if problems:
         print(f"✗ {len(problems)} 张截图有问题：")

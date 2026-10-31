@@ -37,6 +37,21 @@
   --confetti-green: #8EAF5A;
   --confetti-orange: #FA743C;
 
+  /* —— 满版底色场：每页背景的"底子"。
+       色块要长在页面上，不能是浮在白纸上的孤岛，所以背景是两层：
+       底色场铺满整页（含出血），笔触画在它上面。
+       淡色底子留得住黑字（正文对比度 ≥ 4.5:1），笔触才跳得出来。 —— */
+  --wash: var(--paper);
+  --wash-yellow: #FFF6C4;
+  --wash-pink: #FCE3E7;
+  --wash-blue: #DBEDFB;
+  --wash-green: #E8F0DB;
+  --wash-orange: #FFE4D5;
+  --wash-purple: #E6E0F1;
+  --wash-red: #FBDBD7;
+  --wash-cream: #FBF4E6;
+  --wash-night: #2E2A5A;
+
   /* —— 彩虹六色（页面色带 / 角色身体共用）—— */
   --band-1: #F43934;
   --band-2: #FA743C;
@@ -55,6 +70,7 @@
   --moon: #FFF3B0;
   --moon-deep: #E4CE86;
   --star: var(--paper);
+  --night-deep: #241F4C;
 
   /* —— 角色颜色状态（默认：纸白身体 + 黑螺旋） —— */
   --body: var(--paper);

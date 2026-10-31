@@ -5,7 +5,7 @@ export default [
     template: 't-dialog',
     sound: 'gulu',
     aria: '揉一揉，顺一顺。在噜啵的肚子上，转个圈。咕噜——',
-    bg: { kind: 'swirl', colors: ['--green'], focus: [640, 560], cover: 'all' },
+    bg: { kind: 'swirl', colors: ['--green'], focus: [640, 560], cover: 'all', wash: '--wash-green' },
     char: { pose: 'full', at: [250, 330], scale: 0.62, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, text: '揉一揉，顺一顺。<br>在噜啵的肚子上，转个圈。' },
@@ -21,7 +21,7 @@ export default [
     template: 't-burst',
     sound: 'burp',
     aria: '嗝——啵！！！彩纸喷出来啦！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all' },
+    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
     char: { pose: 'burp', at: [140, 330], scale: 0.72, spiral: true },
     text: {
       sound: { text: '嗝——啵！！！', at: [300, 78], size: 11, rotate: -3 },

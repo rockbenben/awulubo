@@ -1,10 +1,11 @@
 <!-- 一页的骨架。数据来自 src/content/specs/*.js，由 tools/render-page.mjs 用 Handlebars 渲染。
      模板里不写任何逻辑：背景的放大倍数、拟声词的逐字微转，都在渲染器里算好再传进来。 -->
-<section class="page {{template}}" data-id="{{id}}"{{#if sound}} data-sound="{{sound}}"{{else}} data-no-sound{{/if}}{{#if trap}} data-trap="1"{{/if}}{{#if aria}} aria-label="{{aria}}"{{/if}}>
+<section class="page {{template}}" data-id="{{id}}"{{#if sound}} data-sound="{{sound}}"{{else}} data-no-sound{{/if}}{{#if trap}} data-trap="1"{{/if}}{{#if pat}} data-pat="1"{{/if}}{{#if aria}} aria-label="{{aria}}"{{/if}}>
   <div class="art" aria-hidden="true">
     <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
 {{#if bg}}      <g class="fx"{{#if bg.vars}} style="{{bg.vars}}"{{/if}}>
-        <use href="#{{bg.symbol}}" transform="{{bg.transform}}" />
+{{#if bg.wash}}        <use class="fx-wash" href="#{{bg.wash.symbol}}" transform="{{bg.wash.transform}}" />
+{{/if}}        <use href="#{{bg.symbol}}" transform="{{bg.transform}}" />
       </g>
 {{/if}}{{#if char}}      <g class="char{{#if char.state}} {{char.state}}{{/if}}"{{#if char.id}} id="{{char.id}}"{{/if}} data-base-scale="{{char.scale}}" transform="translate({{char.at0}},{{char.at1}}) scale({{char.scale}})">
         <use href="#pose-{{char.pose}}" />{{#if char.spiral}}
@@ -14,5 +15,6 @@
 {{/each}}    </svg>
   </div>
 {{#each texts}}  <{{tag}} class="{{key}}" style="{{style}}">{{{body}}}</{{tag}}>
-{{/each}}{{#each hotspots}}  <button class="hotspot" data-action="{{action}}"{{#if target}} data-target="{{target}}"{{/if}} style="left:{{left}};top:{{top}};width:{{width}};height:{{height}}" aria-label="{{label}}"></button>
+{{/each}}{{#each numbers}}  <p class="number {{cls}}" style="{{style}}">{{{text}}}</p>
+{{/each}}{{#each hotspots}}  <button class="hotspot" data-action="{{action}}"{{#if target}} data-target="{{target}}"{{/if}}{{#if index}} data-index="{{index}}"{{/if}} style="left:{{left}};top:{{top}};width:{{width}};height:{{height}}" aria-label="{{label}}"></button>
 {{/each}}</section>

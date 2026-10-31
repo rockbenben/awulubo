@@ -43,6 +43,16 @@ if (srcNewest > fs.statSync(input).mtimeMs) {
 
 fs.mkdirSync(outDir, { recursive: true });
 
+/* 清掉上一版的残留截图：删过页之后旧图还躺在目录里，
+   联系表和闸门都会把它算进去——"多出来的一张"看着像证据，其实是陈旧产物。 */
+const keep = new Set(pages.map((p) => `${p.id}.png`));
+for (const file of fs.readdirSync(outDir)) {
+  if (!file.endsWith('.png')) continue;
+  if (keep.has(file)) continue;
+  fs.unlinkSync(path.join(outDir, file));
+  console.log(`- 清理过期截图 ${file}`);
+}
+
 for (const page of pages) {
   const out = path.join(outDir, `${page.id}.png`);
   execFileSync(
@@ -65,3 +75,16 @@ for (const page of pages) {
 }
 
 console.log(`\n共 ${pages.length} 张，输出在 ${path.relative(root, outDir)}/`);
+
+/* 页面清单：检查脚本靠它知道"该有多少张、哪几页的背景必须满版"。
+   不写死页数——页数变了，这里跟着变。 */
+const manifest = pages.map((p) => ({
+  id: p.id,
+  wash: Boolean(p.bg && p.bg.wash),
+  kind: (p.bg && p.bg.kind) || 'none',
+}));
+fs.writeFileSync(
+  path.join(outDir, 'manifest.json'),
+  JSON.stringify(manifest, null, 2) + '\n',
+  'utf8'
+);

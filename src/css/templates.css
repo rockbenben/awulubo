@@ -20,7 +20,7 @@
 .t-color.t-blue { background: var(--blue); }
 .t-color.t-yellow { background: var(--yellow); }
 .t-night { background: var(--night); }
-.t-night.t-night-deep { background: #241F4C; }
+.t-night.t-night-deep { background: var(--night-deep); }
 
 /* ============ 文字默认样式（位置由页面数据给） ============ */
 .narration,
@@ -66,6 +66,9 @@
 /* 满版色页上的文字反色 */
 .t-color .narration { color: var(--ink); }
 .t-color .sound { color: var(--paper); }
+/* 黄底与蓝底太浅，白字对比度不够（黄底白字只有 1.3:1）——这两页改黑字 */
+.t-color.t-yellow .sound,
+.t-color.t-blue .sound { color: var(--ink); }
 .t-rainbow .narration,
 .t-rainbow .sound { color: var(--ink); }
 .t-night .narration,

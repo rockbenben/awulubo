@@ -5,7 +5,7 @@ export default [
     noSound: true,
     template: 't-search',
     aria: '找一找：红苹果、蓝小鱼、黄星星。它们都藏在哪儿？点你找到的东西。',
-    bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all' },
+    bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all', wash: '--wash-blue' },
     props: [
       { kind: 'apple', at: [150, 180], scale: 0.15, rotate: 20, class: 'prop-apple' },
       { kind: 'fish', at: [660, 640], scale: 0.17, rotate: -12, class: 'prop-fish' },
@@ -30,7 +30,7 @@ export default [
     template: 't-search',
     sound: 'chirp',
     aria: '你都找到了吗？啊呜！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all' },
+    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
     props: [
       { kind: 'apple', at: [140, 180], scale: 0.16, rotate: -10, class: 'prop-apple' },
       { kind: 'fish', at: [690, 200], scale: 0.18, rotate: 12, class: 'prop-fish' },

@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadSpecs } from './load-specs.mjs';
-import { EFFECT_RADIUS, EFFECT_ID, PROP_ID } from './render-page.mjs';
+import { EFFECT_GEOM, EFFECT_ID, PROP_ID } from './render-page.mjs';
 import { PRINT_PAGES, SCREEN_PAGES } from './layout-constants.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -46,6 +46,18 @@ function interactionActions() {
   const src = fs.readFileSync(path.join(srcDir, 'js', 'interactions.js'), 'utf8');
   const body = src.slice(src.indexOf('var actions'));
   return new Set([...body.matchAll(/^ {4}(\w+):\s*function/gm)].map((m) => m[1]));
+}
+
+/* 色板令牌：tokens.css 里定义过的 CSS 变量。
+   页面数据写错令牌名不会报错，只会让颜色悄悄回退——所以要在构建期拦住。 */
+function colorTokens() {
+  const dir = path.join(src, 'css');
+  const names = new Set();
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.css'))) {
+    const text = fs.readFileSync(path.join(dir, file), 'utf8');
+    for (const m of text.matchAll(/(--[a-z0-9-]+)\s*:/gi)) names.add(m[1]);
+  }
+  return names;
 }
 
 function checkText(page, key, spec) {
@@ -94,6 +106,7 @@ async function main() {
   const ids = availableIds();
   const recipes = audioRecipes();
   const actions = interactionActions();
+  const tokens = colorTokens();
 
   for (const page of pages) {
     if (!page.id) fail('有页面缺少 id');
@@ -133,11 +146,18 @@ async function main() {
     }
 
     /* 背景：种类与焦点 */
-    if (page.bg && page.bg.kind && !EFFECT_RADIUS[page.bg.kind]) {
+    if (page.bg && page.bg.kind && !EFFECT_GEOM[page.bg.kind]) {
       fail(`[${page.id}] 未知的背景种类：${page.bg.kind}`);
     } else if (page.bg && page.bg.kind && page.bg.kind !== 'none') {
       if (!ids.has(EFFECT_ID[page.bg.kind])) {
         fail(`[${page.id}] 背景引用了不存在的符号 #${EFFECT_ID[page.bg.kind]}`);
+      }
+      /* 满版底色场：背景要"布满全局"，色块就得长在页面上，
+         不能是浮在白纸上的孤岛。有背景的页必须声明底色场。 */
+      if (!page.bg.wash) {
+        fail(`[${page.id}] 背景缺少 wash（满版底色场）——色块会浮在白纸上`);
+      } else if (!tokens.has(page.bg.wash)) {
+        fail(`[${page.id}] 底色场引用了未定义的色板令牌：${page.bg.wash}`);
       }
     }
     if (page.bg && page.bg.focus) {
@@ -196,6 +216,12 @@ async function main() {
   if (FULL) {
     if (pages.length !== PRINT_PAGES) {
       fail(`印刷版 ${pages.length} 页，应为 ${PRINT_PAGES} 页`);
+    }
+    /* 骑马钉对折：每帖 4 页，页数必须是 4 的倍数，否则最后一帖排不出来。
+       页数变成 31 这种"少一页"的事，只有这条闸门拦得住——它看着像页数，
+       其实是印刷问题：双面打印时书脊那一帖会缺一面。 */
+    if (pages.length % 4 !== 0) {
+      fail(`印刷版 ${pages.length} 页不是 4 的倍数，骑马钉排不出帖（双面打印会缺一面）`);
     }
     if (screenPages !== SCREEN_PAGES) {
       fail(`屏幕版 ${screenPages} 页，应为 ${SCREEN_PAGES} 页`);

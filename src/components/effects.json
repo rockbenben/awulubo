@@ -1,0 +1,68 @@
+{
+  "bands": {
+    "cx": 500,
+    "cy": 500,
+    "r": 1200,
+    "symbol": "fx-bands"
+  },
+  "confetti": {
+    "cx": 500,
+    "cy": 500,
+    "r": 1000,
+    "symbol": "fx-confetti"
+  },
+  "disc": {
+    "cx": 500,
+    "cy": 500,
+    "r": 430,
+    "symbol": "fx-disc"
+  },
+  "rainbow": {
+    "cx": 500,
+    "cy": 500,
+    "r": 1200,
+    "symbol": "fx-rainbow"
+  },
+  "rays": {
+    "cx": 500,
+    "cy": 500,
+    "r": 880,
+    "symbol": "fx-rays"
+  },
+  "rays-corner": {
+    "cx": -40,
+    "cy": 1040,
+    "r": 1500,
+    "symbol": "fx-rays-corner"
+  },
+  "rays-tight": {
+    "cx": 500,
+    "cy": 500,
+    "r": 600,
+    "symbol": "fx-rays-tight"
+  },
+  "sprinkle": {
+    "cx": 500,
+    "cy": 500,
+    "r": 1000,
+    "symbol": "fx-sprinkle"
+  },
+  "stars": {
+    "cx": 500,
+    "cy": 500,
+    "r": 1000,
+    "symbol": "fx-stars"
+  },
+  "swirl": {
+    "cx": 500,
+    "cy": 500,
+    "r": 650,
+    "symbol": "fx-swirl"
+  },
+  "wash": {
+    "cx": 500,
+    "cy": 500,
+    "r": 900,
+    "symbol": "fx-wash"
+  }
+}
