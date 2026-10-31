@@ -7,7 +7,7 @@ export default [
     aria: '再来一条蓝小鱼。噜啵，张嘴。啊呜！点一下蓝小鱼。',
     /* 焦点用页心（不挪动爆闪）：挪动后页面上只剩射线的笔头——
        平切、没有飞白，看着是一块生硬的多边形。停在原位，中段才在画里。 */
-    bg: { kind: 'rays-corner', colors: ['--green'], focus: [500, 500], cover: 'all', wash: '--wash-green' },
+    bg: { kind: 'rays-corner', colors: ['--green'], focus: [-40, 1040], cover: 'all', wash: '--wash-green' },
     props: [{ kind: 'fish', at: [250, 110], scale: 0.56, rotate: -8, class: 'prop-fish' }],
     char: { pose: 'peek', at: [280, 620], scale: 0.5 },
     text: {

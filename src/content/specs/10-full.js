@@ -5,7 +5,7 @@ export default [
     template: 't-dialog',
     sound: 'chomp',
     aria: '还要！还要！啊呜、啊呜、啊呜……再喂一口！',
-    bg: { kind: 'rays-corner', colors: ['--orange'], focus: [500, 500], cover: 'all', wash: '--wash-orange' },
+    bg: { kind: 'rays-corner', colors: ['--orange'], focus: [-40, 1040], cover: 'all', wash: '--wash-orange' },
     props: [
       { kind: 'apple', at: [680, 560], scale: 0.2, rotate: 16, class: 'prop-apple' },
       { kind: 'star', at: [780, 300], scale: 0.15, rotate: -12, class: 'prop-star' },
