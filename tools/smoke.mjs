@@ -560,6 +560,44 @@ async function clickVisible(pageId, selector, fx = 0.5, fy = 0.5) {
   check(back.now === back.base, 'p20 回头重进时角色回到原位');
 }
 
+/* p17：照着**画出来的那个螺旋**描一圈，螺旋要转起来、这一页要过得去。
+   提示写的是"在肚子上画个圈"，孩子描的自然就是屏幕上那个螺旋。
+   以前旋转中心取的是热区中心（热区罩的是整块肚子，中心在螺旋上方 88 个单位处）：
+   手指绕的是螺旋，量的却是另一个点，角度正负相消，净累计 0°，
+   螺旋一格也不转，这一关永远过不去。 */
+{
+  await page.evaluate(() => window.Book.goToId('p17'));
+  await page.waitForTimeout(250);
+  const geo = await page.evaluate(() => {
+    const r = document.querySelector('[data-id="p17"] .spiral').getBoundingClientRect();
+    return {
+      x: r.x + r.width / 2,
+      y: r.y + r.height / 2,
+      rad: Math.min(r.width, r.height) / 2,
+    };
+  });
+  /* 沿着螺旋描一圈 */
+  const pts = [];
+  for (let i = 0; i <= 48; i++) {
+    const t = (i / 48) * Math.PI * 2;
+    pts.push({ x: geo.x + Math.cos(t) * geo.rad * 0.85, y: geo.y + Math.sin(t) * geo.rad * 0.85 });
+  }
+  await page.mouse.move(pts[0].x, pts[0].y);
+  await page.mouse.down();
+  for (const pt of pts) await page.mouse.move(pt.x, pt.y);
+  await page.mouse.up();
+  await page.waitForTimeout(250);
+  const deg = await page.evaluate(() =>
+    document.querySelector('[data-id="p17"] .spiral')?.dataset.deg
+  );
+  check(
+    Math.abs(parseFloat(deg || '0')) >= 300,
+    `p17 照着画出来的螺旋描一圈，螺旋转够了（累计 ${deg}°）`
+  );
+  await page.waitForTimeout(700);
+  check((await activeId()) === 'p18', `p17 描完一圈翻到 p18（实际 ${await activeId()}）`);
+}
+
 /* p33：喊满三声它才听见——喊不够就翻页，"它听见了"这一拍就没了 */
 {
   await page.evaluate(() => window.Book.goToId('p33'));

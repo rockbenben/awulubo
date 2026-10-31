@@ -88,10 +88,17 @@
     }
 
     /* 数一数：数字与"数过了"的痕迹都要复位。
-       不复位的话，回头再进这一页，数字已经全亮着——数一遍就翻页，没法再数。 */
-    var nums = page.querySelectorAll('.number.is-on');
-    for (var n2 = 0; n2 < nums.length; n2++) {
-      nums[n2].classList.remove('is-on');
+       不复位的话，回头再进这一页，数字已经全亮着——数一遍就翻页，没法再数。
+       只复位"数数"这一页自己的数字：答案页（p32）那个「3」是**静态亮着**的
+       （页面数据里 numbers[].on = true），它不是数出来的，是本来就在那儿。
+       以前连它一起清掉，结果读者数完三个苹果翻到答案页，
+       上面写着"三个红苹果！"，那个大大的「3」却不见了——答案页没了答案。 */
+    var countHotspot = page.querySelector('.hotspot[data-action="count"]');
+    if (countHotspot) {
+      var nums = page.querySelectorAll('.number.is-on');
+      for (var n2 = 0; n2 < nums.length; n2++) {
+        nums[n2].classList.remove('is-on');
+      }
     }
     var counted = page.querySelectorAll('.count-item.is-counted');
     for (var c = 0; c < counted.length; c++) {
@@ -189,20 +196,51 @@
     if (!spiral || spiral.dataset.rubBound === '1') return;
     spiral.dataset.rubBound = '1';
 
-    /* 旋转中心就用触点（触点正落在肚子上），
-       不用猜螺旋在角色局部坐标里的位置——那会让中心随角色摆放而偏。 */
-    function pivot() {
-      var r = hotspot.getBoundingClientRect();
-      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    /* 旋转中心 = 画出来的那个螺旋自己的中心。
+       原来取热区中心——热区罩的是"肚子上那一块"（280 见方），
+       它的中心落在螺旋上方 80 多个单位处。孩子照着画出来的螺旋描一圈时，
+       手指绕的是螺旋，热区中心却在这个圈**外面**：角度一会儿正一会儿负，
+       净累计 0°，螺旋一格也不转，"在肚子上画个圈"这个动作永远做不出来。
+       （实测：绕螺旋描一圈累计 0°，绕热区中心描一圈才 360°。）
+
+       螺旋在 CSS 里一直转（spiral-spin），直接量它的外框会跟着晃；
+       量它**没转时**的几何（getBBox，稳）再按角色的矩阵换算到屏幕坐标。
+       换算走角色的 <g>：它带着角色的位移与缩放，角色摆到哪儿中心就跟到哪儿。
+       每次手势开始时重算一次：窗口大小变了、页面滚了，旧坐标就不准了。 */
+    var pivot = null;
+
+    function computePivot() {
+      var bb = spiral.getBBox();
+      var lx = bb.x + bb.width / 2;
+      var ly = bb.y + bb.height / 2;
+      var host = spiral.parentNode;
+      var m = host && host.getScreenCTM ? host.getScreenCTM() : null;
+      if (m) {
+        pivot = {
+          x: m.a * lx + m.c * ly + m.e,
+          y: m.b * lx + m.d * ly + m.f
+        };
+        return;
+      }
+      /* 拿不到矩阵就退回外框中心（会随旋转晃一两像素，可接受） */
+      var r = spiral.getBoundingClientRect();
+      pivot = { x: r.x + r.width / 2, y: r.y + r.height / 2 };
     }
 
     function angleAt(clientX, clientY) {
-      var c = pivot();
-      return (Math.atan2(clientY - c.y, clientX - c.x) * 180) / Math.PI;
+      if (!pivot) computePivot();
+      return (Math.atan2(clientY - pivot.y, clientX - pivot.x) * 180) / Math.PI;
     }
 
     var last = null;
     var moved = false;
+    var down = null;
+
+    /* 点一下与"画了一笔"的界：手指/鼠标离按下的地方超过这么多像素，
+       才算真的在画。原先用"角度变化超过 0.5°"来判断，
+       可手指按下时抖 1° 也算画了——那一按就什么反应都没有，
+       孩子看着像坏了。改成量位移，就跟"我有没有拖动"一个量纲。 */
+    var TAP_SLOP = 14;
 
     function turnTo(deg) {
       spiral.dataset.deg = String(deg);
@@ -230,17 +268,39 @@
 
     hotspot.addEventListener('pointerdown', function (ev) {
       spiral.classList.add('is-rubbing');
+      /* 每次手势都重算一次旋转中心：窗口大小变了、页面滚了，旧坐标就不准 */
+      pivot = null;
+      computePivot();
       last = angleAt(ev.clientX, ev.clientY);
       moved = false;
+      down = { x: ev.clientX, y: ev.clientY };
+      /* 把指针抓在这个热区上。
+         触屏天生就有隐式捕获（Pointer Events 规范），鼠标没有：
+         指针一旦滑出肚子上那个热区，pointermove 就不再来了——
+         圈画到一半"断了"，螺旋是跳着转的，不是跟着手指转；
+         而且断掉的那几段角度会被当成一次大跳转补上，
+         累计出来的度数比孩子真的画过的多，"画满一圈"就成了假账。
+         抓在热区上，鼠标跟触屏的行为就一致了。 */
+      try {
+        if (hotspot.setPointerCapture && ev.pointerId !== undefined) {
+          hotspot.setPointerCapture(ev.pointerId);
+        }
+      } catch (e) {
+        /* 抓不住就算了：触屏本来就能画，鼠标退回到原来的行为 */
+      }
     });
     hotspot.addEventListener('pointermove', function (ev) {
       if (last === null) return;
+      if (down) {
+        var dx = ev.clientX - down.x;
+        var dy = ev.clientY - down.y;
+        if (dx * dx + dy * dy > TAP_SLOP * TAP_SLOP) moved = true;
+      }
       var a = angleAt(ev.clientX, ev.clientY);
       if (a === null) return;
       var d = a - last;
       if (d > 180) d -= 360;
       if (d < -180) d += 360;
-      if (Math.abs(d) > 0.5) moved = true;
       /* 累计角度不取模：画满一圈要能看出"转过了 300°" */
       turnTo(parseFloat(spiral.dataset.deg || '0') + d);
       last = a;
