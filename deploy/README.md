@@ -88,7 +88,13 @@ node tools/push-gh-pages.mjs dist-site
 ```
 
 **Git 仓库**：EdgeOne Pages 要连的是 GitHub / GitLab / Gitee 上的仓库。
-本项目现在的 origin 是本地裸库 `awulubo-origin.git`，推到代码托管站再连即可。
+本项目现在**没有配远端**——仓库本身是自足的（`main` + `gh-pages` 两个分支，源码与构建产物都在里面）。
+要发布时先推上去，再让 EdgeOne 连那个托管站上的仓库：
+
+```bash
+git remote add origin https://github.com/<你的账号>/awulubo.git
+git push -u origin main gh-pages
+```
 
 ## 方案 B：nginx（自己的服务器）
 

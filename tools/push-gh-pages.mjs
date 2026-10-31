@@ -61,7 +61,24 @@ try {
   }
 }
 
-git('push', '--force', 'origin', `${branch}:${branch}`);
+/* 推不推得看有没有远端。
+   本仓库现在**没有配远端**（它自足：源码在 main，产物在 gh-pages）。
+   没有 origin 时把分支在本地更新好就收工——提交已经写进 refs/heads/gh-pages，
+   以后加了远端再 `git push -u origin gh-pages` 就行。
+   原来这里是无条件 `git push --force origin`，没有远端就直接报错退出，
+   白白把已经建好的那一棵树丢掉。 */
+let pushed = false;
+try {
+  git('push', '--force', 'origin', `${branch}:${branch}`);
+  pushed = true;
+} catch (e) {
+  const remotes = git('remote').trim();
+  if (remotes) {
+    console.error(`✗ 推送失败：${e.stderr || e.message}`);
+    process.exit(1);
+  }
+  console.log('· 本仓库没有远端，gh-pages 只在本地更新（加远端后再推一次即可）');
+}
 
-console.log(`✓ gh-pages 已推送：${files.length} 个文件`);
+console.log(`✓ gh-pages ${pushed ? '已推送' : '已更新'}：${files.length} 个文件`);
 for (const f of files.sort()) console.log('   ' + f);
