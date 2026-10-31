@@ -11,7 +11,7 @@ export default [
     aria: '它看见你啦！',
     /* 放射线：惊喜。它从草丛里跳出来，光从它身上射出去 */
     bg: { kind: 'rays', colors: ['--yellow'], gap: '--paper', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [420, 320], scale: 0.58, spiral: true },
+    char: { pose: 'surprise', at: [420, 320], scale: 0.58, spiral: true },
     props: [
       /* 道具要躲开字：橙花原来压在「我」字上、星星压在「点它」上。
          拟声词是这一页最大的一行字，不能被花挡住。 */
@@ -35,7 +35,7 @@ export default [
     sound: 'giggle',
     aria: '我看见你啦！点它。',
     bg: { kind: 'rays', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [420, 320], scale: 0.62, spiral: true },
+    char: { pose: 'wave', at: [420, 320], scale: 0.62, spiral: true },
     props: [
       { kind: 'flower', at: [110, 470], scale: 0.16, style: '--flower: var(--orange); --flower-center: var(--yellow)' },
       { kind: 'flower', at: [840, 240], scale: 0.14, rotate: 18, style: '--flower: var(--pink); --flower-center: var(--yellow)' },
@@ -49,6 +49,6 @@ export default [
       prompt: { at: [60, 870], size: 4, width: 340, text: '点它。' },
     },
     /* 热区罩住噜啵（渲染后可见框约 548–872 × 459–819） */
-    hotspot: { action: 'seen', target: 'char', at: [525, 430], size: 400, label: '点它' },
+    hotspot: { action: 'seen', target: 'char', at: [502, 421], size: 455, label: '点它' },
   },
 ];

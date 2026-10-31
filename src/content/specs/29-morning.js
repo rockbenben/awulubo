@@ -28,7 +28,7 @@ export default [
        "摸摸噜啵"这条指令根本执行不到。
        现在连角色的右缘和两只脚都罩住了：原来 340 见方只罩到 770，
        右边那条（770–843）点下去是"翻页"而不是"从头再来"。 */
-    hotspot: { action: 'yawn', target: 'char', at: [423, 474], size: 437, label: '摸摸噜啵' },
+    hotspot: { action: 'yawn', target: 'char', at: [369, 422], size: 541, label: '摸摸噜啵' },
   },
   {
     id: 'p30',

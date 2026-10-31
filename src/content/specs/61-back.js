@@ -36,7 +36,7 @@ export default [
     aria: '读完啦？再读一次。点圆圈，转回去。',
     bg: { kind: 'rays-tight', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [500, 700], cover: 'all', wash: '--yellow' },
     props: [{ kind: 'arrow', at: [120, 420], scale: 0.72, class: 'prop-arrow' }],
-    char: { pose: 'happy', at: [565, 450], scale: 0.54, spiral: true },
+    char: { pose: 'happy', at: [540, 450], scale: 0.52, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 300, text: '读完啦？' },
       sound: { at: [360, 70], size: 14, rotate: -2, text: '再读一次' },

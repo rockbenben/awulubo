@@ -8,13 +8,13 @@ export default [
     aria: '我们一起跺脚！咚！点它，一起跺。',
     /* 放射线从右下角冲上来：震动从脚下起 */
     bg: { kind: 'rays-corner', colors: ['--orange', '--yellow-deep'], focus: [500, 900], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'happy', at: [360, 300], scale: 0.56, spiral: true },
+    char: { pose: 'cheer', at: [360, 300], scale: 0.56, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 360, text: '我们一起跺脚！' },
       sound: { text: '咚！', at: [560, 76], size: 20, rotate: -4 },
       prompt: { at: [60, 870], size: 4, width: 380, text: '点它，一起跺。' },
     },
-    hotspot: { action: 'stomp', target: 'char', at: [455, 415], size: 380, label: '和它一起跺脚' },
+    hotspot: { action: 'stomp', target: 'char', at: [434, 392], size: 411, label: '和它一起跺脚' },
   },
   {
     id: 'p54',

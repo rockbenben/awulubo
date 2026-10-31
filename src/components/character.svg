@@ -31,6 +31,29 @@
           d="M 614 752 C 634 762, 650 782, 646 802 C 642 822, 616 828, 598 816 C 583 806, 572 786, 572 758 Z" />
   </g>
 
+  <!-- 手臂：噜啵原来只有脚。招手、拍手、举高高都要手，
+       没有手它就只是一张贴图，不是一个小怪物。
+       画法：先描一条粗墨线，再在同一条线上描一条身体色，
+       两层叠出"有轮廓的肢体"（跟脚一个画法，只是细一点）。
+       手臂要伸到**身体轮廓之外**才看得见——起点全在身体里的话，
+       露出来的只有一小截，看起来像两片耳朵。 -->
+  <g id="ch-arm-l-down">
+    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 250 470 C 196 498, 152 548, 136 606" />
+    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 250 470 C 196 498, 152 548, 136 606" />
+  </g>
+  <g id="ch-arm-r-down">
+    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 750 470 C 804 498, 848 548, 864 606" />
+    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 750 470 C 804 498, 848 548, 864 606" />
+  </g>
+  <g id="ch-arm-l-up">
+    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 262 404 C 210 374, 164 324, 138 264" />
+    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 262 404 C 210 374, 164 324, 138 264" />
+  </g>
+  <g id="ch-arm-r-up">
+    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 738 404 C 790 374, 836 324, 862 264" />
+    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 738 404 C 790 374, 836 324, 862 264" />
+  </g>
+
   <g id="ch-eyes-dots">
     <circle style="fill:var(--ink)" cx="412" cy="352" r="26" />
     <circle style="fill:var(--ink)" cx="588" cy="352" r="26" />
@@ -41,6 +64,27 @@
   <g id="ch-eyes-happy">
     <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 384 358 C 396 330, 428 330, 440 356" />
     <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 560 356 C 572 330, 604 330, 616 358" />
+  </g>
+
+  <!-- wide：吓一跳/惊喜——眼睛瞪圆 -->
+  <g id="ch-eyes-wide">
+    <circle style="fill:var(--ink)" cx="410" cy="350" r="36" />
+    <circle style="fill:var(--ink)" cx="590" cy="350" r="36" />
+    <circle style="fill:var(--glint,var(--paper))" cx="398" cy="334" r="13" />
+    <circle style="fill:var(--glint,var(--paper))" cx="578" cy="334" r="13" />
+  </g>
+
+  <!-- wink：眨一只眼（调皮、得意） -->
+  <g id="ch-eyes-wink">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 384 358 C 396 330, 428 330, 440 356" />
+    <circle style="fill:var(--ink)" cx="588" cy="352" r="26" />
+    <circle style="fill:var(--glint,var(--paper))" cx="580" cy="342" r="9" />
+  </g>
+
+  <!-- half：半闭眼（困了、软下来了） -->
+  <g id="ch-eyes-half">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 386 342 C 400 366, 424 366, 438 342" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 562 342 C 576 366, 600 366, 614 342" />
   </g>
 
   <g id="ch-brows-neutral">
@@ -56,6 +100,24 @@
   <g id="ch-brows-excited">
     <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 382 292 C 398 276, 424 276, 440 288" />
     <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 618 292 C 602 276, 576 276, 560 288" />
+  </g>
+
+  <!-- raised：眉毛抬得最高（惊讶、好奇） -->
+  <g id="ch-brows-raised">
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 380 282 C 398 266, 424 266, 442 278" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 620 282 C 602 266, 576 266, 558 278" />
+  </g>
+
+  <!-- angry：眉毛里端往下（生气） -->
+  <g id="ch-brows-angry">
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 382 286 C 400 294, 422 302, 440 312" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 618 286 C 600 294, 578 302, 560 312" />
+  </g>
+
+  <!-- droop：眉毛整体塌下来（累了、没精神） -->
+  <g id="ch-brows-droop">
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 384 310 C 400 302, 422 298, 440 296" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:15;stroke-linecap:round" d="M 616 310 C 600 302, 578 298, 560 296" />
   </g>
 
   <g id="ch-cheeks">
@@ -89,11 +151,66 @@
     <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 448 478 C 478 468, 522 468, 552 478" />
   </g>
 
+  <!-- smirk：得意的歪嘴（一边高一边低） -->
+  <g id="ch-mouth-smirk">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 436 470 C 470 492, 522 484, 550 450" />
+  </g>
+
+  <!-- tongue：调皮吐舌头 -->
+  <g id="ch-mouth-tongue">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 432 456 C 462 482, 538 482, 568 456" />
+    <path style="fill:var(--tongue);stroke:var(--ink);stroke-width:16;stroke-linecap:round;stroke-linejoin:round"
+          d="M 470 474 C 480 524, 520 524, 530 474 C 512 484, 488 484, 470 474 Z" />
+  </g>
+
+  <!-- frown：往下撇的嘴（难过） -->
+  <g id="ch-mouth-frown">
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round" d="M 432 492 C 462 462, 538 462, 568 492" />
+  </g>
+
+  <!-- pout：噘嘴（小嘴） -->
+  <g id="ch-mouth-pout">
+    <path style="fill:var(--mouth);stroke:var(--ink);stroke-width:20;stroke-linejoin:round;stroke-linecap:round"
+          d="M 468 456 C 486 444, 514 444, 532 456 C 540 476, 496 490, 468 456 Z" />
+  </g>
+
+  <!-- 附加件：让情绪不止在脸上 -->
+  <g id="ch-blush-deep">
+    <circle style="fill:var(--cheek);opacity:0.8" cx="336" cy="424" r="38" />
+    <circle style="fill:var(--cheek);opacity:0.8" cx="664" cy="424" r="38" />
+  </g>
+
+  <!-- 汗滴：吓一跳 -->
+  <g id="ch-sweat">
+    <path style="fill:var(--blue);stroke:var(--ink);stroke-width:14;stroke-linejoin:round"
+          d="M 742 286 C 768 326, 776 348, 760 366 C 744 384, 712 374, 712 348 C 712 326, 724 304, 742 286 Z" />
+  </g>
+
+  <!-- 闪光：得意/送礼 -->
+  <g id="ch-sparkle">
+    <path style="fill:var(--yellow);stroke:var(--ink);stroke-width:14;stroke-linejoin:round"
+          d="M 720 250 L 734 288 L 772 302 L 734 316 L 720 354 L 706 316 L 668 302 L 706 288 Z" />
+  </g>
+
+  <!-- 心：喜欢你 -->
+  <g id="ch-heart">
+    <path style="fill:var(--red);stroke:var(--ink);stroke-width:14;stroke-linejoin:round"
+          d="M 700 336 C 666 306, 632 326, 636 356 C 640 386, 700 416, 700 416 C 700 416, 760 386, 764 356 C 768 326, 734 306, 700 336 Z" />
+  </g>
+
+  <!-- zzz：睡着了（夜色页上用，纸白） -->
+  <g id="ch-zzz">
+    <path style="fill:none;stroke:var(--paper);stroke-width:22;stroke-linecap:round;stroke-linejoin:round" d="M 636 300 L 700 300 L 636 360 L 706 360" />
+    <path style="fill:none;stroke:var(--paper);stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 706 216 L 748 216 L 706 254 L 750 254" />
+  </g>
+
   <!-- ============ 姿态（不含螺旋：螺旋由页面单独引用，方便在屏幕上转） ============ -->
 
   <!-- idle：平常，闭着嘴 -->
   <g id="pose-idle">
         <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-body" />
 
     <use href="#ch-brows-neutral" />
@@ -105,6 +222,8 @@
   <!-- hungry：饿了，眉毛发愁，嘴微微张着 -->
   <g id="pose-hungry">
         <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-body" />
 
     <use href="#ch-brows-worried" />
@@ -116,6 +235,8 @@
   <!-- chomp：啊呜，大张嘴 -->
   <g id="pose-chomp">
         <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-body" />
 
     <use href="#ch-brows-excited" />
@@ -126,6 +247,8 @@
   <!-- happy：吃饱了，眯眼大笑 -->
   <g id="pose-happy">
         <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-body" />
 
     <use href="#ch-brows-excited" />
@@ -146,6 +269,8 @@
   <g id="pose-full">
     <use href="#ch-body" />
     <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-brows-worried" />
     <use href="#ch-eyes-dots" />
     <use href="#ch-cheeks" />
@@ -156,6 +281,8 @@
   <g id="pose-burp">
     <use href="#ch-body" />
     <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-happy" />
     <use href="#ch-mouth-open" />
@@ -164,6 +291,8 @@
   <!-- asleep：睡着了 -->
   <g id="pose-asleep">
     <use href="#ch-body" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-brows-neutral" />
     <use href="#ch-eyes-happy" />
     <use href="#ch-mouth-smile" />
@@ -174,10 +303,138 @@
     <use href="#ch-body-rainbow" />
     <use href="#ch-body-line" style="fill:none" />
     <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-dots" />
     <use href="#ch-cheeks" />
     <use href="#ch-mouth-grin" />
+  </g>
+
+  <!-- ============ 新增的姿态（第十二轮之后补的） ============
+       原来九种姿态撑不住二十八个跨页：
+       同一个「眯眼大笑」出现了十几次，角色读起来像一张贴图反复用。
+       下面九种把情绪拆开——好奇、害羞、惊喜、调皮、欢呼、招手、
+       困了、累了、得意。 -->
+
+  <!-- curious：歪着头看你（问名字那页） -->
+  <g id="pose-curious">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-raised" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-pout" />
+  </g>
+
+  <!-- shy：害羞，深腮红，眼睛眯着 -->
+  <g id="pose-shy">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-worried" />
+    <use href="#ch-eyes-happy" />
+    <use href="#ch-blush-deep" />
+    <use href="#ch-mouth-smile" />
+  </g>
+
+  <!-- surprise：吓一跳——瞪圆的眼、汗滴 -->
+  <g id="pose-surprise">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-raised" />
+    <use href="#ch-eyes-wide" />
+    <use href="#ch-mouth-open" />
+    <use href="#ch-sweat" />
+  </g>
+
+  <!-- cheeky：调皮，眨一只眼、吐舌头 -->
+  <g id="pose-cheeky">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-wink" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-tongue" />
+  </g>
+
+  <!-- cheer：两只手举高，欢呼 -->
+  <g id="pose-cheer">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-up" />
+    <use href="#ch-arm-r-up" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-happy" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-grin" />
+  </g>
+
+  <!-- wave：一只手举起来招手 -->
+  <g id="pose-wave">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-up" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-happy" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-grin" />
+  </g>
+
+  <!-- sleepy：困了，半闭眼，软下来 -->
+  <g id="pose-sleepy">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-neutral" />
+    <use href="#ch-eyes-half" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-smile" />
+  </g>
+
+  <!-- tired：累了，眉毛垂下来，嘴抿着 -->
+  <g id="pose-tired">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-droop" />
+    <use href="#ch-eyes-half" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-flat" />
+  </g>
+
+  <!-- yawn：打哈欠——大张嘴，眉毛塌下来，眼睛半闭 -->
+  <g id="pose-yawn">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-droop" />
+    <use href="#ch-eyes-half" />
+    <use href="#ch-mouth-open" />
+  </g>
+
+  <!-- proud：得意，歪嘴，旁边一颗闪光 -->
+  <g id="pose-proud">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-excited" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-smirk" />
+    <use href="#ch-sparkle" />
   </g>
 
 </svg>

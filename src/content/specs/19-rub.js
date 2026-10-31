@@ -19,7 +19,7 @@ export default [
     /* 点它＝揉它一下：晃一下 + 咕噜声，然后翻页。
        target 用 char：揉的是它这个人，不是"身体的一个部位"——
        3 岁的孩子分不清"肚子"和"身体"，手指头按下去的是它整个。 */
-    hotspot: { action: 'massage', target: 'char', at: [408, 429], size: 449, label: '揉一揉噜啵' },
+    hotspot: { action: 'massage', target: 'char', at: [352, 376], size: 555, label: '揉一揉噜啵' },
   },
   {
     id: 'p20',
@@ -29,7 +29,7 @@ export default [
     /* 白底：这一页是全书最安静的两页之一——歇口气，为下一页的爆发攒劲。
        底子用漩涡：转晕了、软下来了，形状跟着软。 */
     bg: { kind: 'swirl', colors: ['--pink'], gap: '--paper', focus: [500, 660], cover: 'all', wash: '--wash-cream' },
-    char: { pose: 'idle', state: 'state-pale', at: [300, 300], scale: 0.62, spiral: true },
+    char: { pose: 'sleepy', state: 'state-pale', at: [300, 300], scale: 0.62, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 400, text: '唔……舒服。' },
       sound: { text: '呼——', at: [520, 74], size: 14, rotate: -2 },

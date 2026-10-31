@@ -31,7 +31,7 @@ export default [
       { kind: 'fish', at: [700, 230], scale: 0.22, rotate: 12 },
       { kind: 'star', at: [430, 150], scale: 0.18, rotate: -6 },
     ],
-    char: { pose: 'happy', at: [300, 400], scale: 0.58, spiral: true },
+    char: { pose: 'cheeky', at: [300, 400], scale: 0.58, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, text: '它一口一个，全吃掉了！' },
       sound: { at: [490, 76], size: 20, rotate: 5, text: '啊呜！' },

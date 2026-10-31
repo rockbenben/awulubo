@@ -14,7 +14,7 @@ export default [
       sound: { text: '呼——', at: [560, 76], size: 18, rotate: 3 },
       prompt: { at: [60, 870], size: 4, width: 380, text: '点它，一起转。' },
     },
-    hotspot: { action: 'spin', target: 'char', at: [455, 350], size: 380, label: '和它一起转圈' },
+    hotspot: { action: 'spin', target: 'char', at: [433, 331], size: 413, label: '和它一起转圈' },
   },
   {
     id: 'p52',

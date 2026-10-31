@@ -7,7 +7,7 @@ export default [
     template: 't-dialog',
     aria: '我们一起拍手！啪！点它，一起拍。',
     bg: { kind: 'rays-tight', colors: ['--yellow'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [360, 220], scale: 0.58, spiral: true },
+    char: { pose: 'cheer', at: [360, 220], scale: 0.58, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 340, text: '我们一起拍手！' },
       sound: { text: '啪！', at: [520, 76], size: 18, rotate: -3 },
@@ -15,7 +15,7 @@ export default [
     },
     /* 这一页没有进场音：啪的一声要等孩子动手才有。
        进来就响，等于替孩子拍了，他就不用拍了。 */
-    hotspot: { action: 'clap', target: 'char', at: [460, 335], size: 390, label: '和它一起拍手' },
+    hotspot: { action: 'clap', target: 'char', at: [437, 316], size: 425, label: '和它一起拍手' },
   },
   {
     id: 'p50',

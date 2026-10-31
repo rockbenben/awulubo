@@ -28,7 +28,7 @@ export default [
     },
     /* 点它＝彩纸再炸一次（全书的爆点）：声音是彩虹，
        彩纸从它身上喷出来，然后翻到下一段 */
-    hotspot: { action: 'gift', target: 'char', at: [316, 452], size: 410, label: '收下这些颜色' },
+    hotspot: { action: 'gift', target: 'char', at: [271, 408], size: 499, label: '收下这些颜色' },
   },
   {
     id: 'p48',
@@ -36,7 +36,7 @@ export default [
     sound: 'pop',
     aria: '收下吧！红的、蓝的、黄的……都是你的！',
     bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [300, 400], scale: 0.58, spiral: true },
+    char: { pose: 'cheer', at: [300, 400], scale: 0.58, spiral: true },
     props: [
       /* 送回来的正是前面那三样：你喂的，现在全是你的 */
       { kind: 'apple', at: [150, 250], scale: 0.2, rotate: -14 },

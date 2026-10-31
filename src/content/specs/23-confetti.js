@@ -37,6 +37,6 @@ export default [
        点它，它横着飞过天空（呼——）。
        以前这一页没有热区，噜啵只是"在那儿"；
        飞行是全书唯一的"它自己在动"，没有这一下，前面那句就是空话。 */
-    hotspot: { action: 'fly', target: 'char', at: [435, 225], size: 320, label: '看它飞过去' },
+    hotspot: { action: 'fly', target: 'char', at: [419, 213], size: 343, label: '看它飞过去' },
   },
 ];
