@@ -26,6 +26,10 @@ def page_texts():
 
     文字来自页面数据（tools/dump-text.mjs --json），旁白/大人提示用霞鹜文楷，
     拟声词/动作提示用站酷快乐体——两类文字要各自在自己的子集里查到，不能只看并集。
+
+    读不出来就返回 None：返回空字典会被当成"一个字都不用查"，
+    那样这道闸门会在什么都没量的情况下报"通过"——
+    而它拦的正是"漏字退回未授权系统字体"。
     """
     import json
     import subprocess
@@ -39,14 +43,21 @@ def page_texts():
     )
     if out.returncode != 0:
         print("✗ 读取页面文字失败：", out.stderr[-400:])
-        return {}
-    data = json.loads(out.stdout)
+        return None
+    try:
+        data = json.loads(out.stdout)
+    except json.JSONDecodeError as err:
+        print("✗ 页面文字不是合法 JSON：", err)
+        return None
     seen = {}
     for page in data["pages"]:
         for item in page["items"]:
             key = "kai" if item["key"] in ("narration", "adult") else "kuaile"
             seen.setdefault((key, page["id"]), "")
             seen[(key, page["id"])] += "".join(item["lines"])
+    if not seen:
+        print("✗ 一页文字都没读到——这道闸门不能就这么算通过")
+        return None
     return seen
 
 
@@ -64,9 +75,13 @@ def main():
         "kuaile": cmap_of(os.path.join(FONTS, "zcool-kuaile-subset.woff2")),
     }
 
+    texts = page_texts()
+    if texts is None:
+        return 1
+
     missing = {}
     total = 0
-    for (kind, pid), text in page_texts().items():
+    for (kind, pid), text in texts.items():
         font = "霞鹜文楷" if kind == "kai" else "站酷快乐体"
         for ch in text:
             if ch in ("\n", "\r", "\t", " "):
@@ -74,6 +89,10 @@ def main():
             total += 1
             if ord(ch) not in subsets[kind]:
                 missing.setdefault((ch, kind, font), []).append(pid)
+
+    if total == 0:
+        print("✗ 一个字符都没量到——不能就这么算通过")
+        return 1
 
     if missing:
         print("✗ 以下字符不在对应字体的子集里（浏览器会退回系统字体，印刷 PDF 会混入未授权字体）：")

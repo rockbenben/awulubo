@@ -6,8 +6,18 @@
 
    做法：
      1. 浏览器里量每一处文字的框（相对页面元素）与文字颜色；
-     2. 从页面截图里按同样的框取像素，挑出"不是文字颜色"的主色 = 真实底色；
+     2. 把这一页**自己截一张图**，按同样的框取像素，
+        挑出"不是文字颜色"的主色 = 真实底色；
      3. 算对比度。正文 ≥ 4.5:1，大字（拟声词）≥ 3:1。
+
+   **两个产物都要量**：
+     · dist/proof.html —— 印刷/拼版口径（44 页，印刷版文案）
+     · dist/index.html —— 屏幕互动口径（40 页，屏幕版文案）——**这是读者真正拿到的那份**
+   以前只量印刷口径，而且量的是 html-shot 技能截出来的 PNG：
+   屏幕版的文案不一样（"点我，开始。"这类纸上点不动的提示要改写），
+   于是屏幕版压在一块深色笔触上的字，全套闸门照样全绿。
+
+   截图由这道闸门自己拍（不依赖 html-shot 技能），所以它在 CI 上也跑得动。
 
    用法：node tools/check-contrast.mjs
    失败即退出码 1。
@@ -16,57 +26,25 @@ import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSpecs } from './load-specs.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const shotsDir = path.join(root, 'dist', 'shots');
-const url = 'file:///' + path.join(root, 'dist/proof.html').replace(/\\/g, '/');
 
-const specs = await loadSpecs();
-const shotIds = new Set(
-  fs.existsSync(shotsDir) ? fs.readdirSync(shotsDir).filter((f) => /^p\d+\.png$/.test(f)) : []
-);
+const TARGETS = [
+  { file: 'proof.html', scope: 'print', label: '印刷/拼版' },
+  { file: 'index.html', scope: 'screen', label: '屏幕版' },
+];
 
-const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1200, height: 1200 } });
-await page.goto(url, { waitUntil: 'load' });
+/* 页面在拼版里是 720 × 720 CSS px；截图按 2 倍拍，量出来的坐标才和旧的一套对得上 */
+const SHOT_SCALE = 2;
 
-const layout = await page.evaluate(() => {
-  const out = [];
-  for (const sec of document.querySelectorAll('.page')) {
-    const pr = sec.getBoundingClientRect();
-    const texts = [];
-    for (const el of sec.querySelectorAll('.narration, .sound, .prompt, .adult')) {
-      const r = el.getBoundingClientRect();
-      if (!r.width || !r.height) continue;
-      texts.push({
-        kind: el.className,
-        text: (el.textContent || '').trim().slice(0, 10),
-        color: getComputedStyle(el).color,
-        x: r.left - pr.left,
-        y: r.top - pr.top,
-        w: r.width,
-        h: r.height,
-        pageW: pr.width,
-      });
-    }
-    out.push({ id: sec.dataset.id, texts });
-  }
-  return out;
-});
-
-await browser.close();
-
-/* 读 PNG：交给 sharp 之外的纯 JS 解码太重，这里直接用 Playwright 截的图 + Python？
-   不行——保持零额外依赖：把像素统计交给 Node 自带的 zlib + 手写 PNG 解码。
-   实际上截图是 PNG（zlib 压缩的扫描线），手写解码不划算，
-   所以这里改用 "python -c" 之外的方式：见下方 pngPixels()。 */
+const problems = [];
+const notes = [];
+let measured = 0;
 
 /* --- 极简 PNG 解码（只处理 8bit RGB/RGBA，非隔行） --- */
 import zlib from 'node:zlib';
 
-function pngPixels(file) {
-  const buf = fs.readFileSync(file);
+function pngPixels(buf) {
   let pos = 8; /* PNG 签名 */
   let width = 0;
   let height = 0;
@@ -154,98 +132,153 @@ function near(c1, c2, tol) {
   );
 }
 
-const problems = [];
-const notes = [];
-let measured = 0;
+const browser = await chromium.launch();
 
-for (const pg of layout) {
-  const file = path.join(shotsDir, `${pg.id}.png`);
-  if (!fs.existsSync(file)) continue;
-  const img = pngPixels(file);
-  const scale = img.width / (pg.texts[0]?.pageW || img.width);
+for (const target of TARGETS) {
+  const file = path.join(root, 'dist', target.file);
+  if (!fs.existsSync(file)) {
+    console.error(`✗ 找不到 dist/${target.file} —— 先跑 npm run build`);
+    process.exit(1);
+  }
+  const url = 'file:///' + file.replace(/\\/g, '/');
+  const page = await browser.newPage({
+    viewport: { width: 1600, height: 1600 },
+    deviceScaleFactor: SHOT_SCALE,
+  });
+  await page.goto(url, { waitUntil: 'load' });
+  await page.evaluate(() => document.fonts.ready);
 
-  for (const t of pg.texts) {
-    const fg = parseColor(t.color);
-    if (!fg) continue;
-    const x0 = Math.max(0, Math.round(t.x * scale));
-    const y0 = Math.max(0, Math.round(t.y * scale));
-    const x1 = Math.min(img.width, Math.round((t.x + t.w) * scale));
-    const y1 = Math.min(img.height, Math.round((t.y + t.h) * scale));
-    if (x1 <= x0 || y1 <= y0) continue;
+  if (target.scope === 'screen') {
+    /* 屏幕版一次只显示一页；摊平成拼版（加 static 类），
+       排版与 proof.html 一致，截图与坐标才可比。 */
+    await page.evaluate(() => document.body.classList.add('static'));
+  }
 
-    /* 量法：先在文字框里找出"墨迹像素"，取它们的**紧包围盒**，
-       再在紧包围盒里找底色——并排除紧贴墨迹的那些像素（抗锯齿光晕，
-       否则量到的是墨与底的混合色）。 */
-    const step = 2;
-    const ink = [];
-    const px = (x, y) => {
-      const i = (y * img.width + x) * img.channels;
-      return [img.data[i], img.data[i + 1], img.data[i + 2]];
-    };
-    const isInk = (c) => near(c, fg, 60);
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -1;
-    let maxY = -1;
-    for (let y = y0; y < y1; y += step) {
-      for (let x = x0; x < x1; x += step) {
-        if (!isInk(px(x, y))) continue;
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
+  const layout = await page.evaluate(() => {
+    const out = [];
+    for (const sec of document.querySelectorAll('.page')) {
+      const pr = sec.getBoundingClientRect();
+      const texts = [];
+      for (const el of sec.querySelectorAll('.narration, .sound, .prompt, .adult')) {
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) continue;
+        texts.push({
+          kind: el.className,
+          text: (el.textContent || '').trim().slice(0, 10),
+          color: getComputedStyle(el).color,
+          x: r.left - pr.left,
+          y: r.top - pr.top,
+          w: r.width,
+          h: r.height,
+          pageW: pr.width,
+        });
       }
+      out.push({ id: sec.dataset.id, texts });
     }
-    if (maxX < 0) continue; /* 框里没有文字像素（可能被别的层盖住了） */
+    return out;
+  });
 
-    const counts = new Map();
-    for (let y = minY; y <= maxY; y += step) {
-      for (let x = minX; x <= maxX; x += step) {
-        const c = px(x, y);
-        if (isInk(c)) continue;
-        /* 跳过紧邻墨迹的像素：那是抗锯齿的混合色，不是底色 */
-        let halo = false;
-        for (let dy = -step; dy <= step && !halo; dy += step) {
-          for (let dx = -step; dx <= step; dx += step) {
-            const nx = x + dx;
-            const ny = y + dy;
-            if (nx < minX || nx > maxX || ny < minY || ny > maxY) continue;
-            if (isInk(px(nx, ny))) {
-              halo = true;
-              break;
+  for (const pg of layout) {
+    if (!pg.texts.length) continue;
+    const shot = await page.locator(`[data-id="${pg.id}"]`).screenshot();
+    const img = pngPixels(shot);
+    const scale = img.width / (pg.texts[0]?.pageW || img.width);
+
+    for (const t of pg.texts) {
+      const fg = parseColor(t.color);
+      if (!fg) continue;
+      const x0 = Math.max(0, Math.round(t.x * scale));
+      const y0 = Math.max(0, Math.round(t.y * scale));
+      const x1 = Math.min(img.width, Math.round((t.x + t.w) * scale));
+      const y1 = Math.min(img.height, Math.round((t.y + t.h) * scale));
+      if (x1 <= x0 || y1 <= y0) continue;
+
+      /* 量法：先在文字框里找出"墨迹像素"，取它们的**紧包围盒**，
+         再在紧包围盒里找底色——并排除紧贴墨迹的那些像素（抗锯齿光晕，
+         否则量到的是墨与底的混合色）。 */
+      const step = 2;
+      const px = (x, y) => {
+        const i = (y * img.width + x) * img.channels;
+        return [img.data[i], img.data[i + 1], img.data[i + 2]];
+      };
+      const isInk = (c) => near(c, fg, 60);
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -1;
+      let maxY = -1;
+      for (let y = y0; y < y1; y += step) {
+        for (let x = x0; x < x1; x += step) {
+          if (!isInk(px(x, y))) continue;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+      if (maxX < 0) continue; /* 框里没有文字像素（可能被别的层盖住了） */
+
+      const counts = new Map();
+      for (let y = minY; y <= maxY; y += step) {
+        for (let x = minX; x <= maxX; x += step) {
+          const c = px(x, y);
+          if (isInk(c)) continue;
+          /* 跳过紧邻墨迹的像素：那是抗锯齿的混合色，不是底色 */
+          let halo = false;
+          for (let dy = -step; dy <= step && !halo; dy += step) {
+            for (let dx = -step; dx <= step; dx += step) {
+              const nx = x + dx;
+              const ny = y + dy;
+              if (nx < minX || nx > maxX || ny < minY || ny > maxY) continue;
+              if (isInk(px(nx, ny))) {
+                halo = true;
+                break;
+              }
             }
           }
+          if (halo) continue;
+          const key = (c[0] >> 3) * 1024 + (c[1] >> 3) * 32 + (c[2] >> 3);
+          const e = counts.get(key) || { n: 0, c: [0, 0, 0] };
+          e.n++;
+          e.c[0] += c[0];
+          e.c[1] += c[1];
+          e.c[2] += c[2];
+          counts.set(key, e);
         }
-        if (halo) continue;
-        const key = (c[0] >> 3) * 1024 + (c[1] >> 3) * 32 + (c[2] >> 3);
-        const e = counts.get(key) || { n: 0, c: [0, 0, 0] };
-        e.n++;
-        e.c[0] += c[0];
-        e.c[1] += c[1];
-        e.c[2] += c[2];
-        counts.set(key, e);
+      }
+      if (!counts.size) continue;
+      const top = [...counts.values()].sort((a, b) => b.n - a.n)[0];
+      const bg = top.c.map((v) => Math.round(v / top.n));
+      const ratio = contrast(fg, bg);
+      const need = t.kind === 'sound' ? 3 : 4.5;
+      measured++;
+      const label = `[${pg.id}]（${target.label}）${t.kind} "${t.text}"`;
+      if (ratio < need) {
+        problems.push(
+          `${label} 对比度 ${ratio.toFixed(2)}:1（需 ≥ ${need}）字色 ${t.color} 底色 rgb(${bg})`
+        );
+      } else {
+        notes.push(`✓ ${label} ${ratio.toFixed(2)}:1`);
       }
     }
-    if (!counts.size) continue;
-    const top = [...counts.values()].sort((a, b) => b.n - a.n)[0];
-    const bg = top.c.map((v) => Math.round(v / top.n));
-    const ratio = contrast(fg, bg);
-    const need = t.kind === 'sound' ? 3 : 4.5;
-    measured++;
-    const label = `[${pg.id}] ${t.kind} "${t.text}"`;
-    if (ratio < need) {
-      problems.push(`${label} 对比度 ${ratio.toFixed(2)}:1（需 ≥ ${need}）字色 ${t.color} 底色 rgb(${bg})`);
-    } else {
-      notes.push(`✓ ${label} ${ratio.toFixed(2)}:1`);
-    }
   }
+
+  await page.close();
 }
 
+await browser.close();
+
 notes.forEach((n) => console.log(`  ${n}`));
-console.log(`\n共量了 ${measured} 处文字`);
+console.log(`\n共量了 ${measured} 处文字（${TARGETS.map((t) => t.label).join(' + ')}）`);
 if (problems.length) {
   console.error(`✗ ${problems.length} 处文字对比度不达标：`);
   problems.forEach((p) => console.error(`  - ${p}`));
+  process.exit(1);
+}
+/* 一处都没量到，不能报"全部达标"——
+   截图没生成、路径写错、页面 id 对不上，都会落到这里。
+   这道闸门要是在什么都没量的情况下说通过，就等于没有闸门。 */
+if (measured === 0) {
+  console.error('✗ 一处文字都没量到（截图缺失或量不到底色）——不能就这么算通过');
   process.exit(1);
 }
 console.log('✓ 文字对比度全部达标');

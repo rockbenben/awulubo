@@ -35,10 +35,10 @@ OFL 1.1 对本项目的实际含义：
 | [Vite](https://vite.dev) | 构建、打包、开发服务器 | MIT |
 | [vite-plugin-singlefile](https://github.com/Matro-Nastya/vite-plugin-singlefile) | 把 CSS/JS/字体内联成单文件 HTML | MIT |
 | [Handlebars](https://handlebarsjs.com) | 页面模板渲染 | MIT |
-| [Playwright](https://playwright.dev) | 印刷 PDF 导出、交互冒烟、版式测量 | Apache-2.0 |
+| [Playwright](https://playwright.dev) | 印刷 PDF 导出、交互冒烟、版式测量、逐页截图 | Apache-2.0 |
 | [fontTools](https://github.com/fonttools/fonttools) | 字体子集化、cmap 覆盖检查 | MIT |
+| [Pillow](https://python-pillow.org) | 截图闸门与联系表读 PNG | MIT-CMU |
 | [@fontsource/zcool-kuaile](https://fontsource.org/fonts/zcool-kuaile)、[@fontsource/lxgw-wenkai](https://fontsource.org/fonts/lxgw-wenkai) | 字体文件分发 | OFL-1.1（见上） |
-| html-shot（本机 gstack 技能） | 逐页截图 | 内部技能 |
 
 以上均为宽松许可（MIT / Apache-2.0），可自由用于商业出版；随产物分发的只有构建结果（HTML/PDF/PNG），不涉及第三方代码。
 

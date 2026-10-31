@@ -103,8 +103,15 @@ function viewBackground(bg) {
   const radius = geom.r;
   const focus = bg.focus || [500, 500];
   const zoom = Math.max(bg.zoom || 1, requiredSpan(focus, bg.cover || 'all') / radius);
-  const tx = focus[0] - 500 * zoom;
-  const ty = focus[1] - 500 * zoom;
+  /* 把特效**自己的圆心**挪到 focus 上。
+     以前写死"这个符号的圆心在 (500,500)"——可每种特效的圆心并不都在那儿：
+     effects.json 里 rays-corner 的圆心是 (-40,1040)（页外左下角，
+     "从角落冲上来"就是这么生成的）。写死 (500,500) 的话，
+     focus 挪的是符号的局部原点，不是它的圆心——
+     p39 的放射线因此被整体推下去 400 单位，burst 从"脚底冲上来"变成了
+     "从左下角斜着抹过"。用各特效自己的圆心，摆位才对得准。 */
+  const tx = focus[0] - geom.cx * zoom;
+  const ty = focus[1] - geom.cy * zoom;
 
   const vars = [];
   if (bg.colors && bg.colors[0]) vars.push(`--ray: var(${bg.colors[0]})`);
@@ -127,8 +134,8 @@ function viewBackground(bg) {
   if (bg.wash) {
     const w = EFFECT_GEOM.wash;
     const wzoom = Math.max(1, requiredSpan([500, 500], 'all') / w.r);
-    const wtx = 500 - 500 * wzoom;
-    const wty = 500 - 500 * wzoom;
+    const wtx = 500 - w.cx * wzoom;
+    const wty = 500 - w.cy * wzoom;
     vars.push(`--wash: var(${bg.wash})`);
     out.vars = vars.join('; ');
     out.wash = {

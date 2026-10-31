@@ -1,10 +1,15 @@
-/* 逐页截图：调用 html-shot 技能渲染，产出 1440 × 1440 的 PNG。
-   技能目录用 HTML_SHOT_DIR 指定，默认取本机已知路径。
+/* 逐页截图：产出 1440 × 1440（屏幕版）/ 1224 × 1224（印刷版）的 PNG。
    用法：
      node tools/shots.mjs            # 屏幕版（dist/proof.html）
      node tools/shots.mjs --print    # 印刷版（dist/print.html，216mm 版式）
+
+   以前这一步靠本机的 html-shot 技能（路径写死在脚本里），
+   于是：换台机器跑不了、CI 里跑不了，
+   而"每页都得真的画出来"这道闸门就只能在某一台机器上守着。
+   现在直接用 Playwright 截图——同一个依赖（Chromium）已经在项目里了，
+   谁 clone 下来都能跑。
 */
-import { execFileSync } from 'node:child_process';
+import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,19 +20,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const pages = await loadSpecs();
 
-const SKILL =
-  process.env.HTML_SHOT_DIR ||
-  'D:/Backup/Libraries/Documents/GitHub/Projects/seldom/aishort-skills/skills/html-shot';
-
 const isPrint = process.argv.includes('--print');
 const input = path.join(dist, isPrint ? 'print.html' : 'proof.html');
 const outDir = path.join(dist, isPrint ? 'print-shots' : 'shots');
 
-if (!fs.existsSync(path.join(SKILL, 'render.mjs'))) {
-  console.error(`✗ 找不到 html-shot 技能：${SKILL}`);
-  console.error('  用 HTML_SHOT_DIR 指定，或先安装该技能。');
-  process.exit(1);
-}
 if (!fs.existsSync(input)) {
   console.error('✗ 先跑 npm run build');
   process.exit(1);
@@ -53,26 +49,26 @@ for (const file of fs.readdirSync(outDir)) {
   console.log(`- 清理过期截图 ${file}`);
 }
 
-for (const page of pages) {
-  const out = path.join(outDir, `${page.id}.png`);
-  execFileSync(
-    'node',
-    [
-      path.join(SKILL, 'render.mjs'),
-      input,
-      out,
-      '--selector',
-      `[data-id='${page.id}']`,
-      '--dpr',
-      isPrint ? '1.5' : '2',
-      '--offline',
-      '--wait',
-      '300',
-    ],
-    { stdio: ['ignore', 'ignore', 'inherit'] }
-  );
+/* 屏幕版 2 倍（720 → 1440），印刷版 1.5 倍（216mm ≈ 816px → 1224） */
+const dpr = isPrint ? 1.5 : 2;
+const url = 'file:///' + input.replace(/\\/g, '/');
+
+const browser = await chromium.launch();
+const page = await browser.newPage({
+  viewport: { width: 1600, height: 1600 },
+  deviceScaleFactor: dpr,
+});
+await page.goto(url, { waitUntil: 'load' });
+/* 字没加载完就截，截到的是回退字体——联系表与闸门都会跟着失真 */
+await page.evaluate(() => document.fonts.ready);
+
+for (const p of pages) {
+  const out = path.join(outDir, `${p.id}.png`);
+  await page.locator(`[data-id='${p.id}']`).screenshot({ path: out });
   console.log(`✓ ${path.relative(root, out)}`);
 }
+
+await browser.close();
 
 console.log(`\n共 ${pages.length} 张，输出在 ${path.relative(root, outDir)}/`);
 
