@@ -42,19 +42,26 @@ main 分支（源码）──CI 验过──▶ gh-pages 分支（构建产物�
 
 | 文件 | 干什么 |
 |---|---|
-| `ci.yml` | 推 main / 提 PR 时：装 Node 24 + Python + Playwright chromium → `npm run check` → 构建 → 导 PDF → 冒烟 → 压力测试 |
+| `ci.yml` | 推 main / 提 PR 时：装 Node 24 + Python + Playwright chromium → **构建** → `npm run check` → 导 PDF → 冒烟 → 压力测试 → 截图与对比度闸门 |
 | `deploy.yml` | 推 main 时：同样的门禁 → 构建 → 把 `dist/` 推到 `gh-pages` 分支 |
+
+> **顺序是"先构建、再检查"**：`dist/` 不进仓库，版式检查量的是 `dist/proof.html`，
+> 检查排在构建前面，干净检出的仓库上必然报"找不到 dist/proof.html"，流水线永远是红的。
 
 **CI 依赖**（`requirements.txt`）：
 
 ```
 fonttools>=4.68
 brotli>=1.2
+pillow>=10.0
 ```
 
-只有字体那两步要 Python：`npm run fonts`（pyftsubset 切子集）与
-`python tools/check-text.py`（核对子集有没有覆盖全书用字——漏字会退回未授权的系统字体）。
-**子集本身是提交进仓库的**（`src/fonts/*.woff2`），CI 不用重新切字。
+只有字体那两步与截图闸门要 Python：`npm run fonts`（pyftsubset 切子集）、
+`python tools/check-text.py`（核对子集有没有覆盖全书用字——漏字会退回未授权的系统字体）
+与 `python tools/check-shots.py`（量每页的墨迹占比）。
+**子集本身是提交进仓库的**（`src/fonts/*.woff2`），CI 不用重新切字；
+连"子集是不是最新的"那个戳记也在仓库里（`src/fonts/.*.stamp`），
+它记的是字符集与源字体的哈希，跟机器无关。
 
 **Node 版本写死 '24'**：不写 `^24` 是因为 setup-node 会装"最新满足的"那个版本，
 哪天 Node 26 出来 CI 就悄悄换了线。写死一条，CI 跑的就是本地那条。
@@ -151,9 +158,9 @@ npx serve dist -l 8080
 
 | 方案 | 怎么验的 | 结果 |
 |---|---|---|
-| nginx | `nginx -t` → 起服务 → curl + 真浏览器加载 | 语法 ok；`index.html` 200 / `text/html; charset=utf-8`；`book.pdf` 200 / `application/pdf`；gzip 协商成功（`Content-Encoding: gzip`）；`index.html` 带 `Cache-Control: no-cache`；浏览器里 32 页正常、点封面进 p02、声音峰值 0.117、零 console 错误 |
-| Docker | `docker build` → `docker run` → curl + 真浏览器加载 | 镜像 53.7 MB；容器里 `index.html` 与三个 PDF 全部 200、Content-Type 正确；浏览器里 32 页正常、点封面进 p02、声音峰值 0.117、零 console 错误 |
-| EdgeOne 构建产物 | 干净构建（`vite build --outDir`）→ 列清单 | 4 个 HTML / 1.7 MB；`shots/` 与 PDF 不会被上传 ✓ |
+| nginx | `nginx -t` → 起服务 → curl + 真浏览器加载 | 语法 ok；`index.html` 200 / `text/html; charset=utf-8`；`book.pdf` 200 / `application/pdf`；gzip 协商成功（`Content-Encoding: gzip`）；`index.html` 带 `Cache-Control: no-cache`；浏览器里 40 页正常、点封面进 p02、声音峰值 0.117、零 console 错误 |
+| Docker | `docker build` → `docker run` → curl + 真浏览器加载 | 镜像 53.7 MB；容器里 `index.html` 与三个 PDF 全部 200、Content-Type 正确；浏览器里 40 页正常、点封面进 p02、声音峰值 0.117、零 console 错误 |
+| EdgeOne 构建产物 | 干净构建（`vite build --outDir`）→ 列清单 | 4 个 HTML / 1.9 MB；`shots/` 与 PDF 不会被上传 ✓ |
 
 > 第一版的 Dockerfile **漏了打印 PDF**：镜像里只跑了 `npm run build`，
 > PDF 要真浏览器渲染，`npm run pdf` 得在构建阶段跑（已修）。
