@@ -19,6 +19,42 @@ if (!fs.existsSync(input)) {
   console.error('✗ 先跑 npm run build');
   process.exit(1);
 }
+
+/* 产物比源码旧 → 停下。
+   少了这一步，脚本会拿**上一次的构建**截图，而且截得出来、看不出来：
+   画面几乎一模一样（差的是边缘的抗锯齿，肉眼看不出来），
+   可它拍的根本不是现在的页面。
+   「门面图是从当前构建生成的」这句话，得由脚本自己保证，
+   不能靠人记得先跑构建。 */
+function newestMtime(dir) {
+  let newest = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      newest = Math.max(newest, newestMtime(full));
+    } else if (entry.isFile()) {
+      newest = Math.max(newest, fs.statSync(full).mtimeMs);
+    }
+  }
+  return newest;
+}
+
+const sources = ['src', 'vite.config.js', 'package.json'];
+let sourceTime = 0;
+for (const s of sources) {
+  const full = path.join(root, s);
+  if (!fs.existsSync(full)) continue;
+  /* 目录要看**里面最新那个文件**：目录自己的时间戳只在增删文件时才变，
+     改文件内容不会动它——拿目录时间戳去比，等于这道闸门永远是开的。 */
+  const t = fs.statSync(full).isDirectory() ? newestMtime(full) : fs.statSync(full).mtimeMs;
+  sourceTime = Math.max(sourceTime, t);
+}
+if (sourceTime > fs.statSync(input).mtimeMs) {
+  console.error('✗ dist/index.html 比源码旧——先跑 npm run build');
+  console.error('  （不然截出来的是上一次构建的页面，图一提交就是过期的）');
+  process.exit(1);
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 
 /* 首屏横幅的四格：两册各两页。门面得让人知道这是**两本书**——
