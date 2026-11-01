@@ -39,7 +39,17 @@ function newestMtime(dir) {
   return newest;
 }
 
-const sources = ['src', 'vite.config.js', 'package.json'];
+const sources = [
+  'src',
+  'vite.config.js',
+  'package.json',
+  /* 四个入口的 HTML 壳子也是构建输入（vite.config.js 的 rollupOptions.input）：
+     改了外壳（按钮、标题、meta）不重建，闸门也得响。 */
+  'index.html',
+  'print.html',
+  'proof.html',
+  'booklet.html',
+];
 let sourceTime = 0;
 for (const s of sources) {
   const full = path.join(root, s);

@@ -32,6 +32,31 @@ await page.evaluate(() => document.fonts.ready);
 const activeId = () =>
   page.evaluate(() => document.querySelector('.page.is-active')?.dataset.id);
 
+/* 找一个真的落在角色墨迹上、且不在热区里的点。
+   角色的外框里有一半是空的，点空了不算「拍到它」——
+   拍一拍走的是 event.target.closest('.char')，
+   点在空白上会落到文档的点击逻辑上，测的就不是同一件事了。
+   ⚠️ 必须带上册 id：两册的页面 id 是各自从 p01 起的，
+   DOM 里同时躺着 128 页，只写 id 会挑到**另一册**的那一页。 */
+const charPoint = (pg, id, book) =>
+  pg.evaluate(
+    ([id, book]) => {
+      const g = document.querySelector(`[data-id="${id}"][data-book="${book}"] .char`);
+      if (!g) return null;
+      const r = g.getBoundingClientRect();
+      for (let fy = 0.1; fy < 0.95; fy += 0.05) {
+        for (let fx = 0.1; fx < 0.95; fx += 0.05) {
+          const x = r.left + r.width * fx;
+          const y = r.top + r.height * fy;
+          const el = document.elementFromPoint(x, y);
+          if (el && el.closest('.char') && !el.closest('.hotspot')) return { x, y };
+        }
+      }
+      return null;
+    },
+    [id, book]
+  );
+
 /* 起点：封面 */
 let active = await activeId();
 check(active === 'p01', `起始页是封面 p01（实际 ${active}）`);
@@ -61,6 +86,25 @@ await page.keyboard.press('ArrowLeft');
 await page.waitForTimeout(450);
 active = await activeId();
 check(active === 'p05', `方向键回到 p05（实际 ${active}）`);
+
+/* 拍一拍角色 → 照样翻页（单页模式）。
+   p04 是个有热区的页（点点它的肚子），拍角色也算这一页好了，
+   翻过去——这是从前就有的行为，两种模式必须一样。
+   2026-11-01 差点把它改掉：拍一拍改成「整组都好了才翻」之后，
+   单页模式下这 14 页（有角色又有热区的）拍一下就不翻了，
+   而闸门全绿——因为冒烟从前没量过「拍一拍」。 */
+{
+  await page.evaluate(() => window.Book.goToId('p04'));
+  await page.waitForTimeout(300);
+  const pt = await charPoint(page, 'p04', 'awulubo');
+  check(!!pt, 'p04 的角色身上找得到一个能点的点');
+  if (pt) {
+    await page.mouse.click(pt.x, pt.y);
+    await page.waitForTimeout(800);
+    active = await activeId();
+    check(active === 'p05', `拍一拍角色后翻到 p05（实际 ${active}）`);
+  }
+}
 
 /* 走到 p08，点苹果 → p09 */
 await page.evaluate(() => window.Book.goToId('p08'));
@@ -1131,24 +1175,10 @@ await proof.close();
   {
     /* p44|p45：拍一拍 p44 也不该把 p45 的「我看见你啦」带走。
        点角色要落在真的墨迹上：角色的外框里有一半是空的，
-       点空了不算「拍到它」。所以在框里一格一格试，
-       拿 elementFromPoint 找那个真的点在角色身上的位置。 */
+       点空了不算「拍到它」（见 charPoint）。 */
     await wide.evaluate(() => window.Book.goToId('p44', 'awulubo'));
     await wide.waitForTimeout(300);
-    const pt = await wide.evaluate(() => {
-      const g = document.querySelector('[data-id="p44"][data-book="awulubo"] .char');
-      if (!g) return null;
-      const r = g.getBoundingClientRect();
-      for (let fy = 0.15; fy < 0.95; fy += 0.1) {
-        for (let fx = 0.15; fx < 0.95; fx += 0.1) {
-          const x = r.left + r.width * fx;
-          const y = r.top + r.height * fy;
-          const el = document.elementFromPoint(x, y);
-          if (el && el.closest('.char')) return { x, y };
-        }
-      }
-      return null;
-    });
+    const pt = await charPoint(wide, 'p44', 'awulubo');
     check(!!pt, 'p44 的角色身上找得到一个能点的点');
     if (pt) {
       await wide.mouse.click(pt.x, pt.y);
@@ -1169,11 +1199,65 @@ await proof.close();
   }
 
   {
+    /* p04|p05：拍一拍照样翻（这一页的互动被跳过是**从前就有的**行为）。
+       两种模式必须一样：单页模式那一段冒烟断言就守着这件事。
+       跨页里多一条：翻的是**一整跨**，不是一页。 */
+    await wide.evaluate(() => window.Book.goToId('p04', 'awulubo'));
+    await wide.waitForTimeout(300);
+    const pt = await charPoint(wide, 'p04', 'awulubo');
+    if (pt) {
+      await wide.mouse.click(pt.x, pt.y);
+      await wide.waitForTimeout(800);
+      const pat = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+      check(
+        pat.join('+') === 'p06+p07',
+        `拍一拍 p04 照样翻一跨（实际 ${pat.join(' + ')}）`
+      );
+    }
+  }
+
+  {
+    /* 连错 5 下「放人走」：**那一页**当作好了。
+       但**旁边那一页**若还有互动，就先留在这一跨上——
+       翻过去等于把那一页也跳过去。
+       现在只有 p16|p17 是「trap 页旁边还有互动」的那一跨。 */
+    await wide.evaluate(() => window.Book.goToId('p16', 'awulubo'));
+    await wide.waitForTimeout(300);
+    const blank = await wide.evaluate(() => {
+      const p = document.querySelector('[data-id="p16"][data-book="awulubo"]');
+      const r = p.getBoundingClientRect();
+      /* 页面最下面那条（提示字那行）没有热区 */
+      return { x: r.left + r.width / 2, y: r.bottom - 12 };
+    });
+    for (let i = 0; i < 5; i++) {
+      await wide.mouse.click(blank.x, blank.y);
+      await wide.waitForTimeout(260);
+    }
+    await wide.waitForTimeout(500);
+    const escaped = await wide.evaluate(() => ({
+      group: Book.currentGroup().map((p) => p.dataset.id),
+      done: Book.currentGroup().map((p) => p.getAttribute('data-done') || '-'),
+    }));
+    check(
+      escaped.group.join('+') === 'p16+p17' && escaped.done[0] === '1',
+      `p16 连点错 5 下算这一页好了，旁边那页还有互动就留在这一跨（实际 ${escaped.group.join(' + ')}，p16 done=${escaped.done[0]}）`
+    );
+    /* 旁边那一页演完，这一跨才真的翻过去 */
+    await clickIfThere('[data-id="p17"][data-book="awulubo"] .hotspot');
+    await wide.waitForTimeout(1000);
+    const after = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+    check(
+      after.join('+') === 'p18+p19',
+      `p17 演完才翻到下一跨（实际 ${after.join(' + ')}）`
+    );
+  }
+
+  {
     /* 等动作的一跨：点空白不动。
-       ⚠️ 往回走不受这道闸门拦（回去不算跳过这一页），
-       但点在**正在等动作的那一页**上不行——那是点空了，
-       该摇一下头；往回走反而把孩子带离任务。
-       这一跨的 trap 页是左页（p14），所以点左页是摇一下头。 */
+       ⚠️ 这道闸门拦的是「点」：方向键与往右滑都走 prev()，不受它管。
+       但两册 9 个 trap 页**全在跨页的左边**——
+       点左页是「在这一页上点空了」，所以是摇一下头，不是往回翻。
+       （代码里那条「往回走放行」的分支要等 trap 页落在右边才走得到。） */
     await wide.evaluate(() => window.Book.goToId('p14', 'awulubo'));
     await wide.waitForTimeout(300);
     const pts = await wide.evaluate(() =>
