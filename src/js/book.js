@@ -243,6 +243,42 @@
     return null;
   }
 
+  /* —— 一页是不是「好了」——
+     一页只有两种状态：没有动作的页天生是好了的；
+     有动作的页等那个动作演完，动手的地方会写上 data-done。
+     判据是「有没有还没做的动作」，不是「有没有翻过页」。 */
+  function isDone(page) {
+    if (!page) return true;
+    if (page.getAttribute('data-done') === '1') return true;
+    return page.querySelectorAll('.hotspot[data-action]').length === 0;
+  }
+
+  /* 当前这一组里还有没有没好的一页（没好的就是还在等孩子动手） */
+  function groupPending() {
+    var g = groupOf(current);
+    for (var k = 0; k < g.length; k++) {
+      if (!isDone(g[k])) return g[k];
+    }
+    return null;
+  }
+
+  /* 这一组都好了才翻。
+     跨页模式下一跨有两页：左页的互动演完**不能顺手把右页也翻过去**——
+     右页自己的那一拍（咕噜、看它飞过去）还没演呢。
+     以前动作一演完就 next()，next() 在跨页模式里是翻一整跨，
+     于是 p16|p17 的「咕噜」和 p22|p23 的「飞」永远没机会演。
+     单页模式下一组就一页，等于「这一页好了就翻」，跟从前一样。 */
+  function turnIfDone() {
+    if (groupPending()) return;
+    next();
+  }
+
+  /* 一个动作演完了：记下这一页好了，再看这一组是不是都好了。 */
+  function finish(page) {
+    if (page && page.setAttribute) page.setAttribute('data-done', '1');
+    turnIfDone();
+  }
+
   /* 翻到下一个跨页（摊开模式）或下一页（单页模式） */
   function next() {
     if (isStatic()) return;
@@ -402,6 +438,16 @@
         global.BookInteractions.pat(cur);
         return;
       }
+      /* 当前这一组页：单页模式一页，跨页模式两页。
+         点在哪一边、这一组有没有在等动作，都拿它来判。 */
+      var group = groupOf(current);
+      /* 点哪边，往哪边走——跟翻纸书一样。
+         摊开时左边是**刚读过的那页**，右边是**还没读的那页**：
+         点右页往前，点左页往回。以前不分左右，点哪儿都往前，
+         孩子想回头看左页，书却把这一跨翻过去了。
+         点在书页之外（上下留白、舞台两侧）仍算往前——那是"继续"的意思，
+         不是"后退"。 */
+      var back = spreadMode() && group.length === 2 && hit === group[0];
       /* 多步互动的页面（按顺序点三样 / 再喂一口 / 揉肚子 / 找一找）：
          点空白不翻页，摇一下头让孩子接着来。
          以前一戳就跳页——"找一找"还会跳到"你都找到了吗？"，
@@ -410,8 +456,12 @@
 
          ⚠️ 跨页时按**整组**算：这一跨里有一页在等一个动作，
          就不该能靠点另一页的空白翻过去——那等于把这一页跳过去。
-         （纸书上读者随时可以翻叶；屏幕上这道闸门是防手滑的。） */
-      var group = groupOf(current);
+         （纸书上读者随时可以翻叶；屏幕上这道闸门是防手滑的。）
+
+         ⚠️ **往回走不受这道闸门拦**：回去不算跳过这一页，孩子还会回来。
+         但点在**正在等动作的那一页**上时不往回走——那一页就是要他动手的，
+         点空了是「没点中」，该摇一下头；往回走反而把孩子带离任务，
+         前面攒下的进度也会被清掉。 */
       var trapped = null;
       for (var t = 0; t < group.length; t++) {
         if (group[t].hasAttribute('data-trap')) {
@@ -420,18 +470,15 @@
         }
       }
       if (trapped) {
+        if (back && hit !== trapped) {
+          withLock(prev);
+          return;
+        }
         if (global.BookInteractions && global.BookInteractions.wrong) {
           global.BookInteractions.wrong(trapped);
         }
         return;
       }
-      /* 点哪边，往哪边走——跟翻纸书一样。
-         摊开时左边是**刚读过的那页**，右边是**还没读的那页**：
-         点右页往前，点左页往回。以前不分左右，点哪儿都往前，
-         孩子想回头看左页，书却把这一跨翻过去了。
-         点在书页之外（上下留白、舞台两侧）仍算往前——那是"继续"的意思，
-         不是"后退"。 */
-      var back = spreadMode() && group.length === 2 && hit === group[0];
       withLock(back ? prev : skipPendingInGroup() || next);
     });
 
@@ -609,6 +656,12 @@
     show: show,
     after: after,
     skipPending: skipPending,
+    /* 一个动作演完了：这一页好了，整组都好了才翻（跨页模式见 turnIfDone） */
+    finish: finish,
+    /* 不管动作，只看这一组是不是都好了：好了才翻 */
+    turnIfDone: turnIfDone,
+    /* 这一页是不是已经好了（诊断与测试用） */
+    isDone: isDone,
     /* 带节流的翻页：最短 350 ms 一页，但期间的请求会被记住而不是丢掉 */
     turn: withLock,
     goToId: function (id, book) {

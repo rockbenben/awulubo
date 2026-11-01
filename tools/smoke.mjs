@@ -1067,6 +1067,136 @@ await proof.close();
   const fwd = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
   check(fwd[0] === 'p04', `点右页往前翻一跨（实际 ${fwd.join(' + ')}）`);
 
+  /* 点之前先看一眼那个元素在不在：前面的断言已经红了的话，
+     别让这一段直接崩掉——崩掉虽然也是红，但看不到是哪一条断言红的。 */
+  const clickIfThere = async (sel) => {
+    const loc = wide.locator(sel);
+    if (!(await loc.count())) return false;
+    if (!(await loc.isVisible())) return false;
+    await loc.click();
+    return true;
+  };
+
+  /* —— 跨页里的互动：一跨有两页，左页的互动不许把右页一起带走 ——
+     这一段是 2026-11-01 补上的：前面的断言都跑在 900px（单页）上，
+     跨页里的互动一条都没量过，于是「左页演完就翻整跨」这个毛病
+     在闸门全绿的情况下活了好几天。
+
+     症状：p16|p17 喂饱三口 → 整跨翻到 p18|p19，
+     p17 的「点点它的肚子」永远没机会演；p22|p23 的彩纸演完，
+     p23 的「它飞过去」也没了。 */
+  {
+    /* p16|p17：左页喂三口，右页那一下「咕噜」得留着 */
+    await wide.evaluate(() => window.Book.goToId('p16', 'awulubo'));
+    await wide.waitForTimeout(300);
+    for (let i = 0; i < 3; i++) {
+      await wide.click('[data-id="p16"][data-book="awulubo"] .hotspot[data-action="feed"]');
+      await wide.waitForTimeout(300);
+    }
+    await wide.waitForTimeout(900);
+    const fed = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+    check(
+      fed.join('+') === 'p16+p17',
+      `p16 喂满三口后这一跨还在（实际 ${fed.join(' + ')}）`
+    );
+    await clickIfThere('[data-id="p17"][data-book="awulubo"] .hotspot');
+    await wide.waitForTimeout(1100);
+    const gulu = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+    check(
+      gulu.join('+') === 'p18+p19',
+      `p17 的咕噜演完才翻到下一跨（实际 ${gulu.join(' + ')}）`
+    );
+  }
+
+  {
+    /* p22|p23：彩纸演完，右页的「看它飞过去」得留着 */
+    await wide.evaluate(() => window.Book.goToId('p22', 'awulubo'));
+    await wide.waitForTimeout(300);
+    await wide.click('[data-id="p22"][data-book="awulubo"] .hotspot');
+    await wide.waitForTimeout(900);
+    const bloom = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+    check(
+      bloom.join('+') === 'p22+p23',
+      `p22 的彩纸演完这一跨还在（实际 ${bloom.join(' + ')}）`
+    );
+    await clickIfThere('[data-id="p23"][data-book="awulubo"] .hotspot');
+    await wide.waitForTimeout(1200);
+    const fly = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+    check(
+      fly.join('+') === 'p24+p25',
+      `p23 飞过去之后才翻到下一跨（实际 ${fly.join(' + ')}）`
+    );
+  }
+
+  {
+    /* p44|p45：拍一拍 p44 也不该把 p45 的「我看见你啦」带走。
+       点角色要落在真的墨迹上：角色的外框里有一半是空的，
+       点空了不算「拍到它」。所以在框里一格一格试，
+       拿 elementFromPoint 找那个真的点在角色身上的位置。 */
+    await wide.evaluate(() => window.Book.goToId('p44', 'awulubo'));
+    await wide.waitForTimeout(300);
+    const pt = await wide.evaluate(() => {
+      const g = document.querySelector('[data-id="p44"][data-book="awulubo"] .char');
+      if (!g) return null;
+      const r = g.getBoundingClientRect();
+      for (let fy = 0.15; fy < 0.95; fy += 0.1) {
+        for (let fx = 0.15; fx < 0.95; fx += 0.1) {
+          const x = r.left + r.width * fx;
+          const y = r.top + r.height * fy;
+          const el = document.elementFromPoint(x, y);
+          if (el && el.closest('.char')) return { x, y };
+        }
+      }
+      return null;
+    });
+    check(!!pt, 'p44 的角色身上找得到一个能点的点');
+    if (pt) {
+      await wide.mouse.click(pt.x, pt.y);
+      await wide.waitForTimeout(800);
+      const pat = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+      check(
+        pat.join('+') === 'p44+p45',
+        `拍一拍 p44 不会把 p45 的互动一起带走（实际 ${pat.join(' + ')}）`
+      );
+      await clickIfThere('[data-id="p45"][data-book="awulubo"] .hotspot');
+      await wide.waitForTimeout(1000);
+      const seen = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+      check(
+        seen.join('+') === 'p46+p47',
+        `p45 演完才翻到下一跨（实际 ${seen.join(' + ')}）`
+      );
+    }
+  }
+
+  {
+    /* 等动作的一跨：点空白不动。
+       ⚠️ 往回走不受这道闸门拦（回去不算跳过这一页），
+       但点在**正在等动作的那一页**上不行——那是点空了，
+       该摇一下头；往回走反而把孩子带离任务。
+       这一跨的 trap 页是左页（p14），所以点左页是摇一下头。 */
+    await wide.evaluate(() => window.Book.goToId('p14', 'awulubo'));
+    await wide.waitForTimeout(300);
+    const pts = await wide.evaluate(() =>
+      [...document.querySelectorAll('.page.is-active')]
+        .filter((p) => p.getAttribute('data-book') === 'awulubo')
+        .map((p) => {
+          const r = p.getBoundingClientRect();
+          /* 挑一个真的没被热区盖住的点：热区都在页的中上部分，
+             页面最下面那条（提示字那行）没有热区 */
+          return { id: p.dataset.id, x: r.left + r.width / 2, y: r.bottom - 12 };
+        })
+    );
+    for (const p of pts) {
+      await wide.mouse.click(p.x, p.y);
+      await wide.waitForTimeout(500);
+    }
+    const held = await wide.evaluate(() => Book.currentGroup().map((p) => p.dataset.id));
+    check(
+      held.join('+') === 'p14+p15',
+      `p14|p15 在等动作时点空白不动（实际 ${held.join(' + ')}）`
+    );
+  }
+
   /* 窄屏（手机上）不该摊开 */
   await wide.setViewportSize({ width: 390, height: 844 });
   await wide.waitForTimeout(300);

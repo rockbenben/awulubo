@@ -48,6 +48,11 @@
     counters[page.getAttribute('data-id')] = 0;
     clearMisses(page);
     page.removeAttribute('data-found');
+    /* 「这一页好了」的标记也要复位：读者会走回头路，
+       第二遍读到这一页时，它得重新要一次互动——
+       不复位的话，p22 的彩纸演完就永远带着「好了」，
+       跨页时右边那一页的互动就再也轮不上了。 */
+    page.removeAttribute('data-done');
 
     /* 页面级的效果状态 */
     page.classList.remove('is-dim', 'is-bloom');
@@ -129,18 +134,24 @@
     misses[id] = missCount(page) + 1;
     if (misses[id] < 5) return;
     misses[id] = 0;
-    global.Book.next();
+    /* 放人走：这一页当作好了（孩子放弃了这一关）。
+       跨页时旁边那一页若还有互动，就先留在这一跨上——
+       翻过去等于把那一页也跳过去。 */
+    global.Book.finish(page);
   }
 
   /* 拍一拍：点在噜啵身上 → 它晃一下、叫一声 → 照样翻页。
      孩子最先戳的就是它。不回应的话，它在全书都只是一张贴图——
      "点它有反应"这件事，只在喂食那几页成立。
-     翻页照旧：点了有反应、页也翻了，孩子不会觉得卡住。 */
+     翻页照旧：点了有反应、页也翻了，孩子不会觉得卡住。
+     ⚠️ 翻的是**这一组**：跨页模式下左页拍一拍，不该把右页的互动一起带走
+     （p44 拍一拍 → p45 的「我看见你啦！」还没演呢）。
+     所以这里问的是「这一组好了没有」，不是无脑往前翻。 */
   function pat(page) {
     global.AudioBook.play('boing');
     wobble(page);
     global.Book.after(450, function () {
-      global.Book.next();
+      global.Book.turnIfDone();
     }, page);
   }
 
@@ -261,7 +272,7 @@
       if (Math.abs(parseFloat(spiral.dataset.deg || '0')) >= 300) {
         global.AudioBook.play('gulu');
         global.Book.after(700, function () {
-          global.Book.next();
+          global.Book.finish(page);
         }, page);
       }
     }
@@ -378,7 +389,7 @@
     start: function (page) {
       global.AudioBook.unlock();
       global.AudioBook.play('chirp');
-      global.Book.next();
+      global.Book.finish(page);
     },
 
     /* 点肚子：咕噜声 + 噜啵晃一下 → 翻页 */
@@ -392,7 +403,7 @@
       }
       wobble(page);
       global.Book.after(750, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -427,7 +438,7 @@
         }
       }
       global.Book.after(750, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -448,7 +459,7 @@
       if (countOf(page) >= 3) {
         global.AudioBook.play('rainbow');
         global.Book.after(800, function () {
-          global.Book.next();
+          global.Book.finish(page);
         }, page);
       }
     },
@@ -466,7 +477,7 @@
       global.AudioBook.play('pop');
       popConfetti(page);
       global.Book.after(700, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -475,7 +486,7 @@
       global.AudioBook.play('snore');
       page.classList.add('is-dim');
       global.Book.after(800, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -505,7 +516,7 @@
       fly(page, target);
       if (found.length >= 3) {
         global.Book.after(700, function () {
-          global.Book.next();
+          global.Book.finish(page);
         }, page);
       }
     },
@@ -536,7 +547,7 @@
         /* 数对了：鼓个掌——给的是大人的鼓励声，不是机器人的 */
         global.AudioBook.play('clap');
         global.Book.after(700, function () {
-          global.Book.next();
+          global.Book.finish(page);
         }, page);
       }
     },
@@ -560,7 +571,7 @@
         });
       }
       global.Book.after(950, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -569,7 +580,7 @@
       global.AudioBook.play('clap');
       wobble(page);
       global.Book.after(800, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -589,7 +600,7 @@
         });
       }
       global.Book.after(850, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -624,7 +635,7 @@
         );
       }
       global.Book.after(820, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -647,7 +658,7 @@
       }
       if (n >= 3) {
         global.Book.after(700, function () {
-          global.Book.next();
+          global.Book.finish(page);
         }, page);
       }
     },
@@ -669,7 +680,7 @@
         });
       }
       global.Book.after(800, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -678,7 +689,7 @@
       global.AudioBook.play('giggle');
       wobble(page);
       global.Book.after(750, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -687,7 +698,7 @@
       global.AudioBook.play('gulu');
       wobble(page);
       global.Book.after(750, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -698,7 +709,7 @@
       global.AudioBook.play('rainbow');
       wobble(page);
       global.Book.after(900, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -707,7 +718,7 @@
       global.AudioBook.play('paper');
       wobble(page);
       global.Book.after(800, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -716,7 +727,7 @@
       global.AudioBook.play('bubble');
       wobble(page);
       global.Book.after(900, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -725,7 +736,7 @@
       global.AudioBook.play('slurp');
       wobble(page);
       global.Book.after(900, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -734,7 +745,7 @@
       global.AudioBook.play('sigh');
       shake(page);
       global.Book.after(800, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -743,7 +754,7 @@
       global.AudioBook.play('sigh');
       wobble(page);
       global.Book.after(800, function () {
-        global.Book.next();
+        global.Book.finish(page);
       }, page);
     },
 
@@ -778,7 +789,10 @@
     var target = btn.getAttribute('data-target') || '';
     var fn = actions[action];
     if (!fn || !page) {
-      global.Book.next();
+      /* 没有动作可演（页面数据里写了一个互动表里没有的动作）：
+         当作这一页好了，往下走。找不到页面就没法「好了」这一说。 */
+      if (page) global.Book.finish(page);
+      else global.Book.next();
       return;
     }
     if (action === 'rub') bindRub(page, btn);
