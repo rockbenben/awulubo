@@ -108,6 +108,8 @@ restore
 
 echo "=== 9. 印刷 PDF 混进了 dist/ ==="
 restore
+# dist/ 不进仓库，新克隆里没有这一层——先建出来再放 PDF
+mkdir -p dist
 printf '%%PDF-1.4\n' > dist/teeth-probe.pdf
 check "dist/ 里有 PDF" "dist/ 里有印刷 PDF" "$(run_pub)"
 rm -f dist/teeth-probe.pdf
