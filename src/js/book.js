@@ -22,6 +22,7 @@
        少一册总比读不出书强。 */
     pages = own.length ? own : allPages.slice();
     applyBookVisibility(id);
+    syncTitle(id);
   }
 
   /* 别册的页面藏起来。
@@ -42,6 +43,45 @@
 
   function isStatic() {
     return document.body.classList.contains('static');
+  }
+
+  /* 地址栏里的 ?book=<册 id>。
+     页码在册内独立：只留 #p31 说不清是哪一册的哪一页——
+     刷新一下或把链接发出去，打开的都会是清单里的第一册。
+     这个参数进（start 读它）和出（切册写它）是同一个键，两边对得上。 */
+  function syncBookQuery(id) {
+    if (!id) return;
+    var url;
+    try {
+      url = new URL(location.href);
+    } catch (e) {
+      return;
+    }
+    if (url.searchParams.get('book') === id) return;
+    url.searchParams.set('book', id);
+    history.replaceState(null, '', url.pathname + url.search + url.hash);
+  }
+
+  /* 浏览器标签上的书名（印刷 PDF 的标题也取自它）。
+     换册要换标题：一直写着第一册的名字，读第二册时标签页是错的，
+     印出来的那本 PDF 的书名也是错的。
+     标题的后半截按**显示方式**走（印刷版 / 拼版），屏幕版用该册的副标题——
+     每个入口在 <body> 上用 data-title-mode 说明自己是谁。 */
+  function syncTitle(id) {
+    var el = document.getElementById('books-manifest');
+    var books = [];
+    try {
+      books = JSON.parse(el ? el.textContent : '[]') || [];
+    } catch (e) {
+      books = [];
+    }
+    for (var k = 0; k < books.length; k++) {
+      if (books[k].id !== id) continue;
+      var mode = document.body.getAttribute('data-title-mode') || 'subtitle';
+      var sub = mode === 'subtitle' ? books[k].subtitle || '' : mode;
+      document.title = sub ? books[k].title + '｜' + sub : books[k].title;
+      return;
+    }
   }
 
   function currentPageId() {
@@ -360,6 +400,11 @@
     /* 印刷版不需要交互 */
     if (document.body.classList.contains('print')) return;
 
+    /* 屏幕版：地址栏写明是哪一册。
+       拼版（static）是联系表，两册都摊开，写册 id 反而误导；印刷版的册是
+       由链接里的 ?book= 决定的（外壳切模式时带上），不用在这里改地址栏。 */
+    syncBookQuery(wanted);
+
     var id = location.hash.slice(1);
     /* 找起始页，然后**只调一次** show()。
        以前是 show(k) 之后又 show(current)——地址栏带 #pXX 打开时，
@@ -427,6 +472,7 @@
       if (!id || id === activeBook) return false;
       setBookPages(id);
       document.body.setAttribute('data-book', id);
+      syncBookQuery(id);
       show(0);
       return true;
     },

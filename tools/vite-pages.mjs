@@ -38,8 +38,24 @@ export function bookPages() {
   return {
     name: 'awulubo-book-pages',
 
+    /* 页面数据与组件是**在服务端渲染进 HTML 的**（不是浏览器端 import），
+       所以改了它们，Vite 不会自己发现——HTML 那层没被标记为过期。
+       这里明确告诉它：内容变了就整页重载。少了这段，
+       「改一句台词 → 刷新浏览器 → 什么都没变」，只能重启 dev。 */
+    handleHotUpdate(ctx) {
+      const file = ctx.file || '';
+      const isContent = file.includes(`${path.sep}src${path.sep}content${path.sep}`);
+      const isComponent = file.includes(`${path.sep}src${path.sep}components${path.sep}`);
+      if (!isContent && !isComponent) return;
+      books = null; /* 下一次 transform 重新读盘 */
+      if (ctx.server) ctx.server.ws.send({ type: 'full-reload' });
+    },
+
     async transformIndexHtml(html, ctx) {
-      if (!books) books = await loadBooks();
+      /* 开发模式每次都重读：页面数据是改得最多的东西，
+         缓存住它等于改一版要重启一次服务器。 */
+      const isDev = !!ctx.server;
+      if (isDev || !books) books = await loadBooks();
       const file = ctx.path || '';
       /* 屏幕版只出 60 页（跳过版权页、给大人的话、后环衬、封底）；印刷版与拼版出全部 64 页 */
       const scope = /print|proof|booklet/.test(file) ? 'print' : 'screen';

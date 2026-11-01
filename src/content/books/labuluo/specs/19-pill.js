@@ -20,7 +20,7 @@ export default [
     sound: 'sigh',
     aria: '它把脸转开了。药最难喂。',
     bg: { kind: 'rays-tight', colors: ['--pink-deep'], gap: '--paper', focus: [500, 640], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'ouch', state: 'state-pale', at: [290, 340], scale: 0.58, spiral: true },
+    char: { pose: 'grumpy', state: 'state-pale', at: [290, 340], scale: 0.58, spiral: true },
     props: [{ kind: 'pill', at: [700, 430], scale: 0.4, rotate: -8, class: 'prop-pill' }],
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, text: '它把脸转开了。<br>药最难喂。' },

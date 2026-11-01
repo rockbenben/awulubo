@@ -144,7 +144,7 @@ src/
         book.json
         specs/*.js     # 同样是 30 个文件
   components/
-    character.svg      # 噜啵的零件与姿态（9 个基本姿态 + 11 个情绪姿态：curious/shy/surprise/cheeky/cheer/wave/sleepy/tired/proud/yawn/ouch）
+    character.svg      # 噜啵的零件与姿态（9 个基本姿态 + 12 个情绪姿态：curious/shy/surprise/cheeky/cheer/wave/sleepy/tired/proud/yawn/ouch/grumpy）
     props.svg          # 苹果 / 小鱼 / 星星 / 白底块 / 月亮 / 圆箭头 / 气泡 / 小花 / 毯子 / 水杯 / 药丸 / zzz
     effects.svg        # 笔触特效层（满版底色场/放射线/色带/漩涡/色盘/彩纸/彩虹条/星星）
     effects.json       # 每种特效的几何（圆心/半径），与图形同源，渲染器据此算放大倍数

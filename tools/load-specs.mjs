@@ -33,7 +33,12 @@ export async function loadBooks() {
       : [];
     const pages = [];
     for (const file of files) {
-      const mod = await import(pathToFileURL(path.join(specDir, file)).href);
+      /* ?mtime= 让 Node 的 ESM 缓存失效：改完页面数据重跑 dev，
+         页面要马上变。少了这个 query，同一个文件永远读第一次导入的那份——
+         改稿子却在浏览器里看不到变化，是最费时间的一种"没反应"。 */
+      const full = path.join(specDir, file);
+      const href = pathToFileURL(full).href + '?mtime=' + fs.statSync(full).mtimeMs;
+      const mod = await import(href);
       const list = Array.isArray(mod.default) ? mod.default : [mod.default];
       for (const spec of list) {
         if (!spec || !spec.id) {

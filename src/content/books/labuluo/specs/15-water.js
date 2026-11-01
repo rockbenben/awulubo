@@ -20,7 +20,7 @@ export default [
     sound: 'snore',
     aria: '它把脸转开了。',
     bg: { kind: 'rays-tight', colors: ['--pink-deep'], gap: '--paper', focus: [500, 640], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'ouch', state: 'state-pale', at: [300, 340], scale: 0.58, spiral: true },
+    char: { pose: 'grumpy', state: 'state-pale', at: [300, 340], scale: 0.58, spiral: true },
     props: [{ kind: 'cup', at: [700, 440], scale: 0.32, rotate: 6, class: 'prop-cup' }],
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, text: '它把脸转开了。' },

@@ -424,14 +424,29 @@
     <use href="#ch-mouth-open" />
   </g>
 
-  <!-- ouch：难受（第二册：生病时的表情）——眉毛里端往下、嘴往下撇 -->
-  <g id="pose-ouch">
+  <!-- grumpy：不高兴、把脸转开（第二册：它不喝水、不吃药）——眉里端往下、嘴往下撇 -->
+  <g id="pose-grumpy">
     <use href="#ch-feet" />
     <use href="#ch-arm-l-down" />
     <use href="#ch-arm-r-down" />
     <use href="#ch-body" />
     <use href="#ch-brows-angry" />
     <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-frown" />
+  </g>
+
+  <!-- ouch：难受（第二册：发烧、药太苦）——眉头往里拧、眼睛挤起来、嘴往下撇
+       ⚠️ 眉里端往下是**生气**，不是难受（第一册踩过：shy 与 tired 被画成了怒眉）。
+       难受用 ch-brows-worried（里端往上）；眼睛挤起来才像"皱成一团"，
+       圆眼睛（ch-eyes-dots）配这张脸读起来像发愣。 -->
+  <g id="pose-ouch">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-worried" />
+    <use href="#ch-eyes-half" />
     <use href="#ch-cheeks" />
     <use href="#ch-mouth-frown" />
   </g>
