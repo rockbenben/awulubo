@@ -90,7 +90,11 @@ restore
 
 echo "=== 6. 仓库里写进了本机绝对路径 ==="
 restore
-printf '\n本机路径示例：D:/Backup/Somewhere\n' >> "$README"
+# 造一个假的盘符路径当例子。**不能把它原样写在这份文件里**——
+# 泄漏检查扫的是 git 跟踪的文本文件，包括这个脚本自己：
+# 原样写出来，这道闸门会先把自己扫红（真发生过）。
+SAMPLE_PATH='Q:' '/Backup/Somewhere'
+printf '\n本机路径示例：%s\n' "$SAMPLE_PATH" >> "$README"
 check "README 里出现本机路径" "有本机绝对路径" "$(run_lic)"
 restore
 
