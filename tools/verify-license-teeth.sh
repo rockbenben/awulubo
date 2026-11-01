@@ -118,13 +118,17 @@ printf '%%PDF-1.4\n' > dist/teeth-probe.pdf
 check "dist/ 里有 PDF" "dist/ 里有印刷 PDF" "$(run_pub)"
 rm -f dist/teeth-probe.pdf
 
-echo "=== 10. 商业授权联系方式填了之后就不再报 ==="
+echo "=== 10. 商业授权联系方式是占位符的时候要报 ==="
 restore
-sed -i 's|`<!-- CONTACT -->`|`teeth@example.com`|' "$LIC"
-check_absent "联系方式填好了" "联系方式还是占位符" "$(run_pub)"
-restore
-# 反过来：占位符还在就得报
+# 把邮箱换成一个占位符——占位符还在就得报。
+# （不能靠文件里本来就有占位符：邮箱填好之后就没有了。）
+sed -i 's|联系：`[^`]*`|联系：`<!-- CONTACT -->`|' "$LIC"
 check "占位符还在会报" "联系方式还是占位符" "$(run_pub)"
+restore
+
+echo "=== 11. 联系方式填好了就不报 ==="
+restore
+check_absent "联系方式填好了" "联系方式还是占位符" "$(run_pub)"
 
 echo
 if [ "$fail" -eq 0 ]; then

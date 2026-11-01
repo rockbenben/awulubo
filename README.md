@@ -437,7 +437,7 @@ location ~ \.pdf$ { default_type application/pdf; }                # 类型要�
 分两层，别看错：
 
 - **代码与工具**（[LICENSE](LICENSE)，MIT）——拿去改、拿去商用都行。
-- **作品内容**（[LICENSE-CONTENT.md](LICENSE-CONTENT.md)，CC BY-NC-ND 4.0）——噜啵的角色形象、两册书的文字与插画、设计规格里的故事脚本。可以免费读、打印、分享、翻译（需署名）；不可以印了卖、做成商品、放进收费产品，也不许用噜啵做新的故事。商业用途另签授权。
+- **作品内容**（[LICENSE-CONTENT.md](LICENSE-CONTENT.md)，CC BY-NC-ND 4.0）——噜啵的角色形象、两册书的文字与插画、设计规格里的故事脚本。可以免费读、打印、分享、翻译（需署名）；不可以印了卖、做成商品、放进收费产品，也不许用噜啵做新的故事。商业用途另签授权（`qingwhat@gmail.com`）。
 
 字体是 SIL OFL 1.1，可商用、可嵌入出版物，详见 [LICENSES.md](LICENSES.md)。音效全部由 Web Audio 合成，无第三方采样；参考 PDF 由用户提供，不随项目分发。
 
