@@ -6,7 +6,7 @@
 - 读者：3–5 岁，核心 3 岁
 - 开本：成品 210 × 210 mm（PDF 216 × 216 mm，含 3 mm 出血），64 页（含封面）
 - 交付：屏幕互动版 + 印刷 PDF，同一套 HTML 源码
-- 参考：[《魔法师杜噜嘟嘟 太神奇啦！》](<file:///D:/Backup/Libraries/Documents/GitHub/Projects/ertongshu/魔法师杜噜嘟嘟 太神奇啦！ (（法）埃尔维·杜莱文图；赵佼佼译) (z-library.sk, 1lib.sk, z-lib.sk).pdf>)、[《魔法师杜噜嘟嘟 神奇的故事又来啦！》](<file:///D:/Backup/Libraries/Documents/GitHub/Projects/ertongshu/魔法师杜噜嘟嘟 神奇的故事又来啦！ (（法）埃尔维·杜莱文图；赵佼佼译) (z-library.sk, 1lib.sk, z-lib.sk).pdf>)
+- 参考：《魔法师杜噜嘟嘟 太神奇啦！》《魔法师杜噜嘟嘟 神奇的故事又来啦！》（（法）埃尔维·杜莱文图，赵佼佼译）——仅用于画风分析，PDF 由作者自行保管，不随项目分发
 
 ---
 

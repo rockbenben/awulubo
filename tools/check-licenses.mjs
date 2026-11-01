@@ -1,8 +1,12 @@
-/* 字体授权闸门：确认打进书里的每一套字体都是明确可商用的许可。
+/* 授权闸门。查三件事：
+     1. 打进书里的每一套字体都是明确可商用的许可；
+     2. 仓库的授权分层写对了——代码 MIT、字体 OFL 1.1、作品内容 CC BY-NC-ND 4.0；
+     3. 随仓库出去的东西里没有本机绝对路径。
    用法：node tools/check-licenses.mjs
-   任何字体包换掉之后，这条要重新跑一遍再进构建。 */
+   换字体、动授权分层之后，这条要重新跑一遍再进构建。 */
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -26,6 +30,197 @@ const FORBIDDEN = [
 
 const problems = [];
 const notes = [];
+
+/* ---- 授权分层（2026-11-01 加）----
+   仓库分三层：代码 MIT、字体 OFL 1.1、作品内容 CC BY-NC-ND 4.0。
+   以前整仓一份 MIT——那等于把噜啵永久送进公有领域，
+   而著作权许可是**不可撤回**的：按 MIT 发出去，收到的每一份都还带着商用权，
+   之后再改协议也追不回来。所以这道闸门守住三件事：
+     1. 两份许可文件都在、都写对了；
+     2. 作品内容没有悄悄回到 MIT；
+     3. 随仓库出去的东西里没有本机绝对路径。 */
+
+/* 作品内容的适用范围——这张表是「仓库里哪些东西不是 MIT」的单一事实源。
+   往内容目录里加新目录时，这里要一起加，否则闸门不会知道该罩住它。 */
+const CONTENT_PATHS = [
+  'src/components/',
+  'src/content/',
+  'docs/superpowers/specs/',
+  'docs/images/',
+  'docs/M0-样张记录.md',
+];
+
+/* src/ 下每个顶层目录归哪一层。加了新目录而忘了归类 → 闸门报错。 */
+const SRC_LAYERS = {
+  js: '代码（MIT）',
+  css: '代码（MIT）',
+  templates: '代码（MIT）',
+  fonts: '字体（OFL 1.1）',
+  components: '作品内容（CC BY-NC-ND 4.0）',
+  content: '作品内容（CC BY-NC-ND 4.0）',
+};
+
+/* 本机绝对路径里，这几个是正当的（讲怎么装软件），放行。 */
+const PATH_ALLOW = ['C:/Program Files', 'C:/Program Files (x86)'];
+
+/* 盘符绝对路径：字母 + 冒号 + 斜杠。
+   前面加负向后顾：网址里的冒号前是字母，不算盘符。
+   ⚠️ 这段源码本身也在扫描范围内——所以**别在这份文件里写出真实的盘符路径当例子**，
+   否则这道闸门会把自己扫红。 */
+const DRIVE_PATH = /(?<![A-Za-z0-9])[A-Za-z]:[\\/]/;
+
+/* 扫哪些文件：跟 git 跟踪的一致（那就是会进仓库、会公开的东西）。 */
+const TEXT_EXT = new Set([
+  '.md', '.mjs', '.js', '.json', '.yml', '.yaml', '.html', '.css', '.txt',
+  '.py', '.svg', '.sh', '.conf', '.stamp',
+]);
+
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'dist-site', '.git', 'reference', 'shots']);
+
+function read(file) {
+  const p = path.join(root, file);
+  return fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null;
+}
+
+/* 取某个二级标题下的正文。
+   ⚠️ 别用 `/^##\s*标题[\s\S]*?(?=\n##\s|$)/m` 那种写法——
+   `m` 旗标下的 `$` 匹配的是**行尾**，非贪婪的段落会在标题行就停住，
+   拿到的只有标题本身，于是「这一节里有没有提到 X」永远判成没有。 */
+function section(text, heading) {
+  const m = text.match(new RegExp('^##\\s+' + heading + '\\s*$', 'm'));
+  if (!m) return null;
+  const rest = text.slice(m.index + m[0].length);
+  const next = rest.search(/^##\s+/m);
+  return next === -1 ? rest : rest.slice(0, next);
+}
+
+function trackedFiles() {
+  try {
+    const out = execFileSync('git', ['ls-files', '-z'], {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    return out.split('\0').filter(Boolean);
+  } catch {
+    return null; // 不是 git 仓库就退回去自己走目录
+  }
+}
+
+function walk(dir, acc = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith('.') && entry.name !== '.github') continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (SKIP_DIRS.has(entry.name)) continue;
+      walk(full, acc);
+    } else {
+      acc.push(path.relative(root, full).split(path.sep).join('/'));
+    }
+  }
+  return acc;
+}
+
+/* ---- 授权分层 ---- */
+function checkLayering() {
+  const mit = read('LICENSE');
+  if (!mit) {
+    problems.push('缺 LICENSE 文件（代码层是 MIT）');
+  } else {
+    if (!/MIT License/i.test(mit)) {
+      problems.push('LICENSE 里没有 MIT License 标题——代码层的授权不明');
+    }
+    if (!/Copyright \(c\) \d{4}/i.test(mit)) {
+      problems.push('LICENSE 里没有版权行');
+    }
+  }
+
+  const content = read('LICENSE-CONTENT.md');
+  if (!content) {
+    problems.push('缺 LICENSE-CONTENT.md（作品内容层是 CC BY-NC-ND 4.0）');
+    return;
+  }
+  if (!/CC BY-NC-ND 4\.0/.test(content)) {
+    problems.push('LICENSE-CONTENT.md 里没有写明 CC BY-NC-ND 4.0');
+  }
+  if (!/creativecommons\.org\/licenses\/by-nc-nd\/4\.0/.test(content)) {
+    problems.push('LICENSE-CONTENT.md 里没有指向 CC BY-NC-ND 4.0 全文的链接');
+  }
+  for (const p of CONTENT_PATHS) {
+    if (!content.includes(p)) {
+      problems.push(
+        `LICENSE-CONTENT.md 的适用范围里没写 ${p}` +
+          '——这个目录里的作品会被当成 MIT 放出去'
+      );
+    }
+  }
+  if (!/\]\(LICENSE\)/.test(content)) {
+    problems.push('LICENSE-CONTENT.md 没有链回 LICENSE（MIT），读者看不出这是分层许可');
+  }
+
+  /* src/ 下每个顶层目录都要归了类 */
+  const srcDir = path.join(root, 'src');
+  if (fs.existsSync(srcDir)) {
+    for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (!SRC_LAYERS[entry.name]) {
+        problems.push(
+          `src/${entry.name}/ 没有归到授权分层里` +
+            `（已归类：${Object.entries(SRC_LAYERS).map(([k, v]) => `src/${k}/=${v}`).join('、')}）` +
+            '——新目录要在这里和 LICENSE-CONTENT.md 里各写一次'
+        );
+      }
+    }
+  }
+
+  /* README 与 LICENSES.md 得把分层讲出来，否则读者会以为整仓 MIT */
+  const readme = read('README.md') || '';
+  if (!readme.includes('LICENSE-CONTENT.md')) {
+    problems.push('README 里没有指向 LICENSE-CONTENT.md 的入口——读者会以为整仓都是 MIT');
+  }
+  const authSec = section(readme, '授权');
+  if (authSec && !authSec.includes('LICENSE-CONTENT.md')) {
+    problems.push('README 的「授权」一节没提作品内容那层——只写 MIT 会被读成整仓 MIT');
+  }
+
+  const licenses = read('LICENSES.md') || '';
+  if (!section(licenses, '授权分层')) {
+    problems.push('LICENSES.md 里没有「授权分层」一节');
+  }
+  const graphSec = section(licenses, '图形');
+  if (graphSec && !/CC BY-NC-ND/.test(graphSec)) {
+    problems.push('LICENSES.md 的「图形」一节没写 CC BY-NC-ND 4.0');
+  }
+}
+
+/* ---- 本机绝对路径 ---- */
+function checkLeaks() {
+  const files = trackedFiles() ?? walk(root);
+  let checked = 0;
+  for (const rel of files) {
+    if (!TEXT_EXT.has(path.extname(rel).toLowerCase())) continue;
+    const full = path.join(root, rel);
+    if (!fs.existsSync(full)) continue;
+    let text;
+    try {
+      text = fs.readFileSync(full, 'utf8');
+    } catch {
+      continue;
+    }
+    checked++;
+    const lines = text.split(/\r?\n/);
+    lines.forEach((line, i) => {
+      /* 先把放行的路径抠掉再测：否则一行里既有正当路径又有真泄漏，会被一起放过 */
+      const scrubbed = PATH_ALLOW.reduce((s, a) => s.split(a).join(''), line);
+      if (!DRIVE_PATH.test(scrubbed)) return;
+      problems.push(
+        `${rel}:${i + 1} 有本机绝对路径——公开仓库会把本机目录结构发出去：` +
+          `「${line.trim().slice(0, 60)}」`
+      );
+    });
+  }
+  notes.push(`✓ 泄漏检查：${checked} 个文本文件，没有本机绝对路径`);
+}
 
 function fontPackages() {
   const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
@@ -170,13 +365,17 @@ function main() {
     }
   }
 
+  /* 授权分层与泄漏：跟字体是三件独立的事，分开报 */
+  checkLayering();
+  checkLeaks();
+
   notes.forEach((n) => console.log(`  ${n}`));
   if (problems.length) {
     console.error('\n✗ 授权检查未通过：');
     problems.forEach((p) => console.error(`  - ${p}`));
     process.exit(1);
   }
-  console.log('✓ 字体授权检查通过：全部为明确可商用的许可');
+  console.log('✓ 授权检查通过：字体可商用；代码 MIT、作品内容 CC BY-NC-ND 4.0 分层写对了；没有本机路径泄漏');
 }
 
 main();

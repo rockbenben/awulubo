@@ -2,7 +2,7 @@
 
 > 3–5 岁自己翻自己点的绘本：喂它苹果、小鱼、黄星星，它就变成那个颜色。离线，不注册。
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![365 开源计划 #047](https://img.shields.io/badge/365%20%E5%BC%80%E6%BA%90%E8%AE%A1%E5%88%92-%23047-1f6feb)](https://github.com/rockbenben/365opensource)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![内容授权 CC BY-NC-ND 4.0](https://img.shields.io/badge/%E5%86%85%E5%AE%B9%E6%8E%88%E6%9D%83-CC%20BY--NC--ND%204.0-lightgrey.svg)](LICENSE-CONTENT.md) [![365 开源计划 #047](https://img.shields.io/badge/365%20%E5%BC%80%E6%BA%90%E8%AE%A1%E5%88%92-%23047-1f6feb)](https://github.com/rockbenben/365opensource)
 
 [⬇ 自己跑一份](#自己跑一份)（`npm install && npm run build`） · [🖨 打印版（64 页）](#打印) · [📖 支持哪些设备](#支持范围)
 
@@ -21,6 +21,7 @@
 | **离线** | 全部离线可用。页面不请求任何外部资源（闸门里有这一条）。 |
 | **构成** | 文字、声音、互动、字体全在一个 HTML 文件里，不依赖位图插画——改一句话就能重印一版。 |
 | **字体** | 内嵌子集，可商用（OFL 1.1），详见 [LICENSES.md](LICENSES.md)。 |
+| **授权** | 代码是 MIT，随便拿去用；**噜啵和这两册书不是**——可免费读、打印、分享，不可商用、不可改编，详见 [LICENSE-CONTENT.md](LICENSE-CONTENT.md)。 |
 | **参考书** | 只用于画风分析，不随项目分发；角色、咒语、桥段、构图全部原创。 |
 
 ## 能做什么
@@ -105,7 +106,7 @@ npm run fonts        # 按全书实际用字切字体子集（src/fonts/*.woff2�
 npm run fx           # 重新生成笔触特效 + 几何表（改了 gen-effects.py 才需要跑）
 npm run build        # vite build → dist/index.html、print.html、proof.html、booklet.html
 npm run dev          # 开发服务器（改页面数据即时刷新）
-npm run check        # 页面数据检查（64/60 页强校验 + 页数必须是 4 的倍数）+ 内容审查（页号连续、trap 页能过、多步互动凑得齐、热区不打架）+ 热区检查（每个热区都罩住它指的东西的**墨迹**、320px 小屏上不小于 44 CSS px）+ 版式检查（屏幕版与印刷版各量一遍；含热点是否罩住道具与角色、角色与道具有没有被页面边缘切掉）+ 字体授权闸门 + 字体覆盖检查
+npm run check        # 页面数据检查（64/60 页强校验 + 页数必须是 4 的倍数）+ 内容审查（页号连续、trap 页能过、多步互动凑得齐、热区不打架）+ 热区检查（每个热区都罩住它指的东西的**墨迹**、320px 小屏上不小于 44 CSS px）+ 版式检查（屏幕版与印刷版各量一遍；含热点是否罩住道具与角色、角色与道具有没有被页面边缘切掉）+ 授权闸门（字体可商用 + 代码/内容分层 + 没有本机路径泄漏）+ 字体覆盖检查
 npm run shots        # 逐页截图（Playwright 自己拍，1440 × 1440）
 npm run shots:readme # README 的门面图（首屏横幅 + 图库 + 摊开的两页）→ docs/images/*.webp
 npm run check:shots  # 截图闸门：每页都得真的画出来，且背景要铺满四条边
@@ -115,6 +116,7 @@ npm run chaos        # 幼儿乱读压力测试（Playwright，随机种子可�
 npm run pdf          # 导出 dist/<册>.pdf（216 mm 单页，每册一本，交给印厂）
 npm run pdf:booklet  # 导出 dist/<册>-a4-duplex.pdf（A4 双面拼版，对折即成书；加 --a3 出 A3 版）
 npm run og           # 生成社交预览图 dist/og.png（1280 × 640，上传到 GitHub Settings → Social preview）
+npm run check:publish # 发布前闸门：git remote、商业授权联系方式、dist/ 里不能有印刷 PDF、社交预览图就位
 ```
 
 > **`npm run check` 查不出"图坏了"**：它量的是版式与结构，不是像素。曾经有一次把"书页居中"的 CSS 写成了 `body.screen`，拼版（`body.screen.static`）也吃到了这条规则，32 页全叠到一起——结构 / 版式 / 冒烟 / 压力测试**全部通过**，只有人眼看联系表才发现整本白板。所以出图之后要跟两步：`npm run check:shots`（每页墨迹占比不能低于 1%，且声明了满版底色场的页，四条边的主色不能还是纸白）与 `npm run check:contrast`（文字压到什么颜色上，就得跟它对比度够）。这两步现在都在 CI 里跑（截图与对比度都由项目自己用 Playwright 拍）。
@@ -134,7 +136,9 @@ npm run og           # 生成社交预览图 dist/og.png（1280 × 640，上传�
 
 > 页面框架的自研部分只剩两件事：**背景的满版底色与笔触摆位**和**拟声词逐字微转**—— 前者保证背景铺满整页（含出血），后者让每个字歪一点点。两者算完交给 Handlebars 模板，模板本身不含逻辑，改版式只改模板或数据。
 
-> `npm run check` 里的 **字体授权闸门** 会逐个核对字体包的 LICENSE：不在白名单（OFL 1.1 / OFL 1.0 / Apache-2.0 / MIT）、出现"仅供个人使用/非商用"表述、或声明了保留字体名的字体，都会让检查失败。换字体后必须重跑。
+> `npm run check` 里的 **授权闸门** 查三件事：字体包的 LICENSE（不在白名单 OFL 1.1 / OFL 1.0 / Apache-2.0 / MIT 里、出现"仅供个人使用/非商用"表述、或声明了保留字体名的字体，都会让检查失败）；**授权分层**（代码 MIT、作品内容 CC BY-NC-ND 4.0，两份许可文件都在、适用范围跟仓库对得上，作品内容不会悄悄回到 MIT）；**路径泄漏**（仓库里不许有本机绝对路径——公开仓库会把本机目录结构发出去）。换字体或动授权分层之后必须重跑。
+
+> `npm run check:publish` 是**发布那一刻**才跑的那道：git remote 有没有设、商业授权的联系方式填了没有、`dist/` 里有没有混进印刷 PDF（deploy.yml 推的正是 dist/，推上去就撤不回来）、社交预览图在不在。
 
 ### 目录
 
@@ -178,6 +182,10 @@ public/
   deploy.yml           # 推 main：构建产物推到 gh-pages 分支，EdgeOne 从那里取
 deploy/                # 部署速查 + nginx / Caddy / Docker / 一条命令等现成配置
 requirements.txt       # Python 侧依赖（只有字体那两步要）
+LICENSE                # 代码层：MIT
+LICENSE-CONTENT.md     # 作品内容层：CC BY-NC-ND 4.0（噜啵与两册书，不可商用、不可改编）
+LICENSES.md            # 字体与第三方素材的逐项授权
+CONTRIBUTING.md        # 提 PR 前看一眼：你的改动落在哪一层授权下
 index.html             # 屏幕版入口
 print.html             # 印刷版入口
 proof.html             # 拼版入口（供截图）
@@ -194,7 +202,9 @@ tools/
   verify-audit-teeth.sh # 给上一条闸门验牙齿：故意弄坏一处，确认它报错
   check-hotspots.mjs  # 热区检查（热区要罩住目标的墨迹 + 320px 小屏上不小于 44 CSS px）
   check-layout.mjs     # 版式检查（Playwright 量墨迹：重叠 / 越界 / 裁切 / 热点是否罩住道具）
-  check-licenses.mjs   # 字体授权闸门
+  check-licenses.mjs   # 授权闸门（字体可商用 + 代码/内容分层 + 本机路径泄漏）
+  verify-license-teeth.sh # 给上一条闸门验牙齿：故意弄坏一处，确认它报错
+  check-publish.mjs    # 发布前闸门（remote / 联系方式 / 印刷 PDF 不进公开站 / 社交预览图）
   check-text.py        # 字体覆盖检查（漏字会退回系统字体）
   check-shots.py       # 截图闸门（每页有内容 + 背景铺满四条边）
   check-contrast.mjs   # 文字对比度闸门（按真实像素量底色）
@@ -424,7 +434,12 @@ location ~ \.pdf$ { default_type application/pdf; }                # 类型要�
 
 ## 授权
 
-见 [LICENSES.md](LICENSES.md)。音效全部为 Web Audio 合成，无第三方采样；参考 PDF 由用户提供，不随项目分发。
+分两层，别看错：
+
+- **代码与工具**（[LICENSE](LICENSE)，MIT）——拿去改、拿去商用都行。
+- **作品内容**（[LICENSE-CONTENT.md](LICENSE-CONTENT.md)，CC BY-NC-ND 4.0）——噜啵的角色形象、两册书的文字与插画、设计规格里的故事脚本。可以免费读、打印、分享、翻译（需署名）；不可以印了卖、做成商品、放进收费产品，也不许用噜啵做新的故事。商业用途另签授权。
+
+字体是 SIL OFL 1.1，可商用、可嵌入出版物，详见 [LICENSES.md](LICENSES.md)。音效全部由 Web Audio 合成，无第三方采样；参考 PDF 由用户提供，不随项目分发。
 
 ## 关于 365 开源计划
 

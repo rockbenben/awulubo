@@ -17,6 +17,7 @@
     "check": "node tools/build-fonts.mjs --check && node tools/check-pages.mjs --full && node tools/audit-content.mjs && node tools/check-hotspots.mjs && node tools/check-layout.mjs && node tools/check-licenses.mjs && python tools/check-text.py",
     "check:shots": "python tools/check-shots.py",
     "check:contrast": "node tools/check-contrast.mjs",
+    "check:publish": "node tools/check-publish.mjs",
     "shots": "node tools/shots.mjs",
     "shots:print": "node tools/shots.mjs --print",
     "smoke": "node tools/smoke.mjs",
