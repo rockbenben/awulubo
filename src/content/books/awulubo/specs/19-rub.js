@@ -7,14 +7,14 @@ export default [
     id: 'p19',
     template: 't-dialog',
     sound: 'gulu',
-    aria: '揉一揉，顺一顺。点一下它的肚子。',
+    aria: '揉一揉，顺一顺。揉揉它的肚子。',
     bg: { kind: 'rays-tight', colors: ['--pink', '--pink-deep'], gap: '--paper', focus: [500, 640], cover: 'all', wash: '--wash-cream' },
     /* 鼓成球：pose full + 大缩放，肚子上的螺旋整个露出来 */
     char: { pose: 'full', at: [250, 250], scale: 0.76, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 400, text: '揉一揉，顺一顺。' },
       sound: { text: '咕噜……', at: [520, 74], size: 12, rotate: 2 },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '点一下它的肚子。' },
+      prompt: { at: [60, 870], size: 4, width: 340, text: '揉揉它的肚子。' },
     },
     /* 点它＝揉它一下：晃一下 + 咕噜声，然后翻页。
        target 用 char：揉的是它这个人，不是"身体的一个部位"——

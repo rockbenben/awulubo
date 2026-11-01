@@ -4,11 +4,11 @@ export default [
     id: 'p23',
     template: 't-dialog',
     sound: 'chirp',
-    aria: '拍拍它，像哄小孩子那样。',
+    aria: '拍拍它，轻轻地拍。',
     bg: { kind: 'rays-tight', colors: ['--purple'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-purple' },
     char: { pose: 'tired', state: 'state-pale', at: [290, 340], scale: 0.58, spiral: true },
     text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '拍拍它，<br>像哄小孩子那样。' },
+      narration: { at: [60, 70], size: 3.4, width: 460, text: '拍拍它，<br>轻轻地拍。' },
       sound: { at: [520, 76], size: 14, rotate: -2, text: '唔……' },
       prompt: { at: [60, 870], size: 4, width: 340, text: '点一点，拍拍它。' },
     },

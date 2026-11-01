@@ -17,11 +17,11 @@ export default [
     id: 'p32',
     template: 't-dialog',
     sound: 'snore',
-    aria: '它还在睡。睡得比昨天沉。',
+    aria: '它还在睡。睡得比昨天香。',
     bg: { kind: 'rays-tight', colors: ['--yellow'], gap: '--paper', focus: [500, 640], cover: 'all', wash: '--wash-cream' },
     char: { pose: 'asleep', state: 'state-pale', at: [300, 350], scale: 0.6, spiral: true },
     text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它还在睡。<br>睡得比昨天沉。' },
+      narration: { at: [60, 70], size: 3.4, width: 460, text: '它还在睡。<br>睡得比昨天香。' },
       sound: { at: [520, 76], size: 14, rotate: -2, text: '呼噜……' },
       prompt: { at: [60, 870], size: 4, width: 340, text: '该叫醒它吗？' },
     },

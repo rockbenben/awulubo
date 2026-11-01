@@ -6,7 +6,7 @@ export default [
     sound: 'slurp',
     aria: '它把药吃了！',
     bg: { kind: 'rays-tight', colors: ['--yellow'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'idle', state: 'state-pale', at: [290, 340], scale: 0.6, spiral: true },
+    char: { pose: 'ouch', state: 'state-pale', at: [290, 340], scale: 0.6, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, text: '它把药吃了！' },
       sound: { at: [520, 76], size: 16, rotate: 3, text: '咕噜。' },

@@ -59,6 +59,9 @@ body {
    它靠 grid 平铺 32 页，被 flex 一顶就全叠到一起了。 */
 body.screen:not(.static) {
   --page: min(100vw, 100dvh);
+  /* 舞台有多宽：单页时就是一页，摊开成跨页时是两页。
+     按钮的位置按它算——否则宽屏上按钮会飘到书外面去。 */
+  --stage-w: var(--page);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,7 +75,7 @@ body.screen:not(.static) {
 body.screen:not(.static) .chrome-btn {
   position: absolute;
   top: calc((100dvh - var(--page)) / 2 + 12px);
-  right: calc((100vw - var(--page)) / 2 + 12px);
+  right: calc((100vw - var(--stage-w)) / 2 + 12px);
 }
 
 /* —— 选页器 ——
@@ -85,7 +88,7 @@ body.screen:not(.static) .chrome-btn {
 .page-btn {
   position: absolute;
   top: calc((100dvh - var(--page)) / 2 + 12px);
-  right: calc((100vw - var(--page)) / 2 + 66px);
+  right: calc((100vw - var(--stage-w)) / 2 + 66px);
   min-width: 44px;
   height: 44px;
   padding: 0 12px;
@@ -165,7 +168,7 @@ body.screen:not(.static) .chrome-btn {
 .shell-toggle {
   position: absolute;
   top: calc((100dvh - var(--page)) / 2 + 12px);
-  right: calc((100vw - var(--page)) / 2 + 120px);
+  right: calc((100vw - var(--stage-w)) / 2 + 120px);
   width: 44px;
   height: 44px;
   padding: 0;
@@ -257,7 +260,7 @@ body.screen.static .page.is-off-book {
   --page: min(100vw, 100dvh);
   --u: calc(var(--page) / 100);
   position: relative;
-  width: var(--page);
+  width: var(--stage-w, var(--page));
   height: var(--page);
   margin: 0 auto;
   background: var(--paper);
@@ -274,6 +277,67 @@ body.screen.static .page.is-off-book {
 
 body.screen .page.is-active {
   display: block;
+}
+
+/* —— 跨页：屏幕够宽时摊开成两页 ——
+   一本书翻开来是**两页**：左边一页，右边一页。网页版不该只给一页——
+   那不是翻书，是看幻灯片。
+   哪两页对在一起由装订决定（骑马钉的书永远翻到「偶数页 | 奇数页」），
+   book.js 的 buildSpreads 负责分组，这里只管摆。
+
+   断点 1100px：每页只占一半屏宽，字就小一半——1100px 时每页 550px，
+   正文 3.4% 的字高约 19px，还看得清；再窄就别摊了（手机上仍是一页一屏）。
+   ⚠️ 断点与 book.js 的 SPREAD_QUERY 要一致，两处一起改。 */
+@media (min-width: 1100px) {
+  body.screen:not(.static) {
+    --page: min(50vw, 100dvh);
+    --stage-w: calc(var(--page) * 2);
+  }
+
+  /* 舞台自己也要改一份：.stage 上有一行 --page（给印刷版、拼版用），
+     它会把从 body 继承下来的值盖掉。 */
+  body.screen:not(.static) .stage {
+    --page: min(50vw, 100dvh);
+    --stage-w: calc(var(--page) * 2);
+    width: var(--stage-w);
+  }
+
+  /* 一页占一半，左右由 data-side 决定（book.js 摆好的） */
+  body.screen:not(.static) .page {
+    inset: 0 auto auto 0;
+    width: var(--page);
+    height: var(--page);
+  }
+
+  body.screen:not(.static) .page[data-side='right'] {
+    left: var(--page);
+  }
+
+  /* 单独一页（封面、故事的第一页……搭档不在书里）：摆中间 */
+  body.screen:not(.static) .page[data-side='solo'] {
+    left: calc(var(--page) / 2);
+  }
+
+  /* 书脊：纸书翻开来中缝就是一道浅浅的阴影。
+     只有真的摊着两页时才有——单独一页时中缝不在那儿。 */
+  body.screen:not(.static) .stage[data-pages='2']::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--page);
+    width: 30px;
+    margin-left: -15px;
+    background: linear-gradient(
+      90deg,
+      rgba(31, 31, 31, 0) 0%,
+      rgba(31, 31, 31, 0.08) 42%,
+      rgba(31, 31, 31, 0.16) 50%,
+      rgba(31, 31, 31, 0.08) 58%,
+      rgba(31, 31, 31, 0) 100%
+    );
+    pointer-events: none;
+  }
 }
 
 /* —— 画面层 —— */

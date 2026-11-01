@@ -72,10 +72,22 @@
 
   function sync(panel) {
     if (!grid) return;
-    var active = global.Book && global.Book.currentIndex ? global.Book.currentIndex() : -1;
+    /* 摊开成跨页时，当前一组有两页：两个格子都要亮。
+       只亮一个的话，读者看着满屏两页、却只有一个格子被框住，像坏了。 */
+    var group = global.Book && global.Book.currentGroup ? global.Book.currentGroup() : null;
+    var on = {};
+    if (group && group.length) {
+      for (var g = 0; g < group.length; g++) {
+        var idx = pages().indexOf(group[g]);
+        if (idx >= 0) on[idx] = true;
+      }
+    } else {
+      var active = global.Book && global.Book.currentIndex ? global.Book.currentIndex() : -1;
+      on[active] = true;
+    }
     var cells = grid.children;
     for (var i = 0; i < cells.length; i++) {
-      cells[i].classList.toggle('is-current', i === active);
+      cells[i].classList.toggle('is-current', !!on[i]);
     }
   }
 
@@ -124,11 +136,22 @@
     /* 翻到哪一页，页码按钮上的数字就跟着变。
        编号是**屏幕版的序号**（1…60），不是印刷页码：
        屏幕版跳过版权页、给大人的话、后环衬、封底四页，
-       按印刷页码编号的话格子会缺 4、61、63、64 几个数，看着像坏了。 */
+       按印刷页码编号的话格子会缺 4、61、63、64 几个数，看着像坏了。
+       摊开成跨页时显示的是**这一组**：8–9/60。 */
     var label = document.getElementById('page-num');
     var total = pages().length;
     function setLabel(i) {
-      if (label) label.textContent = i + 1 + '/' + total;
+      if (!label) return;
+      var range = global.Book && global.Book.currentRange ? global.Book.currentRange() : null;
+      var text;
+      if (range && range.length > 1) {
+        text = range[0] + '–' + range[range.length - 1];
+      } else if (range && range.length === 1) {
+        text = String(range[0]);
+      } else {
+        text = String(i + 1);
+      }
+      label.textContent = text + '/' + total;
     }
     if (global.Book && global.Book.onChange) {
       global.Book.onChange(function (i) {

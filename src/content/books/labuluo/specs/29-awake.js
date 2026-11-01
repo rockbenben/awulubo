@@ -23,7 +23,7 @@ export default [
     char: { pose: 'asleep', state: 'state-pale', at: [300, 460], scale: 0.56, spiral: true },
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, color: '--paper', text: '你坐在它旁边，<br>等天亮。' },
-      prompt: { at: [60, 870], size: 4, width: 380, color: '--paper', text: '等天亮。' },
+      prompt: { at: [60, 870], size: 4, width: 380, color: '--paper', text: '陪它坐一会儿。' },
     },
   },
 ];

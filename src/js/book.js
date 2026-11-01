@@ -9,9 +9,68 @@
   var activeBook = null;
   var pages = allPages.slice();
   var current = 0;
+  /* 跨页：当前册摊开的样子——一项是一页或两页。
+     见 buildSpreads 的说明：哪两页对在一起是物理决定的。 */
+  var spreads = { groups: [], owner: [] };
   /* 换页时通知外面（选页器的页码、当前页高亮）。
      不用事件总线：这里只有一处要听。 */
   var changeListeners = [];
+
+  /* —— 跨页 ——
+     一本书翻开来是**两页**：左边一页，右边一页。
+     哪两页对在一起不是随便定的：骑马钉的书永远翻到 (偶数页 | 奇数页)——
+     封面是 p1（单页），往后就是 (p2|p3)、(p4|p5)……
+     屏幕版跳过几页（版权页、给大人的话、后环衬、封底），
+     缺的那页不在跨页里，它的搭档独自成页。
+
+     ⚠️ 纸书的跨页由装订决定，网页必须跟它一致：
+     同一段故事，屏幕上一屏两页、纸上一翻两页，孩子看到的才是一样的。
+     网页上把 (p5|p6) 摊开、纸上却是 (p4|p5) 与 (p6|p7)，
+     纸上的「承诺」和「兑现」就被书脊劈开了。 */
+  function pageNum(page) {
+    var m = (page.getAttribute('data-id') || '').match(/^p(\d+)$/);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  function buildSpreads(list) {
+    var groups = [];
+    var owner = []; /* 每个页序号属于第几个跨页 */
+    for (var i = 0; i < list.length; i++) {
+      var n = pageNum(list[i]);
+      var next = list[i + 1];
+      if (n > 0 && n % 2 === 0 && next && pageNum(next) === n + 1) {
+        groups.push([list[i], next]);
+        owner.push(groups.length - 1);
+        owner.push(groups.length - 1);
+        i++;
+      } else {
+        groups.push([list[i]]);
+        owner.push(groups.length - 1);
+      }
+    }
+    return { groups: groups, owner: owner };
+  }
+
+  /* 摊开成跨页的断点：屏幕够宽才摊。
+     每页只占一半屏宽，字就小一半——1100px 宽时每页 550px，
+     正文 3.4% 的字高约 19px，还看得清；再窄就别摊了。
+     ⚠️ CSS 里是同一个断点（book.css 的 @media (min-width: 1100px)），
+     两处要一起改。 */
+  var SPREAD_QUERY = '(min-width: 1100px)';
+  var spreadMq = window.matchMedia ? window.matchMedia(SPREAD_QUERY) : null;
+
+  function spreadMode() {
+    return !!(spreadMq && spreadMq.matches);
+  }
+
+  /* 当前这一组页：单页模式一页，跨页模式一页或两页 */
+  function groupOf(pageIndex) {
+    if (!pages.length) return [];
+    if (!spreadMode()) return [pages[pageIndex]];
+    var gi = spreads.owner[pageIndex];
+    if (gi === undefined) return [pages[pageIndex]];
+    return spreads.groups[gi] || [pages[pageIndex]];
+  }
 
   function setBookPages(id) {
     activeBook = id;
@@ -21,6 +80,7 @@
     /* 一册都没有（页面数据没带册 id）时退回全部页面——
        少一册总比读不出书强。 */
     pages = own.length ? own : allPages.slice();
+    spreads = buildSpreads(pages);
     applyBookVisibility(id);
     syncTitle(id);
   }
@@ -89,10 +149,27 @@
     return p ? p.getAttribute('data-id') : null;
   }
 
+  /* 某一页是不是还在读者眼前：
+     单页模式就是当前页；跨页模式是这一组的两页（效果可能演在右边那页上）。 */
+  function inCurrentGroup(id) {
+    var g = groupOf(current);
+    for (var k = 0; k < g.length; k++) {
+      if (g[k].getAttribute('data-id') === id) return true;
+    }
+    return false;
+  }
+
   function announce() {
     var live = document.getElementById('live');
     if (!live) return;
-    live.textContent = pages[current].getAttribute('aria-label') || '';
+    /* 跨页时两页都念出来：屏幕上是两页，朗读稿就该是两页的。 */
+    var g = groupOf(current);
+    var labels = [];
+    for (var k = 0; k < g.length; k++) {
+      var l = g[k].getAttribute('aria-label');
+      if (l) labels.push(l);
+    }
+    live.textContent = labels.join(' ');
   }
 
   function notifyChange() {
@@ -104,9 +181,31 @@
   function show(i) {
     if (!pages.length) return;
     var n = Math.max(0, Math.min(pages.length - 1, i));
+    /* 跨页模式下，这一组页（两页）要一起亮出来；
+       current 记的是这一组的**第一页**，翻页、页码、朗读都以它为准。 */
+    var group = groupOf(n);
+    var first = group[0];
+    var ni = pages.indexOf(first);
+    if (ni >= 0) n = ni;
+    group = groupOf(n);
     for (var k = 0; k < allPages.length; k++) {
-      allPages[k].classList.toggle('is-active', k >= 0 && allPages[k] === pages[n]);
+      var on = group.indexOf(allPages[k]) >= 0;
+      allPages[k].classList.toggle('is-active', on);
+      if (!on) allPages[k].removeAttribute('data-side');
     }
+    /* 左页右页要摆对：跨页里的第一页在左，第二页在右。
+       页面在 DOM 里是平铺的（.page 绝对定位，铺满整个舞台），
+       左右得显式说一声，CSS 才摆得开。
+       单独一页时（封面、版权页那一页……搭档不在书里）摆中间。 */
+    if (group.length === 2) {
+      group[0].setAttribute('data-side', 'left');
+      group[1].setAttribute('data-side', 'right');
+    } else if (spreadMode()) {
+      group[0].setAttribute('data-side', 'solo');
+    }
+    /* 舞台上标一下摊了几页：书脊的阴影只该出现在真的两页之间。 */
+    var stage = document.getElementById('stage');
+    if (stage) stage.setAttribute('data-pages', String(group.length));
     current = n;
     var id = pages[current].getAttribute('data-id');
     /* 换页：上一页还在计时的效果、还没兑现的翻页请求，都作废 */
@@ -116,27 +215,55 @@
       history.replaceState(null, '', '#' + id);
     }
     /* 进入页面时把这一页的互动计数清零：读者会走回头路（p29 摸噜啵、p62 再读一次
-       都会跳回 p05 重读），不清零的话第二遍读到"按顺序点三样"就会永远卡住。 */
+       都会跳回 p05 重读），不清零的话第二遍读到"按顺序点三样"就会永远卡住。
+       跨页时两页都要复位：右边那页也可能带着计数。 */
     if (global.BookInteractions && global.BookInteractions.reset) {
-      global.BookInteractions.reset(pages[current]);
+      for (var r = 0; r < group.length; r++) {
+        global.BookInteractions.reset(group[r]);
+      }
     }
     /* 这一页自己的音效：页面数据里写了 sound 就播出来（大字拟声词的声音）。
        以前只有互动动作有声音，这一层是空的——data-sound 写进了 DOM 却没人读它，
        全书的拟声词从来没响过。 */
-    var pageSound = pages[current].getAttribute('data-sound');
-    if (pageSound) global.AudioBook.play(pageSound);
+    for (var s = 0; s < group.length; s++) {
+      var pageSound = group[s].getAttribute('data-sound');
+      if (pageSound) global.AudioBook.play(pageSound);
+    }
     announce();
     notifyChange();
   }
 
+  /* 当前这一组里，有没有还没演完的效果（有就跳过它） */
+  function skipPendingInGroup() {
+    var g = groupOf(current);
+    for (var k = 0; k < g.length; k++) {
+      var fn = skipPending(g[k].getAttribute('data-id'));
+      if (fn) return fn;
+    }
+    return null;
+  }
+
+  /* 翻到下一个跨页（摊开模式）或下一页（单页模式） */
   function next() {
     if (isStatic()) return;
+    if (spreadMode()) {
+      var gi = spreads.owner[current];
+      if (gi === undefined || gi >= spreads.groups.length - 1) return;
+      show(pages.indexOf(spreads.groups[gi + 1][0]));
+      return;
+    }
     if (current >= pages.length - 1) return;
     show(current + 1);
   }
 
   function prev() {
     if (isStatic()) return;
+    if (spreadMode()) {
+      var gi = spreads.owner[current];
+      if (!gi) return;
+      show(pages.indexOf(spreads.groups[gi - 1][0]));
+      return;
+    }
     if (current <= 0) return;
     show(current - 1);
   }
@@ -218,8 +345,9 @@
       delete pendingTimers[key];
       /* 到期时读者可能已经翻到别的页（走回头路，或另一页的效果还在播）。
          这时再翻页，翻的是"读者正在看的那页"——不是这个效果该去的页，
-         读者会莫名其妙被翻走。页面对不上就丢弃。 */
-      if (key !== 'default' && currentPageId() !== key) return;
+         读者会莫名其妙被翻走。页面对不上就丢弃。
+         ⚠️ 跨页时跟**这一组**比：效果演在右页上时，current 记的是左页。 */
+      if (key !== 'default' && !inCurrentGroup(key)) return;
       fn();
     }, ms);
     pendingTimers[key] = entry;
@@ -253,7 +381,10 @@
 
     document.addEventListener('click', function (ev) {
       if (ev.target.closest('.hotspot, button, a')) return;
-      var cur = pages[current];
+      /* 点在哪一页上，就按那一页的规矩来：
+         跨页模式下两页各有各的热区与「点空白不翻页」的规则。 */
+      var hit = ev.target.closest ? ev.target.closest('.page') : null;
+      var cur = hit && pages.indexOf(hit) >= 0 ? hit : pages[current];
       /* 拍一拍：点在噜啵身上，它晃一下、叫一声，然后照样翻页。
          不用逐页摆热区——点在角色上这件事，事件目标自己会告诉我们
          （点到的就是 SVG 里角色的那个 <use>），不用猜它的可见框在哪。
@@ -275,16 +406,28 @@
          点空白不翻页，摇一下头让孩子接着来。
          以前一戳就跳页——"找一找"还会跳到"你都找到了吗？"，
          孩子一个都没找到，书却问他找到了没有。
-         书页之外的留白也算（手机竖屏时书只占中间，上下都是空的）。 */
-      if (cur && cur.hasAttribute('data-trap')) {
+         书页之外的留白也算（手机竖屏时书只占中间，上下都是空的）。
+
+         ⚠️ 跨页时按**整组**算：这一跨里有一页在等一个动作，
+         就不该能靠点另一页的空白翻过去——那等于把这一页跳过去。
+         （纸书上读者随时可以翻叶；屏幕上这道闸门是防手滑的。） */
+      var group = groupOf(current);
+      var trapped = null;
+      for (var t = 0; t < group.length; t++) {
+        if (group[t].hasAttribute('data-trap')) {
+          trapped = group[t];
+          break;
+        }
+      }
+      if (trapped) {
         if (global.BookInteractions && global.BookInteractions.wrong) {
-          global.BookInteractions.wrong(cur);
+          global.BookInteractions.wrong(trapped);
         }
         return;
       }
       /* 跳过在飞效果与普通翻页走同一条节流通道：
          孩子点一下只该翻一页，但也不能被节流吞掉。 */
-      withLock(skipPending(currentPageId()) || next);
+      withLock(skipPendingInGroup() || next);
     });
 
     document.addEventListener('keydown', function (ev) {
@@ -292,7 +435,7 @@
       if (k === 'ArrowRight' || k === 'PageDown' || k === ' ' || k === 'Enter') {
         if (ev.target.closest('button')) return;
         ev.preventDefault();
-        withLock(skipPending(currentPageId()) || next);
+        withLock(skipPendingInGroup() || next);
       } else if (k === 'ArrowLeft' || k === 'PageUp') {
         ev.preventDefault();
         withLock(prev);
@@ -343,7 +486,7 @@
         if (dx < 0) {
           /* 滑过去的动静：真的书翻页是沙沙一声（点着翻页不响，手指翻才响） */
           global.AudioBook.play('paper');
-          withLock(skipPending(currentPageId()) || next);
+          withLock(skipPendingInGroup() || next);
         } else {
           withLock(prev);
         }
@@ -442,6 +585,16 @@
     }, { once: true });
 
     bind();
+
+    /* 窗口拉宽拉窄：单页与跨页要换过来。
+       matchMedia 的 change 事件比 resize 干净——只在断点真的跨过去时响。 */
+    if (spreadMq) {
+      var onModeChange = function () {
+        show(current);
+      };
+      if (spreadMq.addEventListener) spreadMq.addEventListener('change', onModeChange);
+      else if (spreadMq.addListener) spreadMq.addListener(onModeChange);
+    }
   }
 
   global.Book = {
@@ -493,6 +646,25 @@
     /* 选页器用：当前页的序号（从 0 起） */
     currentIndex: function () {
       return current;
+    },
+    /* 现在是不是摊开成跨页（页码按钮与选页器要跟着变） */
+    isSpread: function () {
+      return spreadMode();
+    },
+    /* 当前显示的这一组页（单页模式一页，跨页模式一页或两页） */
+    currentGroup: function () {
+      return groupOf(current);
+    },
+    /* 当前显示的页在**屏幕版序号**里的范围：跨页时是 [8, 9]。
+       页码按钮据此显示"8–9/60"——摊开时看得见是几页到几页。 */
+    currentRange: function () {
+      var g = groupOf(current);
+      var out = [];
+      for (var k = 0; k < g.length; k++) {
+        var idx = pages.indexOf(g[k]);
+        if (idx >= 0) out.push(idx + 1);
+      }
+      return out;
     },
     /* 选页器用：直接跳到第 i 页（从 0 起）。
        跳页不经过 350ms 的翻页节流——那节流是防"一帧里跳两页"的，

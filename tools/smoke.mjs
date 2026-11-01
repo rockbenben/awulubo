@@ -993,6 +993,71 @@ check(
 );
 await proof.close();
 
+/* —— 跨页：屏幕够宽时摊开成两页 ——
+   前面那些断言跑在 900 × 900 的视口上（手机上那样）：一页一屏，一页一页翻。
+   宽屏（≥1100px）上是**跨页**：左右两页摊开，一翻一跨。
+   这一段专门量宽屏：两页是不是并排、翻页是不是翻一跨。 */
+{
+  const wide = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await wide.goto(url, { waitUntil: 'load' });
+  await wide.evaluate(() => document.fonts.ready);
+
+  const spreadOn = await wide.evaluate(() => window.Book.isSpread());
+  check(spreadOn, '宽屏（1440px）摊开成跨页');
+
+  /* 并排的两页：左边一页、右边一页，且左右不重叠 */
+  await wide.evaluate(() => window.Book.goToId('p06', 'awulubo'));
+  await wide.waitForTimeout(200);
+  const two = await wide.evaluate(() => {
+    const act = [...document.querySelectorAll('.page.is-active')].filter(
+      (p) => p.getAttribute('data-book') === 'awulubo'
+    );
+    const boxes = act.map((p) => {
+      const r = p.getBoundingClientRect();
+      return { id: p.dataset.id, side: p.dataset.side, left: r.left, right: r.right, top: r.top };
+    });
+    return boxes;
+  });
+  check(
+    two.length === 2 && two[0].side === 'left' && two[1].side === 'right',
+    `跨页并排两页（实际 ${two.map((t) => t.id + ':' + t.side).join(' + ')}）`
+  );
+  check(
+    two.length === 2 && two[1].left >= two[0].right - 1 && Math.abs(two[0].top - two[1].top) < 2,
+    '左右两页不重叠、齐平'
+  );
+
+  /* 翻页翻的是**一跨**（两页），不是一页 */
+  await wide.evaluate(() => window.Book.next());
+  await wide.waitForTimeout(250);
+  const after = await wide.evaluate(() =>
+    [...document.querySelectorAll('.page.is-active')]
+      .filter((p) => p.getAttribute('data-book') === 'awulubo')
+      .map((p) => p.dataset.id)
+  );
+  check(
+    after.length === 2 && after[0] === 'p08',
+    `翻一跨就到下一个跨页（实际 ${after.join(' + ')}）`
+  );
+
+  /* 页码显示的是这一跨的范围 */
+  const label = await wide.evaluate(() => document.getElementById('page-num')?.textContent);
+  check(/^\d+–\d+\/\d+$/.test(label || ''), `页码显示跨页范围（实际 ${label}）`);
+
+  /* 窄屏（手机上）不该摊开 */
+  await wide.setViewportSize({ width: 390, height: 844 });
+  await wide.waitForTimeout(300);
+  const narrow = await wide.evaluate(() => ({
+    spread: window.Book.isSpread(),
+    active: [...document.querySelectorAll('.page.is-active')].filter(
+      (p) => p.getAttribute('data-book') === 'awulubo'
+    ).length,
+  }));
+  check(!narrow.spread, '窄屏（390px）不摊开，还是一页一屏');
+  check(narrow.active === 1, `窄屏一次只显示一页（实际 ${narrow.active} 页）`);
+  await wide.close();
+}
+
 /* 无外部请求 */
 const requests = [];
 page.on('request', (r) => {

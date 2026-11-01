@@ -11,7 +11,7 @@ export default [
     text: {
       narration: { at: [60, 70], size: 3.4, width: 460, text: '水喝了，<br>还要吃药。' },
       sound: { at: [520, 76], size: 14, rotate: -2, text: '唔……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '最难的一关。' },
+      prompt: { at: [60, 870], size: 4, width: 340, text: '喂它吃药。' },
     },
   },
   {

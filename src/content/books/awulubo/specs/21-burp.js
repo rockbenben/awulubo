@@ -4,13 +4,13 @@ export default [
     id: 'p21',
     template: 't-dialog',
     sound: 'gulu',
-    aria: '揉一揉，顺一顺。在噜啵的肚子上，转个圈。咕噜——',
+    aria: '转个圈。在噜啵的肚子上画圈。咕噜——',
     bg: { kind: 'swirl', colors: ['--green'], focus: [640, 560], cover: 'all', wash: '--wash-green' },
     char: { pose: 'full', at: [250, 330], scale: 0.62, spiral: true },
     text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '揉一揉，顺一顺。<br>在噜啵的肚子上，转个圈。' },
+      narration: { at: [60, 70], size: 3.4, width: 460, text: '转个圈，<br>在噜啵的肚子上画圈。' },
       sound: { text: '咕噜——', at: [520, 70], size: 12, rotate: 2 },
-      prompt: { text: '在肚子上画个圈。', at: [60, 870], size: 4, width: 340 },
+      prompt: { text: '用手指画圈。', at: [60, 870], size: 4, width: 340 },
     },
     /* 点空白不翻页：这一页要揉肚子（画圈或连点三下），戳一下空地不该跳过 */
     trap: true,
