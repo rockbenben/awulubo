@@ -424,6 +424,18 @@
     <use href="#ch-mouth-open" />
   </g>
 
+  <!-- ouch：难受（第二册：生病时的表情）——眉毛里端往下、嘴往下撇 -->
+  <g id="pose-ouch">
+    <use href="#ch-feet" />
+    <use href="#ch-arm-l-down" />
+    <use href="#ch-arm-r-down" />
+    <use href="#ch-body" />
+    <use href="#ch-brows-angry" />
+    <use href="#ch-eyes-dots" />
+    <use href="#ch-cheeks" />
+    <use href="#ch-mouth-frown" />
+  </g>
+
   <!-- proud：得意，歪嘴，旁边一颗闪光 -->
   <g id="pose-proud">
     <use href="#ch-feet" />

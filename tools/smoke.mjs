@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SCREEN_PAGES } from './layout-constants.mjs';
-import { loadSpecs } from './load-specs.mjs';
+import { loadBooks, loadSpecs } from './load-specs.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const url = 'file:///' + path.join(root, 'dist/index.html').replace(/\\/g, '/');
@@ -888,6 +888,51 @@ await page.keyboard.press('m');
   await page.waitForTimeout(200);
 }
 
+/* 第二册《噜啵生病啦！》：切册 + 照顾它的那几个互动。
+   页码在册内独立，所以每一步都要带册 id——不带的话跳的是第一册的同一页。 */
+{
+  await page.evaluate(() => window.Book.setBook('labuluo'));
+  await page.waitForTimeout(300);
+  const book = await page.evaluate(() => ({
+    attr: document.body.dataset.book,
+    id: document.querySelector('.page.is-active')?.dataset.id,
+    hidden: document.querySelectorAll('.page.is-off-book').length,
+  }));
+  check(book.attr === 'labuluo', `切到第二册（实际 ${book.attr}）`);
+  check(book.id === 'p01', `切册后回到那一册的第一页（实际 ${book.id}）`);
+  check(book.hidden > 0, `第一册的页面被藏起来了（${book.hidden} 页）`);
+
+  /* 照顾它：盖毯子 / 喂水 / 喂药 / 半夜咳嗽 */
+  for (const [id, action, next] of [
+    ['p14', 'cover', 'p15'],
+    ['p18', 'water', 'p19'],
+    ['p20', 'medicine', 'p21'],
+    ['p27', 'cough', 'p28'],
+  ]) {
+    await page.evaluate((a) => window.Book.goToId(a.id, 'labuluo'), { id });
+    await page.waitForTimeout(200);
+    await page.click(`[data-id="${id}"][data-book="labuluo"] .hotspot[data-action="${action}"]`);
+    await page.waitForTimeout(1100);
+    const at = await page.evaluate(() => document.querySelector('.page.is-active')?.dataset.id);
+    check(at === next, `第二册 p${id.slice(1)} 的「${action}」翻到 ${next}（实际 ${at}）`);
+  }
+
+  /* 再读一次：回到**这一册**的第一页，不是第一册的 */
+  await page.evaluate((a) => window.Book.goToId(a.id, 'labuluo'), { id: 'p62' });
+  await page.waitForTimeout(200);
+  await page.click('[data-id="p62"][data-book="labuluo"] .hotspot[data-action="again"]');
+  await page.waitForTimeout(900);
+  const back = await page.evaluate(() => ({
+    id: document.querySelector('.page.is-active')?.dataset.id,
+    book: document.body.dataset.book,
+  }));
+  check(back.book === 'labuluo' && back.id === 'p05', `第二册的「再读一次」回到本册 p05（实际 ${back.book}/${back.id}）`);
+
+  /* 切回第一册，后面几项断言还按第一册算 */
+  await page.evaluate(() => window.Book.setBook('awulubo'));
+  await page.waitForTimeout(250);
+}
+
 /* 屏幕版页数与印刷专属页 */
 const screenIds = await page.evaluate(() =>
   Array.from(document.querySelectorAll('.page')).map((p) => p.dataset.id)
@@ -899,7 +944,11 @@ check(
     !screenIds.includes('p64'),
   '屏幕版跳过版权/给大人的话/后环衬/封底'
 );
-check(screenIds.length === SCREEN_PAGES, `屏幕版 ${SCREEN_PAGES} 页（实际 ${screenIds.length}）`);
+const books = await loadBooks();
+check(
+  screenIds.length === SCREEN_PAGES * books.length,
+  `屏幕版 ${books.length} 册共 ${SCREEN_PAGES * books.length} 页（实际 ${screenIds.length}）`
+);
 
 /* 背景必须"布满全局"：满版底色场的**实际渲染范围**要盖住整页。
    量 SVG 里 <use class="fx-wash"> 的渲染包围盒——

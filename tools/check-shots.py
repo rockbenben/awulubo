@@ -93,7 +93,7 @@ def main():
     ap.add_argument("--shots", default=SHOTS, help="截图目录")
     args = ap.parse_args()
 
-    files = sorted(glob.glob(os.path.join(args.shots, "p*.png")))
+    files = sorted(glob.glob(os.path.join(args.shots, "**", "*.png"), recursive=True))
     if not files:
         print("✗ 没有截图 —— 先跑 npm run shots")
         return 1
@@ -121,11 +121,13 @@ def main():
 
     # 背景铺满：声明了满版底色场的页，四条边都得有颜色
     if manifest:
-        by_id = {m["id"]: m for m in manifest}
+        by_id = {(m.get("book", ""), m["id"]): m for m in manifest}
         for f in files:
             name = os.path.basename(f)
             page_id = os.path.splitext(name)[0]
-            meta = by_id.get(page_id)
+            # 册 id 是截图所在目录名（每一册一个子目录）
+            book = os.path.basename(os.path.dirname(f))
+            meta = by_id.get((book, page_id))
             if not meta or not meta.get("wash"):
                 continue
             try:

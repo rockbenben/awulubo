@@ -1,0 +1,72 @@
+/* 封面 / 前环衬 / 扉页 / 版权 —— 第二册 */
+export default [
+  {
+    id: 'p01',
+    template: 't-cover',
+    sound: 'chirp',
+    aria: '《噜啵生病啦！》一个要你照顾的小怪物。点我，开始。',
+    bg: { kind: 'rays', colors: ['--blue', '--deep-blue'], gap: '--blue', focus: [500, 560], wash: '--blue' },
+    char: { pose: 'tired', state: 'state-pale', at: [170, 220], scale: 0.64, spiral: true },
+    text: {
+      sound: { at: [75, 85], size: 15, align: 'center', width: 850, rotate: -2, text: '噜啵生病啦！' },
+      narration: { at: [300, 290], size: 3.4, align: 'center', width: 400, text: '一个要你照顾的小怪物' },
+      prompt: { at: [60, 870], size: 4, align: 'center', width: 1000, text: '点我，开始。', print: '' },
+    },
+    hotspot: { action: 'start', at: [0, 0], size: 1000, label: '点封面开始阅读' },
+  },
+  {
+    id: 'p02',
+    template: 't-endpaper',
+    noSound: true,
+    aria: '前环衬：毯子、杯子、药丸散落在纸上。',
+    props: [
+      { kind: 'cup', at: [120, 120], scale: 0.2, rotate: -8 },
+      { kind: 'pill', at: [600, 80], scale: 0.22, rotate: 12 },
+      { kind: 'blanket', at: [300, 330], scale: 0.22, rotate: -4 },
+      { kind: 'apple', at: [700, 460], scale: 0.15, rotate: 18 },
+      { kind: 'cup', at: [80, 600], scale: 0.17, rotate: 14 },
+      { kind: 'pill', at: [420, 720], scale: 0.18, rotate: -10 },
+      { kind: 'star', at: [840, 800], scale: 0.13, rotate: 20 },
+    ],
+  },
+  {
+    id: 'p03',
+    template: 't-title',
+    sound: 'chirp',
+    aria: '扉页：《噜啵生病啦！》一个要你照顾的小怪物。',
+    bg: { kind: 'rays-tight', colors: ['--purple', '--blue'], focus: [500, 760], wash: '--wash-purple' },
+    char: { pose: 'tired', state: 'state-pale', at: [250, 470], scale: 0.6, spiral: true },
+    text: {
+      sound: { at: [250, 70], size: 13, align: 'center', width: 500, rotate: -1, text: '噜啵生病啦！' },
+      narration: { at: [300, 300], size: 3.4, align: 'center', width: 400, text: '一个要你照顾的小怪物' },
+    },
+  },
+  {
+    id: 'p04',
+    template: 't-plain',
+    screen: false,
+    noSound: true,
+    aria: '版权页与编者说：记录这本书的来历、字体授权，以及怎么和孩子一起读。',
+    props: [{ kind: 'spiral', at: [430, 640], scale: 0.14 }],
+    text: {
+      narration: { at: [140, 120], size: 3.4, width: 600, text: '《噜啵生病啦！》' },
+      adult: {
+        at: [140, 240],
+        size: 2.2,
+        width: 720,
+        text: [
+          '一个要你照顾的小怪物',
+          '文字与插画：＿＿＿＿＿＿＿',
+          '出版：＿＿＿＿＿＿＿　初版：＿＿＿＿年＿＿月',
+          '版本 1.0。未经许可不得转载。',
+          '字体：站酷快乐体 · 霞鹜文楷（SIL OFL 1.1），可商用、可嵌入出版物。',
+          '',
+          '编者说：',
+          '这一册和前一册反着来：前一册是孩子喂它，这一册是孩子照顾它。',
+          '所以这一册里没有一样是它自己要的——它要的只是有人陪着。',
+          '另有一本可以点、可以听的屏幕版，手机或平板上打开就能读。',
+        ],
+      },
+    },
+  },
+];

@@ -46,6 +46,11 @@ const PROP_ID = {
   spiral: 'ch-spiral',
   bubble: 'prop-bubble',
   flower: 'prop-flower',
+  /* 第二册《噜啵生病啦！》新增的三件道具 */
+  blanket: 'prop-blanket',
+  cup: 'prop-cup',
+  pill: 'prop-pill',
+  zzz: 'prop-zzz',
 };
 export { PROP_ID };
 

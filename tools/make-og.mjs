@@ -52,7 +52,7 @@ h1{font-family:'ZCOOL',sans-serif;font-size:96px;line-height:1.05;letter-spacing
   <div class="text">
     <h1>啊呜噜啵！</h1>
     <div class="tag">3–5 岁自己翻自己点的绘本</div>
-    <div class="sub">喂它苹果、小鱼、黄星星，<br>它就变成那个颜色，还会打嗝喷彩纸。</div>
+    <div class="sub">两册：喂它苹果、小鱼、黄星星，<br>它就变成那个颜色；它病了，换你照顾它。</div>
     <div class="pill">全部离线 · 不联网不上传不注册</div>
   </div>
 </div></body></html>`;

@@ -70,8 +70,8 @@ for (const target of TARGETS) {
   for (const spec of pages) {
     if (target.scope === 'screen' && spec.screen === false) continue;
 
-    const data = await page.evaluate((id) => {
-      const el = document.querySelector(`[data-id="${id}"]`);
+    const data = await page.evaluate(({ id, book }) => {
+      const el = document.querySelector(`[data-id="${id}"][data-book="${book}"]`);
       if (!el) return null;
       const box = el.getBoundingClientRect();
       const texts = [...el.querySelectorAll('.narration, .sound, .prompt, .adult')].map((t) => {
@@ -149,7 +149,7 @@ for (const target of TARGETS) {
         }
       }
       return { width: box.width, height: box.height, texts, hotspots, propCenters, charBox, propBoxes };
-    }, spec.id);
+    }, { id: spec.id, book: spec.book });
 
     if (!data) {
       problems.push(`[${spec.id}]（${target.label}）页面在产物里找不到`);

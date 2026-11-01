@@ -408,7 +408,13 @@
     skipPending: skipPending,
     /* 带节流的翻页：最短 350 ms 一页，但期间的请求会被记住而不是丢掉 */
     turn: withLock,
-    goToId: function (id) {
+    goToId: function (id, book) {
+      /* 页码在册内独立：两册都有 p05，只给页码会跳到**当前册**的那一页。
+         带册 id 进来时先切册——检查脚本要按册逐页量，量错册等于没量。 */
+      if (book && book !== activeBook) {
+        setBookPages(book);
+        document.body.setAttribute('data-book', book);
+      }
       for (var k = 0; k < pages.length; k++) {
         if (pages[k].getAttribute('data-id') === id) {
           show(k);

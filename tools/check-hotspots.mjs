@@ -35,11 +35,11 @@ await page.evaluate(() => document.fonts.ready);
 
 for (const spec of specs) {
   if (spec.screen === false) continue;
-  await page.evaluate((id) => window.Book.goToId(id), spec.id);
+  await page.evaluate((a) => window.Book.goToId(a.id, a.book), { id: spec.id, book: spec.book });
   await page.waitForTimeout(80);
 
-  const rows = await page.evaluate((id) => {
-    const p = document.querySelector(`[data-id="${id}"]`);
+  const rows = await page.evaluate(({ id, book }) => {
+    const p = document.querySelector(`[data-id="${id}"][data-book="${book}"]`);
     const pr = p.getBoundingClientRect();
     const u = pr.width / 1000;
     /* 采样时把热区让开：不然每个点最上层都是热区按钮，问不出墨在哪 */
@@ -108,7 +108,7 @@ for (const spec of specs) {
        中途撤了，后面的热区会挡住墨迹，量出来是"没有墨" */
     style.remove();
     return out;
-  }, spec.id);
+  }, { id: spec.id, book: spec.book });
 
   for (const r of rows) {
     if (!r.ink) {
@@ -144,15 +144,15 @@ const MIN_TAP = 44;
   await small.evaluate(() => document.fonts.ready);
   for (const spec of specs) {
     if (spec.screen === false) continue;
-    await small.evaluate((id) => window.Book.goToId(id), spec.id);
+    await small.evaluate((a) => window.Book.goToId(a.id, a.book), { id: spec.id, book: spec.book });
     await small.waitForTimeout(50);
-    const hs = await small.evaluate((id) => {
-      const p = document.querySelector(`[data-id="${id}"]`);
+    const hs = await small.evaluate(({ id, book }) => {
+      const p = document.querySelector(`[data-id="${id}"][data-book="${book}"]`);
       return [...p.querySelectorAll('.hotspot')].map((h) => {
         const b = h.getBoundingClientRect();
         return { action: h.dataset.action, target: h.dataset.target || '-', w: b.width, h: b.height };
       });
-    }, spec.id);
+    }, { id: spec.id, book: spec.book });
     for (const r of hs) {
       const m = Math.min(r.w, r.h);
       if (m < MIN_TAP) {

@@ -53,8 +53,11 @@ def page_texts():
     for page in data["pages"]:
         for item in page["items"]:
             key = "kai" if item["key"] in ("narration", "adult") else "kuaile"
-            seen.setdefault((key, page["id"]), "")
-            seen[(key, page["id"])] += "".join(item["lines"])
+            # 页码在册内独立（两册都有 p05），所以键里要带上册 id——
+            # 只按页码归并会把两册同一页的文字混成一条，报错时指不出是哪一册。
+            pid = (page.get("book", ""), page["id"])
+            seen.setdefault((key, pid), "")
+            seen[(key, pid)] += "".join(item["lines"])
     if not seen:
         print("✗ 一页文字都没读到——这道闸门不能就这么算通过")
         return None
@@ -97,9 +100,10 @@ def main():
     if missing:
         print("✗ 以下字符不在对应字体的子集里（浏览器会退回系统字体，印刷 PDF 会混入未授权字体）：")
         for (ch, kind, font), pids in sorted(missing.items()):
-            print(
-                f"  {ch!r} (U+{ord(ch):04X}) 缺 {font}，出现在 {', '.join(sorted(set(pids)))}"
+            where = ", ".join(
+                f"{book}/{pid}" if book else pid for book, pid in sorted(set(pids))
             )
+            print(f"  {ch!r} (U+{ord(ch):04X}) 缺 {font}，出现在 {where}")
         return 1
 
     print(f"✓ 字体覆盖检查通过：全书 {total} 个字符，按字体分工全部命中子集")

@@ -7,4 +7,4 @@
 
    册的元数据（书名、副标题）写在各自的 `book.json` 里，
    这里只列顺序——浏览器端拿不到文件系统，册的清单必须显式写出来。 */
-export default ['awulubo'];
+export default ['awulubo', 'labuluo'];

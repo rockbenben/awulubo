@@ -173,14 +173,14 @@ for (const target of TARGETS) {
           pageW: pr.width,
         });
       }
-      out.push({ id: sec.dataset.id, texts });
+      out.push({ id: sec.dataset.id, book: sec.dataset.book, texts });
     }
     return out;
   });
 
   for (const pg of layout) {
     if (!pg.texts.length) continue;
-    const shot = await page.locator(`[data-id="${pg.id}"]`).screenshot();
+    const shot = await page.locator(`[data-id="${pg.id}"][data-book="${pg.book}"]`).screenshot();
     const img = pngPixels(shot);
     const scale = img.width / (pg.texts[0]?.pageW || img.width);
 

@@ -13,13 +13,21 @@
 
   var grid = null;
   var built = false;
+  var builtBook = '';
 
   function isStatic() {
     return document.body.classList.contains('static');
   }
 
+  /* 只列**当前册**的页：两册的页码各自从 p01 开始，
+     铺在一起会出现两个 p01——点哪个都说不清是哪一册的哪一页。 */
   function pages() {
-    return Array.prototype.slice.call(document.querySelectorAll('.page'));
+    var book = global.Book && global.Book.book ? global.Book.book() : '';
+    return Array.prototype.slice
+      .call(document.querySelectorAll('.page'))
+      .filter(function (p) {
+        return !book || p.getAttribute('data-book') === book;
+      });
   }
 
   /* 这一页的缩略图：克隆画面层的 SVG（不含 HTML 文字层——文字层是绝对定位的，
@@ -34,7 +42,11 @@
   }
 
   function build(panel) {
-    if (built) return;
+    var book = global.Book && global.Book.book ? global.Book.book() : '';
+    /* 换册了要重建：格子里是上一册的缩略图 */
+    if (built && builtBook === book) return;
+    if (grid && grid.parentNode) grid.parentNode.removeChild(grid);
+    grid = null;
     var list = pages();
     grid = document.createElement('div');
     grid.className = 'picker-grid';
@@ -55,6 +67,7 @@
     });
     panel.appendChild(grid);
     built = true;
+    builtBook = book;
   }
 
   function sync(panel) {

@@ -41,8 +41,19 @@ fs.mkdirSync(outDir, { recursive: true });
 
 /* 清掉上一版的残留截图：删过页之后旧图还躺在目录里，
    联系表和闸门都会把它算进去——"多出来的一张"看着像证据，其实是陈旧产物。 */
-const keep = new Set(pages.map((p) => `${p.id}.png`));
-for (const file of fs.readdirSync(outDir)) {
+/* 每一册一个子目录：页码在册内独立（两册都有 p01），
+   文件名不带上册就会互相覆盖——第二册的 p01 会盖掉第一册的 p01。 */
+const keep = new Set(pages.map((p) => path.join(p.book, `${p.id}.png`)));
+const walk = (dir, base = '') => {
+  const out = [];
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const rel = base ? path.join(base, e.name) : e.name;
+    if (e.isDirectory()) out.push(...walk(path.join(dir, e.name), rel));
+    else out.push(rel);
+  }
+  return out;
+};
+for (const file of walk(outDir)) {
   if (!file.endsWith('.png')) continue;
   if (keep.has(file)) continue;
   fs.unlinkSync(path.join(outDir, file));
@@ -63,8 +74,10 @@ await page.goto(url, { waitUntil: 'load' });
 await page.evaluate(() => document.fonts.ready);
 
 for (const p of pages) {
-  const out = path.join(outDir, `${p.id}.png`);
-  await page.locator(`[data-id='${p.id}']`).screenshot({ path: out });
+  const dir = path.join(outDir, p.book);
+  fs.mkdirSync(dir, { recursive: true });
+  const out = path.join(dir, `${p.id}.png`);
+  await page.locator(`[data-id='${p.id}'][data-book='${p.book}']`).screenshot({ path: out });
   console.log(`✓ ${path.relative(root, out)}`);
 }
 
@@ -76,6 +89,7 @@ console.log(`\n共 ${pages.length} 张，输出在 ${path.relative(root, outDir)
    不写死页数——页数变了，这里跟着变。 */
 const manifest = pages.map((p) => ({
   id: p.id,
+  book: p.book,
   wash: Boolean(p.bg && p.bg.wash),
   kind: (p.bg && p.bg.kind) || 'none',
 }));

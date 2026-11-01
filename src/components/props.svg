@@ -72,4 +72,34 @@
     <path style="fill:var(--ink)" d="M 752 214 L 792 288 L 700 296 Z" />
   </g>
 
+  <!-- 毯子（第二册：盖在噜啵身上） -->
+  <g id="prop-blanket">
+    <path style="fill:var(--pink);stroke:var(--ink);stroke-width:26;stroke-linecap:round;stroke-linejoin:round"
+          d="M 100 520 C 100 300, 280 200, 500 200 C 720 200, 900 300, 900 520 C 760 570, 240 570, 100 520 Z" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round" d="M 190 500 C 320 540, 680 540, 810 500" />
+  </g>
+
+  <!-- 水杯（第二册：喂它喝水） -->
+  <g id="prop-cup">
+    <path style="fill:var(--paper);stroke:var(--ink);stroke-width:26;stroke-linejoin:round"
+          d="M 330 340 L 400 720 L 600 720 L 670 340 Z" />
+    <path style="fill:var(--blue);stroke:var(--ink);stroke-width:20;stroke-linejoin:round"
+          d="M 352 400 L 400 660 L 600 660 L 648 400 Z" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:24;stroke-linecap:round"
+          d="M 664 420 C 764 420, 764 566, 652 566" />
+  </g>
+
+  <!-- 药丸（第二册：最难的一关） -->
+  <g id="prop-pill">
+    <path style="fill:var(--paper);stroke:var(--ink);stroke-width:24;stroke-linejoin:round"
+          d="M 340 430 C 340 378, 382 348, 434 348 L 566 348 C 618 348, 660 378, 660 430 C 660 482, 618 512, 566 512 L 434 512 C 382 512, 340 482, 340 430 Z" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round" d="M 500 352 L 500 508" />
+  </g>
+
+  <!-- 睡着了的 z（第二册） -->
+  <g id="prop-zzz">
+    <path style="fill:none;stroke:var(--paper);stroke-width:22;stroke-linecap:round;stroke-linejoin:round" d="M 180 240 L 330 240 L 180 390 L 340 390" />
+    <path style="fill:none;stroke:var(--paper);stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 370 80 L 470 80 L 370 190 L 480 190" />
+  </g>
+
 </svg>

@@ -403,11 +403,15 @@
       clearMisses(page);
       var n = bump(page);
       if (page.getAttribute('data-id') === 'p17') {
-        /* 还要还要：一口一口地吃，越吃越圆。
-           基准缩放取 data-base-scale（页面数据里的原值），
-           不能读当前 transform——那已经是上一次改过的值，会越叠越大。 */
+        /* 「越吃越圆」是**这一册**第 5 跨页的特殊演法：
+           喂三口，角色一次比一次大。
+           判据是页面里有没有 #grow-char，不是页码——
+           第二册也有一页叫 p17（喂水），按页码判会把它当成「越吃越圆」那一页：
+           喂一口就退回去，孩子永远过不去。 */
         var char = page.querySelector('#grow-char');
         if (char) {
+          /* 基准缩放取 data-base-scale（页面数据里的原值），
+             不能读当前 transform——那已经是上一次改过的值，会越叠越大。 */
           var baseScale = parseFloat(char.dataset.baseScale || '0.56');
           var scale = Math.min(baseScale + n * 0.06, baseScale + 0.18);
           var base = char.getAttribute('transform') || '';
@@ -415,11 +419,11 @@
             'transform',
             base.replace(/scale\([\d.]+\)/, 'scale(' + scale.toFixed(2) + ')')
           );
-        }
-        if (n < 3) {
-          /* 还要喂：把苹果放回原位，下一口还有东西可喂 */
-          restoreProp(page, target);
-          return;
+          if (n < 3) {
+            /* 还要喂：把苹果放回原位，下一口还有东西可喂 */
+            restoreProp(page, target);
+            return;
+          }
         }
       }
       global.Book.after(750, function () {
@@ -694,6 +698,42 @@
       global.AudioBook.play('rainbow');
       wobble(page);
       global.Book.after(900, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 盖毯子（第二册）：孩子把毯子拉过去，它暖和了一点 */
+    cover: function (page) {
+      global.AudioBook.play('paper');
+      wobble(page);
+      global.Book.after(800, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 喂水（第二册）：它终于喝了一小口 */
+    water: function (page) {
+      global.AudioBook.play('bubble');
+      wobble(page);
+      global.Book.after(900, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 喂药（第二册）：最难的一关 */
+    medicine: function (page) {
+      global.AudioBook.play('slurp');
+      wobble(page);
+      global.Book.after(900, function () {
+        global.Book.next();
+      }, page);
+    },
+
+    /* 半夜咳了一声（第二册） */
+    cough: function (page) {
+      global.AudioBook.play('sigh');
+      shake(page);
+      global.Book.after(800, function () {
         global.Book.next();
       }, page);
     },
