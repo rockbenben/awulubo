@@ -24,7 +24,9 @@
     "chaos": "node tools/chaos.mjs",
     "pdf": "node tools/pdf.mjs",
     "pdf:booklet": "node tools/pdf-booklet.mjs",
-    "og": "node tools/make-og.mjs",
+    "og": "node tools/make-brand.mjs --card",
+    "logo": "node tools/make-brand.mjs --logo",
+    "brand": "node tools/make-brand.mjs --all",
     "shots:readme": "node tools/readme-shots.mjs && python tools/readme-compose.py"
   },
   "devDependencies": {

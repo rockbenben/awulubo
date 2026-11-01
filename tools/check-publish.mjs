@@ -74,10 +74,16 @@ if (fs.existsSync(dist)) {
 }
 
 /* ---- 4. 社交预览图 ---- */
-/* GitHub 只存一张，上传即覆盖、旧图不可找回——所以发之前先确认这张就是想要的。 */
-const og = path.join(dist, 'og.png');
+/* GitHub 只存一张，上传即覆盖、旧图不可找回——所以发之前先确认这张就是想要的。
+   认的是仓库里那份（docs/images/og.png）：它进版本库，不会被 clean 掉，
+   上传到 Settings → Social preview 的也是它。
+   dist/og.png 是同一张的部署副本（dist/ 不进版本库），缺了只是提醒。 */
+const og = path.join(root, 'docs/images/og.png');
 if (!fs.existsSync(og)) {
-  problems.push('缺社交预览图——先跑 npm run og（产物在 dist/og.png），再手工上传到 Settings → Social preview');
+  problems.push(
+    '缺社交预览图——先跑 npm run og（产物在 docs/images/og.png 与 dist/og.png），' +
+      '再手工上传到 Settings → Social preview'
+  );
 } else {
   const buf = fs.readFileSync(og);
   const w = buf.readUInt32BE(16);
@@ -90,6 +96,9 @@ if (!fs.existsSync(og)) {
     problems.push(`社交预览图 ${kb} KB，超过 GitHub 的 1 MB 上限`);
   }
   notes.push(`✓ 社交预览图：${w}×${h}，${kb} KB`);
+  if (!fs.existsSync(path.join(dist, 'og.png'))) {
+    notes.push('· dist/og.png 不在（npm run og 会一起写一份，部署站要用）');
+  }
 }
 
 notes.forEach((n) => console.log(`  ${n}`));

@@ -1,4 +1,4 @@
-# 《啊呜噜啵！》
+<h1><img src="docs/images/logo.svg" width="64" height="71" alt=""> 《啊呜噜啵！》</h1>
 
 > 3–5 岁自己翻自己点的绘本：喂它苹果、小鱼、黄星星，它就变成那个颜色。离线，不注册。
 
@@ -115,7 +115,9 @@ npm run smoke        # 交互冒烟（Playwright，118 项断言，含"每个音
 npm run chaos        # 幼儿乱读压力测试（Playwright，随机种子可复现）
 npm run pdf          # 导出 dist/<册>.pdf（216 mm 单页，每册一本，交给印厂）
 npm run pdf:booklet  # 导出 dist/<册>-a4-duplex.pdf（A4 双面拼版，对折即成书；加 --a3 出 A3 版）
-npm run og           # 生成社交预览图 dist/og.png（1280 × 640，上传到 GitHub Settings → Social preview）
+npm run og           # 生成社交预览图 1280×640（docs/images/og.png + dist/og.png，上传到 GitHub Settings → Social preview）
+npm run logo         # 生成品牌标记 docs/images/logo.svg（噜啵举着黄星星；仓库头像也用这张）
+npm run brand        # 两个一起生成（改了角色零件要重跑：logo 是摊平的快照）
 npm run check:publish # 发布前闸门：git remote、商业授权联系方式、dist/ 里不能有印刷 PDF、社交预览图就位
 ```
 

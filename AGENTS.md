@@ -31,6 +31,8 @@ awulubo/
 ├── deploy/                 # 部署速查：nginx / Caddy / Docker / 一条命令 / 对象存储
 ├── docs/
 │   ├── images/             # README 的首屏图与图库（npm run shots:readme 的产物，已提交）
+│   │   ├── logo.svg        # 品牌标记（npm run logo 的产物：噜啵举着黄星星）
+│   │   └── og.png          # 社交预览图 1280×640（npm run og 的产物，已提交一份）
 │   ├── M0-样张记录.md      # 过程记录：画风确认点、每一轮改动的理由与实测
 │   └── superpowers/specs/
 │       └── 2026-10-30-awulubo-picture-book-design.md   # 设计规格（唯一的设计契约）
@@ -65,6 +67,7 @@ awulubo/
 ├── tools/                  # 构建、检查、截图、导出（见 README 的「给开发者」）
 │   ├── check-licenses.mjs  # 授权闸门（字体可商用 + 代码/内容分层 + 本机路径泄漏）
 │   ├── check-publish.mjs   # 发布前闸门（remote / 联系方式 / 印刷 PDF 不进公开站 / 预览图）
+│   ├── make-brand.mjs      # 品牌资产：logo 与社交预览图（npm run logo / og / brand）
 │   └── verify-license-teeth.sh # 给上面两道闸门验牙齿
 ```
 
@@ -236,6 +239,16 @@ awulubo/
     而 `npm run pdf` 的产物就落在 `dist/`——本地印完顺手一推，
     印刷版就免费发出去了，而且撤不回来。`npm run check:publish` 拦这个。
     社交预览图同理：GitHub 只存一张，上传即覆盖、旧图不可找回。
+17. **logo 与社交预览图是**摊平**的快照，不是活物。**
+    `tools/make-brand.mjs` 把角色零件摊平（`<use>` 展开、`var()` 落成实色），
+    好让 `docs/images/logo.svg` 自足、不跟着角色变——
+    但反过来也成立：**改了角色，logo 就过期了**，得重跑 `npm run brand`。
+    摊平时有两条必须记住：
+    - **`<g>` 自己的 style 不能丢**：`ch-body-line` 的黑描边写在 `<g>` 上，
+      只取内层的话身体就没有轮廓，噜啵变成一坨没有线的白饼（真发生过）。
+    - **`var(--x, var(--y))` 这种带 fallback 的写法要分两步解**：
+      先解不带 fallback 的（嵌套在里面的那个先解），再解带 fallback 的。
+      一步解不了的话样式整条作废，元素退回默认的黑。
 
 ## 5. 下一步可以做什么
 
