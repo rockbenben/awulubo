@@ -68,21 +68,35 @@ const NAME_TO_KIND = [
 async function main() {
   const pages = await loadSpecs();
 
-  /* ── 1. 页号序列 ── */
-  const numbers = pages.map((p) => {
-    const m = /^p(\d+)$/.exec(p.id);
-    return m ? Number(m[1]) : null;
-  });
-  numbers.forEach((n, i) => {
-    if (n === null) fail(`[${pages[i].id}] 页号不是 pNN 形式`);
-  });
-  const sorted = numbers.filter((n) => n !== null).sort((a, b) => a - b);
-  for (let i = 1; i < sorted.length; i++) {
-    if (sorted[i] !== sorted[i - 1] + 1) {
-      fail(`页号不连续：${sorted[i - 1]} 之后是 ${sorted[i]}（中间少了一页）`);
-    }
+  /* ── 1. 页号序列 ──
+     页号在**每册内**独立（每册都从 p01 开始），所以按册分组查连续性：
+     全部册的页号摊在一起排，中间接缝处会出现 p64 → p01，那是正常的。 */
+  const byBook = new Map();
+  for (const p of pages) {
+    const key = p.book || '';
+    if (!byBook.has(key)) byBook.set(key, []);
+    byBook.get(key).push(p);
   }
-  notes.push(`页号 ${sorted[0]}–${sorted[sorted.length - 1]}，共 ${sorted.length} 页`);
+  for (const [book, list] of byBook) {
+    const numbers = list.map((p) => {
+      const m = /^p(\d+)$/.exec(p.id);
+      return m ? Number(m[1]) : null;
+    });
+    numbers.forEach((n, i) => {
+      if (n === null) fail(`[${list[i].id}] 页号不是 pNN 形式`);
+    });
+    const sorted = numbers.filter((n) => n !== null).sort((a, b) => a - b);
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] !== sorted[i - 1] + 1) {
+        fail(
+          `[${book}] 页号不连续：${sorted[i - 1]} 之后是 ${sorted[i]}（中间少了一页）`
+        );
+      }
+    }
+    notes.push(
+      `${book}：页号 ${sorted[0]}–${sorted[sorted.length - 1]}，共 ${sorted.length} 页`
+    );
+  }
 
   for (const page of pages) {
     const hs = hotspotsOf(page);

@@ -205,34 +205,34 @@ if (problems.length === 0) {
 
 /* ---- 第二阶段：乱走之后还能不能通关 ---- */
 async function tryPlay() {
-  await page.evaluate(() => window.Book.goToId('p13'));
+  await page.evaluate(() => window.Book.goToId('p15'));
   await page.waitForTimeout(150);
   for (const t of ['apple', 'fish', 'star']) {
-    await page.click(`[data-id="p13"] .hotspot[data-target="${t}"]`);
+    await page.click(`[data-id="p15"] .hotspot[data-target="${t}"]`);
     await page.waitForTimeout(300);
   }
   await page.waitForTimeout(900);
   return activeId();
 }
-check((await tryPlay()) === 'p14', '乱走之后 p13「按顺序点三样」仍能通关');
+check((await tryPlay()) === 'p16', '乱走之后 p15「按顺序点三样」仍能通关');
 
-await page.evaluate(() => window.Book.goToId('p17'));
+await page.evaluate(() => window.Book.goToId('p21'));
 await page.waitForTimeout(150);
 for (let i = 0; i < 3; i++) {
-  await page.click('[data-id="p17"] .hotspot[data-action="rub"]');
+  await page.click('[data-id="p21"] .hotspot[data-action="rub"]');
   await page.waitForTimeout(260);
 }
 await page.waitForTimeout(900);
-check((await activeId()) === 'p18', '乱走之后 p17「揉肚子」仍能通关');
+check((await activeId()) === 'p22', '乱走之后 p21「揉肚子」仍能通关');
 
-await page.evaluate(() => window.Book.goToId('p27'));
+await page.evaluate(() => window.Book.goToId('p31'));
 await page.waitForTimeout(150);
 for (const t of ['apple', 'fish', 'star']) {
-  await page.click(`[data-id="p27"] .hotspot[data-target="${t}"]`);
+  await page.click(`[data-id="p31"] .hotspot[data-target="${t}"]`);
   await page.waitForTimeout(300);
 }
 await page.waitForTimeout(900);
-check((await activeId()) === 'p28', '乱走之后 p27「找一找」仍能通关');
+check((await activeId()) === 'p32', '乱走之后 p31「找一找」仍能通关');
 
 /* ---- 第三阶段：一次点击只翻一页 ---- */
 await page.evaluate(() => window.Book.goToId('p05'));
@@ -270,7 +270,7 @@ check(
 
 /* ---- 第五阶段：从最后一页一路倒着走回封面 ----
    翻页有 350 ms 的节流，所以按键要按节流的节奏来（这是产品的设定，不是 bug） */
-await page.evaluate(() => window.Book.goToId('p28'));
+await page.evaluate(() => window.Book.goToId('p34'));
 await page.waitForTimeout(150);
 let backSteps = 0;
 for (let i = 0; i < 60; i++) {

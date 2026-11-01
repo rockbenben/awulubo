@@ -1,10 +1,10 @@
 /* 页面检查：结构、字数、符号引用、位置越界、页数，以及成品里的外链。
    用法：node tools/check-pages.mjs [--full]
-   --full 强校验全书 32 印刷页 / 28 屏幕页。 */
+   --full 强校验每册 64 印刷页 / 60 屏幕页。 */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSpecs } from './load-specs.mjs';
+import { loadBooks, loadSpecs } from './load-specs.mjs';
 import { EFFECT_GEOM, EFFECT_ID, PROP_ID } from './render-page.mjs';
 import { PRINT_PAGES, SCREEN_PAGES } from './layout-constants.mjs';
 
@@ -246,17 +246,25 @@ async function main() {
 
   const screenPages = pages.filter((p) => p.screen !== false).length;
   if (FULL) {
-    if (pages.length !== PRINT_PAGES) {
-      fail(`印刷版 ${pages.length} 页，应为 ${PRINT_PAGES} 页`);
-    }
-    /* 骑马钉对折：每帖 4 页，页数必须是 4 的倍数，否则最后一帖排不出来。
-       页数变成 31 这种"少一页"的事，只有这条闸门拦得住——它看着像页数，
-       其实是印刷问题：双面打印时书脊那一帖会缺一面。 */
-    if (pages.length % 4 !== 0) {
-      fail(`印刷版 ${pages.length} 页不是 4 的倍数，骑马钉排不出帖（双面打印会缺一面）`);
-    }
-    if (screenPages !== SCREEN_PAGES) {
-      fail(`屏幕版 ${screenPages} 页，应为 ${SCREEN_PAGES} 页`);
+    /* 页数按**册**校：一册 = 一本书 = 64 页。
+       多册时每册都要各自满足，否则会出现「第一册 64 页、第二册 44 页」
+       这种混装——骑马钉按整本排，第二册缺的那一面还是排不出来。 */
+    const books = await loadBooks();
+    for (const b of books) {
+      const n = b.pages.length;
+      const s = b.pages.filter((p) => p.screen !== false).length;
+      if (n !== PRINT_PAGES) {
+        fail(`册 ${b.id}：印刷版 ${n} 页，应为 ${PRINT_PAGES} 页`);
+      }
+      /* 骑马钉对折：每帖 4 页，页数必须是 4 的倍数，否则最后一帖排不出来。
+         页数变成 31 这种"少一页"的事，只有这条闸门拦得住——它看着像页数，
+         其实是印刷问题：双面打印时书脊那一帖会缺一面。 */
+      if (n % 4 !== 0) {
+        fail(`册 ${b.id}：印刷版 ${n} 页不是 4 的倍数，骑马钉排不出帖（双面打印会缺一面）`);
+      }
+      if (s !== SCREEN_PAGES) {
+        fail(`册 ${b.id}：屏幕版 ${s} 页，应为 ${SCREEN_PAGES} 页`);
+      }
     }
   } else {
     notes.push(

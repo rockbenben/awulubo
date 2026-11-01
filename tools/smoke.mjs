@@ -825,6 +825,69 @@ await page.keyboard.press('m');
   );
 }
 
+/* 选页器：能直接跳到任意一页，不必一页一页翻。
+   64 页的书只能顺序翻的话，想找「数一数」那页要从头翻十几下。 */
+{
+  await page.evaluate(() => window.Book.goToId('p05'));
+  await page.waitForTimeout(250);
+  await page.click('#page-btn');
+  await page.waitForTimeout(400);
+  const cells = await page.evaluate(() => {
+    const grid = document.querySelector('.picker-grid');
+    return {
+      count: grid ? grid.children.length : 0,
+      withSvg: grid ? grid.querySelectorAll('svg').length : 0,
+      open: !document.getElementById('picker').hidden,
+    };
+  });
+  check(cells.open, '选页器能打开');
+  check(cells.count === SCREEN_PAGES, `选页器铺开 ${SCREEN_PAGES} 页（实际 ${cells.count}）`);
+  check(cells.withSvg === cells.count, `每一格都有缩略图（${cells.withSvg}/${cells.count}）`);
+
+  /* 点第 30 格：跳到那一页，面板关上 */
+  await page.click('.picker-cell[data-index="29"]');
+  await page.waitForTimeout(500);
+  const jumped = await page.evaluate(() => ({
+    id: document.querySelector('.page.is-active')?.dataset.id,
+    hidden: document.getElementById('picker').hidden,
+    label: document.getElementById('page-num')?.textContent,
+  }));
+  check(jumped.id === 'p31', `点第 30 格跳到 p31（实际 ${jumped.id}）`);
+  check(jumped.hidden === true, '选完页面板自动关上');
+  check(jumped.label === '30/60', `页码跟着更新（实际 ${jumped.label}）`);
+}
+
+/* 外壳：一册 = 一本书 = 64 页。网页默认以网页方式展示，
+   选册之后可以切到打印版等模式。 */
+{
+  await page.evaluate(() => window.Book.goToId('p05'));
+  await page.waitForTimeout(250);
+  await page.click('#shell-btn');
+  await page.waitForTimeout(300);
+  const shell = await page.evaluate(() => {
+    const links = [...document.querySelectorAll('#shell .shell-btn')];
+    return {
+      book: document.body.dataset.book,
+      mode: document.body.dataset.mode,
+      books: links.filter((b) => b.hasAttribute('data-book')).length,
+      modes: links.filter((b) => b.hasAttribute('data-mode')).map((b) => ({
+        id: b.getAttribute('data-mode'),
+        href: b.getAttribute('href'),
+      })),
+    };
+  });
+  check(shell.book === 'awulubo', `当前是第 1 册 awulubo（实际 ${shell.book}）`);
+  check(shell.mode === 'web', `默认以网页方式展示（实际 ${shell.mode}）`);
+  check(shell.books >= 1, `外壳里有册的入口（${shell.books} 个）`);
+  const print = shell.modes.find((m) => m.id === 'print');
+  check(
+    !!print && /print\.html\?book=awulubo/.test(print.href || ''),
+    `切到打印版走的是独立的印刷构建（${print ? print.href : '无'}）`
+  );
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(200);
+}
+
 /* 屏幕版页数与印刷专属页 */
 const screenIds = await page.evaluate(() =>
   Array.from(document.querySelectorAll('.page')).map((p) => p.dataset.id)

@@ -1,6 +1,6 @@
 <!-- 一页的骨架。数据来自 src/content/specs/*.js，由 tools/render-page.mjs 用 Handlebars 渲染。
      模板里不写任何逻辑：背景的放大倍数、拟声词的逐字微转，都在渲染器里算好再传进来。 -->
-<section class="page {{template}}" data-id="{{id}}"{{#if sound}} data-sound="{{sound}}"{{else}} data-no-sound{{/if}}{{#if trap}} data-trap="1"{{/if}}{{#if pat}} data-pat="1"{{/if}}{{#if aria}} aria-label="{{aria}}"{{/if}}>
+<section class="page {{template}}" data-id="{{id}}" data-book="{{book}}"{{#if sound}} data-sound="{{sound}}"{{else}} data-no-sound{{/if}}{{#if trap}} data-trap="1"{{/if}}{{#if pat}} data-pat="1"{{/if}}{{#if aria}} aria-label="{{aria}}"{{/if}}>
   <div class="art" aria-hidden="true">
     <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
 {{#if bg}}      <g class="fx"{{#if bg.vars}} style="{{bg.vars}}"{{/if}}>

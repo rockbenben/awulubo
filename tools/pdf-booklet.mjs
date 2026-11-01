@@ -24,6 +24,9 @@ if (!fs.existsSync(src)) {
 }
 
 const A3 = process.argv.includes('--a3');
+/* 拼哪一册：一册 = 一本书 = 64 页，骑马钉的帖序在册内各算各的。
+   多册时用 --book=<册 id> 指定，不给就拼清单里的第一册。 */
+const bookArg = (process.argv.find((a) => a.startsWith('--book=')) || '').split('=')[1] || '';
 /* 纸张：sheet 是纸，cell 是每半张的宽度，书页按 cell/216 等比缩进去 */
 const paper = A3
   ? { w: '420mm', h: '297mm', cell: '210mm', scale: (210 / 216).toFixed(5) }
@@ -32,7 +35,7 @@ const out = path.join(dist, A3 ? 'book-a3-duplex.pdf' : 'book-a4-duplex.pdf');
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
-await page.goto('file:///' + src.replace(/\\/g, '/'), { waitUntil: 'load' });
+await page.goto('file:///' + src.replace(/\\/g, '/') + (bookArg ? '?book=' + encodeURIComponent(bookArg) : ''), { waitUntil: 'load' });
 await page.evaluate(() => document.fonts.ready);
 await page.emulateMedia({ media: 'print' });
 await page.addStyleTag({

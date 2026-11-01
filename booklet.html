@@ -12,8 +12,12 @@
   </head>
   <body class="print booklet">
     <!--BOOK_DEFS-->
+    <!--BOOK_MANIFEST-->
     <main class="stage" id="stage">
       <!--BOOK_PAGES-->
     </main>
+    <!-- 也要跑 boot.js：拼版是「每一册各自成帖」的，
+         哪一册要印由地址栏 ?book=<册 id> 决定（见 book.js 的选册）。 -->
+    <script type="module" src="/src/js/boot.js"></script>
   </body>
 </html>

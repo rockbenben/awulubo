@@ -1,9 +1,12 @@
 /* Vite 插件：把页面数据与 SVG 组件注入 HTML 入口。
-   —— 这一层是本书特有的（页面数据 + 组件库），打包/压缩/内联交给 Vite。 */
+   —— 这一层是本书特有的（页面数据 + 组件库），打包/压缩/内联交给 Vite。
+
+   多册：每一册都是一个独立的 64 页文件，页面带 `data-book="<册 id>"`。
+   网页端默认展示「当前册」，切换册时由运行时改 `body[data-book]` 与页面的可见性。 */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadSpecs } from './load-specs.mjs';
+import { loadBooks } from './load-specs.mjs';
 import { renderPage } from './render-page.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -30,22 +33,48 @@ function buildDefs() {
 }
 
 export function bookPages() {
-  let specs = null;
+  let books = null;
 
   return {
     name: 'awulubo-book-pages',
 
     async transformIndexHtml(html, ctx) {
-      if (!specs) specs = await loadSpecs();
+      if (!books) books = await loadBooks();
       const file = ctx.path || '';
-      /* 屏幕版只出 28 页；印刷版与拼版出全部页面 */
+      /* 屏幕版只出 60 页（跳过版权页、给大人的话、后环衬、封底）；印刷版与拼版出全部 64 页 */
       const scope = /print|proof|booklet/.test(file) ? 'print' : 'screen';
-      const pages = specs.filter((p) => scope === 'print' || p.screen !== false);
-      const markup = /booklet/.test(file)
-        ? bookletSheets(pages, scope)
-        : pages.map((p) => renderPage(p, scope)).join('\n\n');
+      const pages = books
+        .map((b) => b.pages.filter((p) => scope === 'print' || p.screen !== false))
+        .flat();
+
+      let markup;
+      if (/booklet/.test(file)) {
+        /* 骑马钉拼版按册分块排：每册是一本独立的书，
+           帖序在册内从头算（最外一张是那一册的封面与封底）。 */
+        markup = books
+          .map((b) => {
+            const bp = b.pages.filter((p) => scope === 'print' || p.screen !== false);
+            return bookletSheets(bp, scope, b.id);
+          })
+          .join('\n');
+      } else {
+        markup = pages.map((p) => renderPage(p, scope)).join('\n\n');
+      }
+
+      /* 册清单（浏览器端拿不到文件系统，册的列表必须显式带进去） */
+      const manifest = books.map((b, i) => ({
+        id: b.id,
+        no: i + 1,
+        title: b.meta.title || b.id,
+        subtitle: b.meta.subtitle || '',
+      }));
+
       return html
         .replace('<!--BOOK_DEFS-->', buildDefs())
+        .replace(
+          '<!--BOOK_MANIFEST-->',
+          `<script type="application/json" id="books-manifest">${JSON.stringify(manifest)}</script>`
+        )
         .replace('<!--BOOK_PAGES-->', markup);
     },
   };
@@ -54,7 +83,7 @@ export function bookPages() {
 /* A4 双面骑马钉拼版：一张纸的两面，每面并排两个书页，对折就是书。
    页序按骑马钉来——最外一张是封面与封底，往里依次往中间收。
    （每帖 4 页，N 页的书要 N/4 张纸、双面印，一共 N/2 个 A4 面。） */
-function bookletSheets(pages, scope) {
+function bookletSheets(pages, scope, bookId) {
   const n = pages.length;
   const sides = [];
   for (let k = 1; k <= n / 4; k++) {
@@ -66,7 +95,7 @@ function bookletSheets(pages, scope) {
       const cells = side
         .map((i) => `      <div class="cell">${renderPage(pages[i - 1], scope)}</div>`)
         .join('\n');
-      return `    <div class="sheet">\n${cells}\n    </div>`;
+      return `    <div class="sheet" data-book="${bookId}">\n${cells}\n    </div>`;
     })
     .join('\n');
 }

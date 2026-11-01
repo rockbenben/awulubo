@@ -10,6 +10,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dist = path.join(root, 'dist');
 const src = path.join(root, 'dist/print.html');
 
+/* 印哪一册：一册 = 一本书 = 64 页。多册时用 --book=<册 id> 指定，
+   不给就印清单里的第一册。 */
+const bookArg = (process.argv.find((a) => a.startsWith('--book=')) || '').split('=')[1] || '';
+
 if (!fs.existsSync(src)) {
   console.error('✗ 先跑 npm run build');
   process.exit(1);
@@ -17,7 +21,7 @@ if (!fs.existsSync(src)) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage();
-await page.goto('file:///' + src.replace(/\\/g, '/'), { waitUntil: 'load' });
+await page.goto('file:///' + src.replace(/\\/g, '/') + (bookArg ? '?book=' + encodeURIComponent(bookArg) : ''), { waitUntil: 'load' });
 await page.evaluate(() => document.fonts.ready);
 await page.emulateMedia({ media: 'print' });
 

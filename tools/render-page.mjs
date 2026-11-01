@@ -274,6 +274,7 @@ export function renderPage(spec, scope = 'screen') {
   );
   return template()({
     id: spec.id,
+    book: spec.book || '',
     template: spec.template || 't-dialog',
     sound: spec.sound || '',
     trap: Boolean(spec.trap),

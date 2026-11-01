@@ -3,8 +3,42 @@
 (function (global) {
   'use strict';
 
-  var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  var allPages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+  /* 当前读的册。页码在每册内独立（每册都从 p01 开始），
+     所以「当前页」是**册内序号**，不是全局序号。 */
+  var activeBook = null;
+  var pages = allPages.slice();
   var current = 0;
+  /* 换页时通知外面（选页器的页码、当前页高亮）。
+     不用事件总线：这里只有一处要听。 */
+  var changeListeners = [];
+
+  function setBookPages(id) {
+    activeBook = id;
+    var own = allPages.filter(function (p) {
+      return p.getAttribute('data-book') === id;
+    });
+    /* 一册都没有（页面数据没带册 id）时退回全部页面——
+       少一册总比读不出书强。 */
+    pages = own.length ? own : allPages.slice();
+    applyBookVisibility(id);
+  }
+
+  /* 别册的页面藏起来。
+     打印/拼版模式下页面是平铺的，不藏就会把两册拼在一起印——
+     每一册都是一本独立的书，骑马钉的帖序也在册内各算各的。 */
+  function applyBookVisibility(id) {
+    for (var k = 0; k < allPages.length; k++) {
+      var b = allPages[k].getAttribute('data-book');
+      allPages[k].classList.toggle('is-off-book', !!id && b !== id);
+    }
+    /* 骑马钉拼版：每一「面」是一册的一帖，别册的面也要藏起来 */
+    var sheets = document.querySelectorAll('.sheet[data-book]');
+    for (var j = 0; j < sheets.length; j++) {
+      var sb = sheets[j].getAttribute('data-book');
+      sheets[j].classList.toggle('is-off-book', !!id && sb !== id);
+    }
+  }
 
   function isStatic() {
     return document.body.classList.contains('static');
@@ -21,11 +55,17 @@
     live.textContent = pages[current].getAttribute('aria-label') || '';
   }
 
+  function notifyChange() {
+    for (var i = 0; i < changeListeners.length; i++) {
+      changeListeners[i](current, pages.length);
+    }
+  }
+
   function show(i) {
     if (!pages.length) return;
     var n = Math.max(0, Math.min(pages.length - 1, i));
-    for (var k = 0; k < pages.length; k++) {
-      pages[k].classList.toggle('is-active', k === n);
+    for (var k = 0; k < allPages.length; k++) {
+      allPages[k].classList.toggle('is-active', k >= 0 && allPages[k] === pages[n]);
     }
     current = n;
     var id = pages[current].getAttribute('data-id');
@@ -42,10 +82,11 @@
     }
     /* 这一页自己的音效：页面数据里写了 sound 就播出来（大字拟声词的声音）。
        以前只有互动动作有声音，这一层是空的——data-sound 写进了 DOM 却没人读它，
-       24 页的拟声词从来没响过。 */
+       全书的拟声词从来没响过。 */
     var pageSound = pages[current].getAttribute('data-sound');
     if (pageSound) global.AudioBook.play(pageSound);
     announce();
+    notifyChange();
   }
 
   function next() {
@@ -288,11 +329,34 @@
   }
 
   function start() {
+    /* 选册：地址栏 ?book=<册 id> 优先，否则用清单里的第一册。
+       页码在册内独立，所以「哪一册」必须单独带——
+       只留 #p31 的话，打开的是哪一册说不清。
+       放在最前面：拼版（static）与印刷版也要按册过滤，
+       否则两册的页面会拼在一起印。 */
+    var ids = [];
+    for (var b = 0; b < allPages.length; b++) {
+      var bid = allPages[b].getAttribute('data-book');
+      if (bid && ids.indexOf(bid) < 0) ids.push(bid);
+    }
+    var wanted = '';
+    try {
+      wanted = new URLSearchParams(location.search).get('book') || '';
+    } catch (e) {
+      wanted = '';
+    }
+    if (!wanted || ids.indexOf(wanted) < 0) wanted = ids[0] || '';
+    if (wanted) {
+      setBookPages(wanted);
+      document.body.setAttribute('data-book', wanted);
+    }
+
     /* ?static=1：全部页面平铺，用于联系表与逐页截图 */
     if ((location.search || '').indexOf('static=1') >= 0) {
       document.body.classList.add('static');
       return;
     }
+
     /* 印刷版不需要交互 */
     if (document.body.classList.contains('print')) return;
 
@@ -352,8 +416,41 @@
         }
       }
     },
+    /* 切册：一册 = 一本书 = 64 页。切过去回到那一册的第一页。 */
+    setBook: function (id) {
+      if (!id || id === activeBook) return false;
+      setBookPages(id);
+      document.body.setAttribute('data-book', id);
+      show(0);
+      return true;
+    },
+    book: function () {
+      return activeBook;
+    },
+    books: function () {
+      var ids = [];
+      for (var k = 0; k < allPages.length; k++) {
+        var b = allPages[k].getAttribute('data-book');
+        if (b && ids.indexOf(b) < 0) ids.push(b);
+      }
+      return ids;
+    },
     current: function () {
       return current;
+    },
+    /* 选页器用：当前页的序号（从 0 起） */
+    currentIndex: function () {
+      return current;
+    },
+    /* 选页器用：直接跳到第 i 页（从 0 起）。
+       跳页不经过 350ms 的翻页节流——那节流是防"一帧里跳两页"的，
+       而选页是读者明确指定的一个目标，不是连点。 */
+    goToIndex: function (i) {
+      show(i);
+    },
+    /* 换页通知：fn(当前页序号, 总页数) */
+    onChange: function (fn) {
+      if (typeof fn === 'function') changeListeners.push(fn);
     },
     page: function () {
       return pages[current];

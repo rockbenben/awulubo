@@ -1,35 +1,64 @@
-/* 读取页面数据（src/content/specs/*.js），按文件名顺序拼成整本书的页面清单。
-   页面清单是唯一的事实来源：构建、检查、字体子集、截图都从这里取。 */
+/* 读取页面数据（src/content/books/<册>/specs/*.js），按文件名顺序拼成册的页面清单。
+   页面清单是唯一的事实来源：构建、检查、字体子集、截图都从这里取。
+
+   一册 = 一本书 = 64 页。多册并列时，每一页都带 `book` 字段（册 id），
+   网页端据此切换「现在读的是哪一册」。 */
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const SPECS = path.join(HERE, '..', 'src', 'content', 'specs');
+const BOOKS = path.join(HERE, '..', 'src', 'content', 'books');
 
-export async function loadSpecs() {
-  const files = fs.readdirSync(SPECS).filter((f) => f.endsWith('.js')).sort();
-  const pages = [];
-  for (const file of files) {
-    const mod = await import(pathToFileURL(path.join(SPECS, file)).href);
-    const list = Array.isArray(mod.default) ? mod.default : [mod.default];
-    for (const spec of list) {
-      if (!spec || !spec.id) {
-        throw new Error(`${file} 里有页面缺少 id`);
-      }
-      pages.push({ ...spec, file });
-    }
-  }
-  const ids = new Set();
-  for (const p of pages) {
-    if (ids.has(p.id)) throw new Error(`页面 ID 重复：${p.id}`);
-    ids.add(p.id);
-  }
-  return pages;
+/** 册清单（顺序即读者看到的顺序） */
+async function manifest() {
+  const mod = await import(pathToFileURL(path.join(BOOKS, 'index.js')).href);
+  return mod.default || [];
 }
 
-/* 页面里所有会被渲染出来的文字（供字体子集与覆盖检查使用） */
+/** 全部册：[{ id, meta, pages }] */
+export async function loadBooks() {
+  const ids = await manifest();
+  const books = [];
+  for (const id of ids) {
+    const dir = path.join(BOOKS, id);
+    const metaFile = path.join(dir, 'book.json');
+    const meta = fs.existsSync(metaFile)
+      ? JSON.parse(fs.readFileSync(metaFile, 'utf8'))
+      : { title: id };
+    const specDir = path.join(dir, 'specs');
+    const files = fs.existsSync(specDir)
+      ? fs.readdirSync(specDir).filter((f) => f.endsWith('.js')).sort()
+      : [];
+    const pages = [];
+    for (const file of files) {
+      const mod = await import(pathToFileURL(path.join(specDir, file)).href);
+      const list = Array.isArray(mod.default) ? mod.default : [mod.default];
+      for (const spec of list) {
+        if (!spec || !spec.id) {
+          throw new Error(`${id}/${file} 里有页面缺少 id`);
+        }
+        pages.push({ ...spec, book: id, file });
+      }
+    }
+    books.push({ id, meta, pages });
+  }
+  return books;
+}
+
+/** 全部册的全部页面（带 `book` 字段）。
+    检查类脚本用它；页面 id 在各册内独立（每册都从 p01 开始），所以按册分组查。 */
+export async function loadSpecs() {
+  const books = await loadBooks();
+  const out = [];
+  for (const b of books) {
+    for (const p of b.pages) out.push(p);
+  }
+  return out;
+}
+
+/** 页面里所有会被渲染出来的文字（供字体子集与覆盖检查使用） */
 export function textsOf(page) {
   const out = [];
   for (const t of Object.values(page.text || {})) {

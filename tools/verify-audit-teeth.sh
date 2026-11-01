@@ -4,11 +4,15 @@
 # 自己备份、自己恢复——不依赖 /tmp 下别人留下的文件，
 # 换台机器跑也成立。
 cd "$(dirname "$0")/.." || exit 1
-SPEC=src/content/specs
+SPEC=src/content/books/awulubo/specs
 BAK=$(mktemp -d)
 
 FILES="31-search.js 39-count.js 35-hide.js 15-rainbow.js 21-burp.js 43-shout.js"
-for f in $FILES; do cp "$SPEC/$f" "$BAK/$f"; done
+for f in $FILES; do
+  # 备份失败就**立刻停**：否则下面的破坏改完恢复不回来，
+  # 闸门变红是真的，可工作区已经被改坏了。
+  cp "$SPEC/$f" "$BAK/$f" || { echo "备份失败：$SPEC/$f"; exit 1; }
+done
 
 restore() {
   for f in $FILES; do cp "$BAK/$f" "$SPEC/$f"; done
@@ -43,7 +47,7 @@ echo "=== 2. trap 页没有热区 ==="
 restore
 python - <<'PY'
 import io, re
-p='src/content/specs/31-search.js'
+p='src/content/books/awulubo/specs/31-search.js'
 s=io.open(p,encoding='utf-8').read()
 # 把这一页的热区整个去掉（孩子会卡死在这一页）
 s=re.sub(r"    hotspot: \[\n(?:.*\n)*?    \],\n", "", s, count=1)
@@ -64,7 +68,7 @@ echo "=== 4. find 目标凑不齐 ==="
 restore
 python - <<'PY'
 import io
-p='src/content/specs/31-search.js'
+p='src/content/books/awulubo/specs/31-search.js'
 s=io.open(p,encoding='utf-8').read()
 s=s.replace("      { action: 'find', target: 'star', at: [540, 118], size: 250, label: '找黄星星' },\n","")
 io.open(p,'w',encoding='utf-8').write(s)
@@ -77,7 +81,7 @@ echo "=== 5. feed3 少了 apple ==="
 restore
 python - <<'PY'
 import io
-p='src/content/specs/15-rainbow.js'
+p='src/content/books/awulubo/specs/15-rainbow.js'
 s=io.open(p,encoding='utf-8').read()
 s=s.replace("      { action: 'feed3', target: 'apple', at: [143, 177], size: 250, label: '喂红苹果' },\n","")
 io.open(p,'w',encoding='utf-8').write(s)
@@ -97,7 +101,7 @@ echo "=== 7. count 的 .count-item 道具不够 ==="
 restore
 python - <<'PY'
 import io
-p='src/content/specs/39-count.js'
+p='src/content/books/awulubo/specs/39-count.js'
 s=io.open(p,encoding='utf-8').read()
 s=s.replace("      { kind: 'apple', at: [370, 520], scale: 0.26, class: 'prop-apple count-item' },\n","",1)
 io.open(p,'w',encoding='utf-8').write(s)
@@ -110,7 +114,7 @@ echo "=== 8. 文字点名的物件没有热区 ==="
 restore
 python - <<'PY'
 import io
-p='src/content/specs/31-search.js'
+p='src/content/books/awulubo/specs/31-search.js'
 s=io.open(p,encoding='utf-8').read()
 s=s.replace("      { action: 'find', target: 'star', at: [540, 118], size: 250, label: '找黄星星' },\n","")
 s=s.replace("      { action: 'find', target: 'fish', at: [646, 596], size: 250, label: '找蓝小鱼' },",

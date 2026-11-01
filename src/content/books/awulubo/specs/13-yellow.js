@@ -8,7 +8,7 @@ export default [
     bg: { kind: 'rays-corner', colors: ['--purple'], focus: [-40, 1040], cover: 'all', wash: '--wash-purple' },
     props: [
       { kind: 'star', at: [300, 150], scale: 0.4, rotate: 10, class: 'prop-star' },
-      /* 提示字压在深紫笔触上只有 2.2:1，垫一块手绘白底块（同 p08/p32 的手法） */
+      /* 提示字压在深紫笔触上只有 2.2:1，垫一块手绘白底块（同 p13/p41 的手法） */
       { kind: 'blob', at: [6, 688], scale: 0.4 },
     ],
     char: { pose: 'peek', at: [280, 620], scale: 0.5 },
