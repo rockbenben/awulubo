@@ -1,0 +1,15 @@
+# 换行符：闸门脚本必须保持 LF。
+# core.autocrlf=true 的机器上，clone 出来的 .sh 会变成 CRLF，
+# bash 会在 shebang 后面塞一个 \r，脚本直接跑不起来。
+*.sh text eol=lf
+
+# 文本文件按仓库里存的样子入库（LF），检出时由 core.autocrlf 决定。
+*.md text
+*.mjs text
+*.js text
+*.json text
+*.yml text
+*.html text
+*.css text
+*.py text
+*.svg text
