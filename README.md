@@ -2,11 +2,11 @@
 
 > 3–5 岁自己翻自己点的绘本：喂它苹果、小鱼、黄星星，它就变成那个颜色。离线，不注册。
 
-[![365 开源计划 #047](https://img.shields.io/badge/365%20%E5%BC%80%E6%BA%90%E8%AE%A1%E5%88%92-%23047-1f6feb)](https://github.com/rockbenben/365opensource)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![365 开源计划 #047](https://img.shields.io/badge/365%20%E5%BC%80%E6%BA%90%E8%AE%A1%E5%88%92-%23047-1f6feb)](https://github.com/rockbenben/365opensource)
 
 [▶ 在线阅读](https://rockbenben.github.io/awulubo/) · [🖨 打印版（64 页）](https://rockbenben.github.io/awulubo/print.html) · [⬇ 自己跑一份](#自己跑一份)
 
-![《啊呜噜啵！》的封面、"彩虹！"、"嗝——啵！！！"和"都送给你"四页](docs/images/hero.webp)
+![《啊呜噜啵！》的封面、"嗝——啵！！！"彩纸喷发、《噜啵生病啦！》的封面和"嘿嘿！"变红，四页](docs/images/hero.webp)
 
 孩子想自己读绘本，可是不识字、也不会翻页——这本就是给这种孩子的：点一下它就变色，揉一揉它就打嗝喷彩纸，它会躲起来要你找，你喊它一声它就蹦出来说「我看见你啦」。
 
@@ -47,15 +47,19 @@
 
 ## 看看长什么样
 
+屏幕够宽时摊开成两页，像真的翻开一本书——左边是刚读过的那页，右边是还没读的那页：
+
+![摊开的两页：左边是「都送给你！」的彩虹噜啵，右边是「都是你的！」的彩纸](docs/images/spread.webp)
+
 | 找一找 | 数一数 |
 | --- | --- |
-| ![找一找：红苹果、蓝小鱼、黄星星藏在满页彩纸里](docs/images/find.webp) | ![数一数：三个红苹果散在页上，点一个旁边就冒出一个数字](docs/images/count.webp) |
+| ![找一找：红苹果、蓝小鱼、黄星星藏在满页彩纸里](docs/images/find.webp) | ![数一数：三个红苹果上各写着一个数——点一个，数就冒出来](docs/images/count.webp) |
 
-| 它看见你啦 | 都送给你 |
+| 它看见你啦 | 都是你的 |
 | --- | --- |
-| ![它看见你啦：它从草丛里蹦出来，举起一只手](docs/images/seen.webp) | ![都送给你：满页彩虹，它把肚子里的颜色全送给你](docs/images/gift.webp) |
+| ![它看见你啦：它举起一只手，喊「我看见你啦」](docs/images/seen.webp) | ![都是你的：红苹果、蓝小鱼、黄星星和彩纸一起撒满页](docs/images/gift.webp) |
 
-<sub>截图由 `npm run shots` 从当前构建自动生成，页面一改就重跑一次。</sub>
+<sub>截图由 `npm run shots:readme` 从当前构建自动生成，页面一改就重跑一次。</sub>
 
 ## 限制
 
@@ -102,6 +106,7 @@ npm run build        # vite build → dist/index.html、print.html、proof.html�
 npm run dev          # 开发服务器（改页面数据即时刷新）
 npm run check        # 页面数据检查（64/60 页强校验 + 页数必须是 4 的倍数）+ 内容审查（页号连续、trap 页能过、多步互动凑得齐、热区不打架）+ 热区检查（每个热区都罩住它指的东西的**墨迹**、320px 小屏上不小于 44 CSS px）+ 版式检查（屏幕版与印刷版各量一遍；含热点是否罩住道具与角色、角色与道具有没有被页面边缘切掉）+ 字体授权闸门 + 字体覆盖检查
 npm run shots        # 逐页截图（Playwright 自己拍，1440 × 1440）
+npm run shots:readme # README 的门面图（首屏横幅 + 图库 + 摊开的两页）→ docs/images/*.webp
 npm run check:shots  # 截图闸门：每页都得真的画出来，且背景要铺满四条边
 npm run check:contrast # 文字对比度闸门：按真实像素量文字底下是什么颜色（正文 ≥ 4.5:1，大字 ≥ 3:1）；屏幕版与印刷版都量
 npm run smoke        # 交互冒烟（Playwright，105 项断言，含"每个音色都得有声"、"选页器能跳页"、"外壳能选册切模式"、"宽屏摊成跨页"）
@@ -200,6 +205,8 @@ tools/
   pdf.mjs              # 导出印刷 PDF（单页，216 mm）
   pdf-booklet.mjs      # 导出 A4/A3 双面骑马钉拼版 PDF（家用打印用）
   shots.mjs            # 逐页截图（Playwright 自己拍）
+  readme-shots.mjs     # README 门面图的素材（首屏横幅四格 + 图库 + 摊开的两页）
+  readme-compose.py    # 素材 PNG → docs/images/*.webp（拼版与转码）
   shot-one.mjs         # 重截单页（调版式时用）
   shot-fx.mjs          # 单独渲染一个笔触特效（查笔触本身的问题时用）
   contact_sheet.py     # 联系表

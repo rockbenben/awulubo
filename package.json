@@ -23,7 +23,8 @@
     "chaos": "node tools/chaos.mjs",
     "pdf": "node tools/pdf.mjs",
     "pdf:booklet": "node tools/pdf-booklet.mjs",
-    "og": "node tools/make-og.mjs"
+    "og": "node tools/make-og.mjs",
+    "shots:readme": "node tools/readme-shots.mjs && python tools/readme-compose.py"
   },
   "devDependencies": {
     "@fontsource/lxgw-wenkai": "^5.3.0",

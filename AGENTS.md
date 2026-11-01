@@ -28,7 +28,7 @@ awulubo/
 │   └── deploy.yml          # 推 main：dist/ 推到 gh-pages 分支（EdgeOne Pages 取）
 ├── deploy/                 # 部署速查：nginx / Caddy / Docker / 一条命令 / 对象存储
 ├── docs/
-│   ├── images/             # README 的首屏图与图库（npm run shots 的产物，已提交）
+│   ├── images/             # README 的首屏图与图库（npm run shots:readme 的产物，已提交）
 │   ├── M0-样张记录.md      # 过程记录：画风确认点、每一轮改动的理由与实测
 │   └── superpowers/specs/
 │       └── 2026-10-30-awulubo-picture-book-design.md   # 设计规格（唯一的设计契约）
