@@ -201,7 +201,9 @@ awulubo/
 - [ ] `npm run pdf` 产出 64 页 PDF（**每册一本**），字体全部内嵌、无 Type3
 - [ ] `npm run shots` 产出 128 张截图（两册各 64 张），联系表逐页看过
 - [ ] **实物印一册出来，通读一遍**
-- [ ] README 的四处门面与真实状态一致（首屏图、description、topics、社交预览图）
+- [ ] README 的四处门面与真实状态一致（首屏图 ✅ 已由 `npm run shots:readme` 从当前构建生成；
+      **description / topics / 社交预览图还没做**——它们是 GitHub 仓库的属性，
+      而 `rockbenben/awulubo` 这个仓库还不存在，本地也没有 git remote）
 - [ ] 仓库描述里没有夸大：说「离线」就要真的不联网，说「60 页」就要真的是 60 页
 
 **新加一个闸门时**：闸门要能红（自己弄坏一次验证），失败信息要指出**怎么改**

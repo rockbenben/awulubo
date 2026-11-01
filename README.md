@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![365 开源计划 #047](https://img.shields.io/badge/365%20%E5%BC%80%E6%BA%90%E8%AE%A1%E5%88%92-%23047-1f6feb)](https://github.com/rockbenben/365opensource)
 
-[▶ 在线阅读](https://rockbenben.github.io/awulubo/) · [🖨 打印版（64 页）](https://rockbenben.github.io/awulubo/print.html) · [⬇ 自己跑一份](#自己跑一份)
+[⬇ 自己跑一份](#自己跑一份)（`npm install && npm run build`） · [🖨 打印版（64 页）](#打印) · [📖 支持哪些设备](#支持范围)
 
 ![《啊呜噜啵！》的封面、"嗝——啵！！！"彩纸喷发、《噜啵生病啦！》的封面和"嘿嘿！"变红，四页](docs/images/hero.webp)
 
@@ -64,6 +64,7 @@
 ## 限制
 
 - **界面全中文**：没有英文版。纸书版也没有声音——声音是屏幕版用 Web Audio 现场合成的。
+- **还没有在线试玩**：这一版还没发布到网上。克隆下来跑一次就能看（`npm install && npm run build`，然后双击 `dist/index.html`）——绘本是一个单文件，拷到哪台电脑都能开。
 - **手机与平板要用 http(s) 打开**：`file://` 下浏览器会限制音频与字体（iPad 尤其明显）。
 - **还没有实物打样**：PDF 的版式检查、逐页 300 dpi 检查都过了，但还没在纸上印过一遍。
 - **参考书不随项目分发**：画风分析用的 PDF 要自己准备（版权原因）。
