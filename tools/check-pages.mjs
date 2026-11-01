@@ -265,6 +265,27 @@ async function main() {
       if (s !== SCREEN_PAGES) {
         fail(`册 ${b.id}：屏幕版 ${s} 页，应为 ${SCREEN_PAGES} 页`);
       }
+
+      /* 一跨 = 一个页面数据文件的两页。骑马钉的书永远翻到「偶数页 | 奇数页」，
+         所以**同一跨的两页必须来自同一个文件**。
+         文件要是从奇数页起，它的两页就分落在两跨里：左页配的是上一场的右页、
+         右页配的是下一场的左页——一翻开是两个故事拼在一起，而且每一跨都错开一页。
+         2026-11-01 真发生过：版权页占着 p4，正文从 p5 起，整本书的跨页全错位；
+         页数、字数、版式、热区四道闸门全绿，因为它们量的都是单页。
+         这条闸门量的是「谁跟谁对在一起」，单页怎么量都量不出来。 */
+      const byNum = new Map(b.pages.map((p) => [Number(p.id.slice(1)), p]));
+      for (const [num, left] of byNum) {
+        if (num % 2 !== 0) continue;
+        const right = byNum.get(num + 1);
+        if (!right) continue; /* 末页独自成页（封底） */
+        if (left.file !== right.file) {
+          fail(
+            `册 ${b.id}：p${num}|p${num + 1} 这一跨的两页来自不同文件` +
+              `（${left.file} / ${right.file}）——一跨要是一个文件里的两页，` +
+              `否则翻开来左右两页是两个故事`
+          );
+        }
+      }
     }
   } else {
     notes.push(

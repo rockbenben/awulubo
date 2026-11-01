@@ -425,9 +425,14 @@
         }
         return;
       }
-      /* 跳过在飞效果与普通翻页走同一条节流通道：
-         孩子点一下只该翻一页，但也不能被节流吞掉。 */
-      withLock(skipPendingInGroup() || next);
+      /* 点哪边，往哪边走——跟翻纸书一样。
+         摊开时左边是**刚读过的那页**，右边是**还没读的那页**：
+         点右页往前，点左页往回。以前不分左右，点哪儿都往前，
+         孩子想回头看左页，书却把这一跨翻过去了。
+         点在书页之外（上下留白、舞台两侧）仍算往前——那是"继续"的意思，
+         不是"后退"。 */
+      var back = spreadMode() && group.length === 2 && hit === group[0];
+      withLock(back ? prev : skipPendingInGroup() || next);
     });
 
     document.addEventListener('keydown', function (ev) {

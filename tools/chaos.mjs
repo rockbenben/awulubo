@@ -205,48 +205,48 @@ if (problems.length === 0) {
 
 /* ---- 第二阶段：乱走之后还能不能通关 ---- */
 async function tryPlay() {
-  await page.evaluate(() => window.Book.goToId('p15'));
+  await page.evaluate(() => window.Book.goToId('p14'));
   await page.waitForTimeout(150);
   for (const t of ['apple', 'fish', 'star']) {
-    await page.click(`[data-id="p15"] .hotspot[data-target="${t}"]`);
+    await page.click(`[data-id="p14"] .hotspot[data-target="${t}"]`);
     await page.waitForTimeout(300);
   }
   await page.waitForTimeout(900);
   return activeId();
 }
-check((await tryPlay()) === 'p16', '乱走之后 p15「按顺序点三样」仍能通关');
+check((await tryPlay()) === 'p15', '乱走之后 p14「按顺序点三样」仍能通关');
 
-await page.evaluate(() => window.Book.goToId('p21'));
+await page.evaluate(() => window.Book.goToId('p20'));
 await page.waitForTimeout(150);
 for (let i = 0; i < 3; i++) {
-  await page.click('[data-id="p21"] .hotspot[data-action="rub"]');
+  await page.click('[data-id="p20"] .hotspot[data-action="rub"]');
   await page.waitForTimeout(260);
 }
 await page.waitForTimeout(900);
-check((await activeId()) === 'p22', '乱走之后 p21「揉肚子」仍能通关');
+check((await activeId()) === 'p21', '乱走之后 p20「揉肚子」仍能通关');
 
-await page.evaluate(() => window.Book.goToId('p31'));
+await page.evaluate(() => window.Book.goToId('p30'));
 await page.waitForTimeout(150);
 for (const t of ['apple', 'fish', 'star']) {
-  await page.click(`[data-id="p31"] .hotspot[data-target="${t}"]`);
+  await page.click(`[data-id="p30"] .hotspot[data-target="${t}"]`);
   await page.waitForTimeout(300);
 }
 await page.waitForTimeout(900);
-check((await activeId()) === 'p32', '乱走之后 p31「找一找」仍能通关');
+check((await activeId()) === 'p31', '乱走之后 p30「找一找」仍能通关');
 
 /* ---- 第三阶段：一次点击只翻一页 ---- */
-await page.evaluate(() => window.Book.goToId('p05'));
+await page.evaluate(() => window.Book.goToId('p04'));
 await page.waitForTimeout(150);
-await page.click('[data-id="p05"] .hotspot');
+await page.click('[data-id="p04"] .hotspot');
 await page.waitForTimeout(60);
-await page.click('[data-id="p05"] .hotspot');
+await page.click('[data-id="p04"] .hotspot');
 await page.waitForTimeout(1000);
-check((await activeId()) === 'p06', '连点两下只翻一页（没有连跳到 p07）');
+check((await activeId()) === 'p05', '连点两下只翻一页（没有连跳到 p06）');
 
 /* ---- 第四阶段：节流不能吞掉孩子的点击 ----
    以前翻页锁是"锁住就丢"，孩子连点六下只有两下有反应，另外四下"点了没反应"。
    现在每个 350 ms 窗口里只要有点击就翻一页：不丢、不堆。 */
-await page.evaluate(() => window.Book.goToId('p05'));
+await page.evaluate(() => window.Book.goToId('p04'));
 await page.waitForTimeout(200);
 const beforeTaps = await page.evaluate(() =>
   Array.from(document.querySelectorAll('.page')).findIndex((p) =>
@@ -270,7 +270,7 @@ check(
 
 /* ---- 第五阶段：从最后一页一路倒着走回封面 ----
    翻页有 350 ms 的节流，所以按键要按节流的节奏来（这是产品的设定，不是 bug） */
-await page.evaluate(() => window.Book.goToId('p34'));
+await page.evaluate(() => window.Book.goToId('p33'));
 await page.waitForTimeout(150);
 let backSteps = 0;
 for (let i = 0; i < 60; i++) {
