@@ -23,7 +23,7 @@ export function verifyPlay(book){
  for(let n=23;n<=34;n++){assert.equal(ball(n).kind,'ball');assert.deepEqual(ball(n).at,ball(23).at,'墙脚停留不能提前归角色');assert.equal(ball(n).scale,ball(23).scale);}
  for(const n of [35,36,37,43])assert.equal(p(n).props.find(o=>o.id==='child-hand')?.kind,'palm','接到孩子手中，不能由角色接管');
  assert.deepEqual(ball(35).at,ball(36).at);assert.deepEqual(ball(36).at,ball(37).at,'短抛后仍由孩子接住');
- assert.match(ball(36).style,/--go-arc:\s*90/);assert.match(ball(36).style,/--go-y:\s*0(?:;|$)/);
+ assert.match(ball(36).style,/--go-arc:\s*90/);assert.match(ball(36).style,/--go-y:[ ]*0(?:;|$)/);
  assert.equal(p(34).char.pose,'push','角色应朝孩子侧推球，不背向接球方');
  assert.ok(ball(34).at[0]<p(34).char.at[0],'角色到墙边，从球的右后方向左侧孩子推出');
  assert.deepEqual(ball(39).at,ball(40).at);assert.deepEqual(ball(40).at,ball(41).at);assert.notEqual(ball(41).layer,'behind','让开后不再藏球');

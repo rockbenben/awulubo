@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 -46 820 906" width="820" height="906">
-<!-- 噜啵举着黄星星。《啊呜噜啵！》的品牌标记。
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="185 -25 630 870" width="630" height="870">
+<!-- 噜啵与金星星。《啊呜噜啵！》品牌标志。
      路径已摊平（不含 <use>、不含 var()）：改角色要重新跑 tools/make-brand.mjs。 -->
-<g transform="translate(516,62) rotate(-12) scale(0.3) translate(-507.5,-460)"><g>
+<g transform="translate(508,145) rotate(-8) scale(0.35) translate(-507.5,-460)"><g>
     <path d="M 500.0 54.1 C 516.1 53.3 597.3 311.6 625.3 332.5 C 653.3 353.5 915.0 352.9 919.7 368.6 C 924.3 384.4 706.3 536.0 695.3 568.5 C 684.3 600.9 767.8 845.3 754.8 855.7 C 741.8 866.0 533.7 724.6 500.0 724.3 C 466.3 723.9 261.4 861.1 249.0 850.5 C 236.6 839.9 324.9 597.0 314.6 565.2 C 304.4 533.4 90.9 388.3 95.5 373.6 C 100.1 358.9 356.6 366.0 383.5 344.7 C 410.5 323.4 483.9 54.9 500.0 54.1 Z" style="fill:#FFE94D;stroke:#1F1F1F;stroke-width:26;stroke-linecap:round;stroke-linejoin:round"/>
   </g></g>
 <g>

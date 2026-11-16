@@ -1,10 +1,10 @@
-<h1><img src="docs/images/logo.svg" width="64" height="71" alt=""> 啊呜噜啵！绘本系列</h1>
+<h1><img src="docs/images/logo.svg" width="51" height="71" alt=""> 啊呜噜啵！绘本系列</h1>
 
 > 给 3–5 岁孩子的中文互动绘本，五册：喂它就变色，它生病、闹脾气、非要自己来。无需注册，不上传数据。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![内容授权 CC BY-NC-ND 4.0](https://img.shields.io/badge/%E5%86%85%E5%AE%B9%E6%8E%88%E6%9D%83-CC%20BY--NC--ND%204.0-lightgrey.svg)](LICENSE-CONTENT.md) [![365 开源计划 #047](https://img.shields.io/badge/365%20%E5%BC%80%E6%BA%90%E8%AE%A1%E5%88%92-%23047-1f6feb)](https://github.com/rockbenben/365opensource)
 
-[⬇ 自己跑一份](#自己跑一份)（`npm ci && npm run build`） · [🖨 打印版（64 页）](#打印) · [📖 支持哪些设备](#支持范围)
+[⬇ 下载发布包](https://github.com/rockbenben/awulubo/releases) · [💻 本地运行](#自己跑一份) · [🖨 打印版说明](#打印) · [📖 支持范围](#支持范围)
 
 ![五册的封面：《啊呜噜啵！》《噜啵生病啦！》《一起玩！》《生气啦！》《我自己来！》](docs/images/hero.webp)
 

@@ -147,11 +147,12 @@ function flatten(id, inherited = {}, extraVars = {}, depth = 0) {
 }
 
 /* 角色：按顺序摊平无手零件。state决定身体颜色，沿用原构图。 */
-function critter(state, { spiral = true } = {}) {
+function critter(state, { spiral = true, bellyColors = false } = {}) {
   const vars = {
     '--body': state === 'paper' ? TOKENS['--paper'] : TOKENS[`--${state}`],
     '--spiral': TOKENS['--ink'],
     '--glint': TOKENS['--paper'],
+    '--belly-colors': bellyColors ? 'inline' : 'none',
   };
   const order = [
     'ch-feet',
@@ -185,13 +186,14 @@ function heldProp(kind, scale, cx, cy, rotate = 0) {
 
 /* 书上封面的笔触层：真的用 effects.svg 里那一份，不另画条纹。
    符号自己的圆心在 (500,500)（effects.json 里 rays.cx/cy），所以平移量要把圆心放到指定位置。 */
-const EFFECT_SYMBOL = { rays: 'fx-rays', bands: 'fx-bands', 'rays-tight': 'fx-rays-tight' };
-function effectLayer(kind, centerX, centerY, zoom, colors) {
+const EFFECT_SYMBOL = { rays: 'fx-rays', bands: 'fx-bands', 'rays-tight': 'fx-rays-tight', confetti: 'fx-confetti', stars: 'fx-stars' };
+function effectLayer(kind, centerX, centerY, zoom, colors = {}) {
   const inner = flatten(EFFECT_SYMBOL[kind], {}, {
     ...TOKENS,
-    '--ray': colors.ray,
-    '--ray2': colors.ray2,
-    '--ray-gap': colors.gap,
+    '--ray': colors.ray ?? TOKENS['--yellow'],
+    '--ray2': colors.ray2 ?? TOKENS['--yellow-deep'],
+    '--ray-gap': colors.gap ?? TOKENS['--paper'],
+    '--star': colors.star ?? TOKENS['--yellow'],
   });
   const tx = centerX - 500 * zoom;
   const ty = centerY - 500 * zoom;
@@ -199,18 +201,15 @@ function effectLayer(kind, centerX, centerY, zoom, colors) {
 }
 
 /* ============================================================
-   logo：噜啵望着头顶黄星星
-   —— 为什么星星留在头顶而不是塞进嘴里：脸被眼睛、眉毛、嘴占满了，
-      量过脸部空隙只有 x 440–560 / y 300–425，塞不下一颗看得见的星星。
-      星星留在头顶上方最清楚：那颗黄星就是整个 mark 的视觉焦点，
-      缩到 40 px（GitHub 仓库头像的实际大小）也还认得出。
+   logo：噜啵头顶金星星
+   —— 金星星贴合头顶曲线，外框紧凑收拢，
+      缩到 40 px（GitHub 仓库头像大小）与 favicon 均清晰可辨。
    ============================================================ */
 function logoSvg() {
-  /* 角色的实际外框：脚底 y=840（含描边），圆身与双脚沿用原坐标 */
-  const star = heldProp('prop-star', 0.3, 516, 62, -12);
+  const star = heldProp('prop-star', 0.35, 508, 145, -8);
   const body = critter('paper');
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 -46 820 906" width="820" height="906">
-<!-- 噜啵举着黄星星。《啊呜噜啵！》的品牌标记。
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="185 -25 630 870" width="630" height="870">
+<!-- 噜啵与金星星。《啊呜噜啵！》品牌标志。
      路径已摊平（不含 <use>、不含 var()）：改角色要重新跑 tools/make-brand.mjs。 -->
 ${star}
 ${body}
@@ -219,84 +218,198 @@ ${body}
 
 /* ============================================================
    社交预览图 1280×640
-   —— 三只噜啵并排站在下沿，各自举着自己那份吃的：苹果(红)、小鱼(蓝)、黄星(黄)。
-      一张图就说完了这本书的玩法，不用解释。
-      版面是**上下叠**（标题在上、角色在下沿），不是"左文字右插图"两栏。
+   —— 绘本剧场风：全五册核心提炼，彩肚噜啵与漂浮互动道具（苹果/小鱼/金星/彩纸）。
+      左侧层级分明：册系药丸徽章、快乐体大标题、五册故事副标与四色特性胶囊。
    ============================================================ */
-const CARD = {
-  width: 1280,
-  height: 640,
-  wash: '--wash-yellow',
-  copy: {
-    left: 76, top: 34, h1: 120, sub: 44, facts: 31,
-    gapSub: 20, gapFacts: 24,
-    factsRight: 1204,   /* 承诺那一行右对齐到这条线上 */
-    factsTop: 62,
-  },
-  cast: {
-    scale: 0.36,
-    centres: [350, 640, 930],
-    feetGap: 8,          /* 脚底离画面下沿留几像素：贴着边会被裁掉半只脚 */
-    propY: -20,          /* 道具外接框中心在角色坐标系里的 y（负数 = 举得更高，与头拉开距离） */
-    items: [
-      { state: 'red', prop: 'prop-apple', pscale: 0.38, prot: -14 },
-      { state: 'blue', prop: 'prop-fish', pscale: 0.62, prot: 12 },
-      { state: 'yellow', prop: 'prop-star', pscale: 0.4, prot: -9 },
-    ],
-  },
-  /* 背景笔触：种类 / 圆心 / 放大倍数 / 三种颜色（纸白缺口可以让光芒断开）
-     —— 用**斜向色带**（书上第二册封面的那种），不用放射线：
-        放射线放大之后是一块块大黄板子，看不出是光芒；
-        斜向色带是一道一道的笔触，像马克笔刷出来的，跟书页一个画法。 */
-  burst: { kind: 'bands', cx: 640, cy: 320, zoom: 0.7, ray: '--yellow', ray2: '--yellow-deep', gap: '--paper' },
-};
+function cardHtml() {
+  const W = 1280;
+  const H = 640;
 
-function cardHtml(opts = {}) {
-  const O = { ...CARD, ...opts, copy: { ...CARD.copy, ...(opts.copy || {}) }, cast: { ...CARD.cast, ...(opts.cast || {}) } };
-  const T = TOKENS;
-  const W = O.width;
-  const H = O.height;
-  const C = O.cast;
+  // Background ray effect
+  const burst = `<svg class="bg-fx" viewBox="0 0 ${W} ${H}">
+    ${effectLayer('bands', 960, 320, 0.72, {
+      ray: '#FFE94D',
+      ray2: '#FFD700',
+      gap: '#FFF8E7',
+    })}
+  </svg>`;
 
-  const oy = H - 840 * C.scale - C.feetGap;
-  const cast = C.items.map((it, i) => {
-    const ox = C.centres[i] - 500 * C.scale;
-    const prop = heldProp(it.prop, it.pscale, 500, C.propY, it.prot);
-    return `<g transform="translate(${ox},${oy}) scale(${C.scale})">${prop}${critter(it.state)}</g>`;
-  }).join('\n');
+  // Hero Lubu: cx = 960, scale = 0.50, feet bottom at 585
+  const heroLubuY = H - 840 * 0.50 - 55;
+  const heroLubuX = 960 - 500 * 0.50;
+  const heroLubu = `<g transform="translate(${heroLubuX}, ${heroLubuY}) scale(0.50)">
+    ${critter('paper', { spiral: false, bellyColors: true })}
+  </g>`;
 
-  const burst = O.burst
-    ? `<svg class="bg" viewBox="0 0 ${W} ${H}">${effectLayer(O.burst.kind, O.burst.cx, O.burst.cy, O.burst.zoom, {
-        ray: T[O.burst.ray],
-        ray2: T[O.burst.ray2],
-        gap: T[O.burst.gap],
-      })}</svg>`
-    : '';
+  // Floating props in arc around Lubu with breathing room
+  const starProp = heldProp('prop-star', 0.23, 960, 115, 4);
+  const appleProp = heldProp('prop-apple', 0.24, 805, 205, -14);
+  const fishProp = heldProp('prop-fish', 0.38, 1115, 265, -14);
 
-  const cp = O.copy;
-  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+  // Confetti scattered in air
+  const confettiLayer = `<g opacity="0.80">
+    ${effectLayer('confetti', 960, 310, 0.65)}
+  </g>`;
+
+  const zcoolUrl = '/node_modules/@fontsource/zcool-kuaile/files/zcool-kuaile-chinese-simplified-400-normal.woff2';
+  const wenkaiUrl = '/node_modules/@fontsource/lxgw-wenkai/files/lxgw-wenkai-latin-500-normal.woff2';
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
 <style>
-@font-face{font-family:'ZCOOL';src:url('file:///${path.join(root, 'node_modules/@fontsource/zcool-kuaile/files/zcool-kuaile-chinese-simplified-400-normal.woff2')}')}
-*{margin:0;padding:0;box-sizing:border-box}
-body{width:${W}px;height:${H}px;overflow:hidden;background:${T[O.wash]};
-  font-family:'ZCOOL',sans-serif;color:${T['--ink']};-webkit-font-smoothing:antialiased}
-.stage{position:relative;width:${W}px;height:${H}px;overflow:hidden}
-.cast{position:absolute;left:0;top:0;width:${W}px;height:${H}px}
-.copy{position:absolute;left:${cp.left}px;top:${cp.top}px}
-h1{font-size:${cp.h1}px;line-height:1;letter-spacing:2px;font-weight:400}
-.sub{font-size:${cp.sub}px;line-height:1.2;margin-top:${cp.gapSub}px}
-.facts{position:absolute;right:${W - cp.factsRight}px;top:${cp.factsTop}px;width:600px;text-align:right;
-  font-size:${cp.facts}px;line-height:1.65}
-</style></head><body>
+@font-face {
+  font-family: 'ZCOOL';
+  src: url('${zcoolUrl}') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'WenKai';
+  src: url('${wenkaiUrl}') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: ${W}px;
+  height: ${H}px;
+  overflow: hidden;
+  background: #FFF8E7;
+  font-family: 'ZCOOL', sans-serif;
+  color: #1F1F1F;
+  -webkit-font-smoothing: antialiased;
+}
+.stage {
+  position: relative;
+  width: ${W}px;
+  height: ${H}px;
+  overflow: hidden;
+  background: radial-gradient(circle at 75% 50%, #FFFDF5 0%, #FFF8E7 65%, #FFF2D0 100%);
+}
+.bg-fx {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: ${W}px;
+  height: ${H}px;
+  opacity: 0.28;
+}
+.cast-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: ${W}px;
+  height: ${H}px;
+}
+.content {
+  position: absolute;
+  left: 76px;
+  top: 72px;
+  width: 630px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+.pill {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 18px;
+  background: #FFFDF8;
+  border: 2.5px solid #1F1F1F;
+  border-radius: 999px;
+  font-family: 'ZCOOL', sans-serif;
+  font-size: 22px;
+  color: #1F1F1F;
+  letter-spacing: 1px;
+  box-shadow: 2px 2px 0px rgba(31,31,31,0.12);
+}
+.title {
+  margin-top: 20px;
+  font-size: 114px;
+  line-height: 1.02;
+  letter-spacing: 3px;
+  font-weight: 400;
+  color: #1F1F1F;
+  text-shadow: 3px 3px 0px rgba(255,233,77,0.6);
+}
+.subtitle {
+  margin-top: 22px;
+  font-family: 'WenKai', system-ui, -apple-system, sans-serif;
+  font-size: 32px;
+  line-height: 1.45;
+  color: #4A3528;
+  font-weight: 500;
+}
+.features {
+  margin-top: 36px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
+}
+.feature-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: #FFFDF8;
+  border: 2px solid #1F1F1F;
+  border-radius: 12px;
+  font-family: 'WenKai', system-ui, -apple-system, sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  color: #1F1F1F;
+  box-shadow: 2px 2px 0px rgba(31,31,31,0.08);
+}
+.feature-chip .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.dot-red { background: #F43934; }
+.dot-blue { background: #3B82F6; }
+.dot-yellow { background: #F59E0B; }
+.dot-green { background: #10B981; }
+.ground-line {
+  position: absolute;
+  right: 60px;
+  bottom: 42px;
+  width: 520px;
+  height: 8px;
+  background: #E8D9B8;
+  border-radius: 999px;
+  opacity: 0.6;
+}
+</style>
+</head>
+<body>
 <div class="stage">
   ${burst}
-  <div class="copy">
-    <h1>啊呜噜啵！</h1>
-    <div class="sub">一个要你喂的小怪物</div>
+  <div class="ground-line"></div>
+  <svg class="cast-svg" viewBox="0 0 ${W} ${H}">
+    ${confettiLayer}
+    ${starProp}
+    ${appleProp}
+    ${fishProp}
+    ${heroLubu}
+  </svg>
+  <div class="content">
+    <div class="pill">3–5 岁中文互动绘本 · 全五册</div>
+    <h1 class="title">啊呜噜啵！</h1>
+    <div class="subtitle">喂它变色 · 陪它生病 · 一起呼气 · 我自己来</div>
+    <div class="features">
+      <div class="feature-chip"><span class="dot dot-red"></span>宽屏双页翻阅</div>
+      <div class="feature-chip"><span class="dot dot-blue"></span>触控手势互动</div>
+      <div class="feature-chip"><span class="dot dot-yellow"></span>骑马钉双面打印</div>
+      <div class="feature-chip"><span class="dot dot-green"></span>单文件离线不上传</div>
+    </div>
   </div>
-  <div class="facts">3–5 岁自己翻自己点的绘本<br>全部离线 · 不联网、不上传、不注册</div>
-  <svg class="cast" viewBox="0 0 ${W} ${H}">${cast}</svg>
-</div></body></html>`;
+</div>
+</body>
+</html>`;
 }
 
 /* 候选板：几张摆在一起挑。背景处理（有没有光芒、光芒多大）最难凭想象定，
@@ -305,9 +418,9 @@ async function variants() {
   const list = [
     ['最终版', {}],
   ];
-  const cells = list.map(([label, opts]) => `
+  const cells = list.map(([label]) => `
     <figure>
-      <div class="cell"><div class="scaler">${cardHtml(opts)}</div></div>
+      <div class="cell"><div class="scaler">${cardHtml()}</div></div>
       <figcaption>${label}</figcaption>
     </figure>`).join('');
   const html = `<!doctype html><meta charset="utf-8"><style>
@@ -323,12 +436,14 @@ async function variants() {
   console.log(`→ ${out}`);
 }
 
+const defaultBase = 'file:///' + root.replace(/\\/g, '/') + '/';
+
 /* ---- 渲染 ---- */
-async function shoot(html, width, height, out, base = null) {
+async function shoot(html, width, height, out, base = defaultBase) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width, height } });
   /* base：先落到那个目录上，再写内容——
-     file:// 下相对路径的资源（logo.svg）从 about:blank 引用会被浏览器拦掉。 */
+     file:// 下相对路径的资源（logo.svg、字体）从 about:blank 引用会被浏览器拦掉。 */
   if (base) await page.goto(base);
   await page.setContent(html, { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
