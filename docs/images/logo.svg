@@ -9,16 +9,13 @@
     <path d="M 614 752 C 634 762, 650 782, 646 802 C 642 822, 616 828, 598 816 C 583 806, 572 786, 572 758 Z" style="fill:#FFFFFF;stroke:#1F1F1F;stroke-width:24;stroke-linecap:round;stroke-linejoin:round"/>
   </g>
 <g>
-    <path d="M 262 404 C 210 374, 164 324, 138 264" style="fill:none;stroke:#1F1F1F;stroke-width:50;stroke-linecap:round"/>
-    <path d="M 262 404 C 210 374, 164 324, 138 264" style="fill:none;stroke:#FFFFFF;stroke-width:26;stroke-linecap:round"/>
-  </g>
-<g>
-    <path d="M 738 404 C 790 374, 836 324, 862 264" style="fill:none;stroke:#1F1F1F;stroke-width:50;stroke-linecap:round"/>
-    <path d="M 738 404 C 790 374, 836 324, 862 264" style="fill:none;stroke:#FFFFFF;stroke-width:26;stroke-linecap:round"/>
-  </g>
-<g>
     <g style="fill:#FFFFFF;stroke:#1F1F1F;stroke-width:26;stroke-linecap:round;stroke-linejoin:round">
     <path d="M 490.4 239.0 C 581.0 235.8 621.6 257.7 679.2 309.1 C 736.8 360.4 758.9 382.0 772.8 463.9 C 786.6 545.9 784.5 562.6 754.1 628.1 C 723.6 693.6 702.3 722.2 618.9 761.6 C 535.6 801.0 513.5 792.9 429.9 770.4 C 346.3 747.9 288.2 717.5 252.6 657.9 C 217.0 598.3 219.8 568.3 228.3 482.9 C 236.8 397.6 261.0 328.0 318.5 282.2 C 376.0 236.4 399.9 242.2 506.4 238.4" style="fill:#FFFFFF"/>
+  </g>
+    <g style="display:none;stroke:none">
+    <path d="M 355 610 Q 410 580 465 610 L 465 745 Q 400 748 355 700 Z" style="fill:#F43934"/>
+    <path d="M 465 610 Q 515 585 550 610 L 550 745 L 465 745 Z" style="fill:#8ABFE9"/>
+    <path d="M 550 610 Q 615 580 650 610 L 650 700 Q 610 750 550 745 Z" style="fill:#FFE94D"/>
   </g>
   </g>
 <g>

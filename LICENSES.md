@@ -7,12 +7,12 @@
 | 层 | 授权 | 覆盖 |
 |---|---|---|
 | **代码与工具** | [MIT](LICENSE) | `src/js/`、`src/css/`、`tools/`、构建与 CI 配置 |
-| **作品内容** | [**CC BY-NC-ND 4.0**](LICENSE-CONTENT.md) | `src/components/`（噜啵与道具的图形）、`src/content/`（两册正文与页面数据）、`docs/superpowers/specs/`（故事脚本与角色设计） |
+| **作品内容** | [**CC BY-NC-ND 4.0**](LICENSE-CONTENT.md) | `src/components/`（噜啵与道具的图形）、`src/content/`（五册正文与页面数据）、`docs/superpowers/specs/`（故事脚本与角色设计） |
 | **字体** | SIL OFL 1.1（见下） | `src/fonts/` |
 
 **为什么代码和作品要分开**：MIT 允许任何人商用，而且**不可撤回**——一旦按 MIT 发出去，
 此后所有拿到副本的人都永久持有商用权。对引擎来说这是好事（用的人越多越好），
-对噜啵来说是坏事：这个形象和这两册书将来可能要做成商业产品。
+对噜啵来说是坏事：这个形象和这五册书将来可能要做成商业产品。
 所以代码走 MIT 招人用，作品走「免费读、免费打印、免费分享，不许商用、不许改编」，
 商业用途另签授权。
 
@@ -59,10 +59,11 @@ OFL 1.1 对本项目的实际含义：
 | [Handlebars](https://handlebarsjs.com) | 页面模板渲染 | MIT |
 | [Playwright](https://playwright.dev) | 印刷 PDF 导出、交互冒烟、版式测量、逐页截图 | Apache-2.0 |
 | [fontTools](https://github.com/fonttools/fonttools) | 字体子集化、cmap 覆盖检查 | MIT |
+| [pypdf](https://github.com/py-pdf/pypdf) | 成品 PDF 的纸型、嵌入字体、Type3 与标题验收 | BSD-3-Clause |
 | [Pillow](https://python-pillow.org) | 截图闸门与联系表读 PNG | MIT-CMU |
 | [@fontsource/zcool-kuaile](https://fontsource.org/fonts/zcool-kuaile)、[@fontsource/lxgw-wenkai](https://fontsource.org/fonts/lxgw-wenkai) | 字体文件分发 | OFL-1.1（见上） |
 
-以上均为宽松许可（MIT / Apache-2.0），可自由用于商业出版；随产物分发的只有构建结果（HTML/PDF/PNG），不涉及第三方代码。
+以上均为宽松许可（MIT / Apache-2.0 / BSD-3-Clause 等），可自由用于商业出版；随产物分发的只有构建结果（HTML/PDF/PNG），不涉及第三方代码。
 
 ## 音效
 
@@ -77,7 +78,7 @@ OFL 1.1 对本项目的实际含义：
 
 ## 故事与文本
 
-两册的旁白、拟声词与页面数据（`src/content/`）与图形同属一份作品，
+五册的旁白、拟声词与页面数据（`src/content/`）与图形同属一份作品，
 授权见 [LICENSE-CONTENT.md](LICENSE-CONTENT.md)。
 
 ## 参考书
