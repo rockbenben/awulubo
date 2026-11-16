@@ -6,6 +6,7 @@
   var ctx = null;
   var master = null;
   var muted = false;
+  var sharedNoise = null;
 
   function ensure() {
     if (!ctx) {
@@ -28,12 +29,16 @@
     return ctx;
   }
 
+  /* 白噪声缓冲池：共享 2 秒白噪声数据，避免每次发声都重新分配内存与 Math.random 循环 */
   function noiseBuffer(seconds) {
-    var len = Math.max(1, Math.floor(ctx.sampleRate * seconds));
-    var buf = ctx.createBuffer(1, len, ctx.sampleRate);
-    var data = buf.getChannelData(0);
-    for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-    return buf;
+    var dur = Math.max(seconds || 0.1, 2);
+    if (!sharedNoise || sharedNoise.duration < seconds) {
+      var len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+      sharedNoise = ctx.createBuffer(1, len, ctx.sampleRate);
+      var data = sharedNoise.getChannelData(0);
+      for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    }
+    return sharedNoise;
   }
 
   /* 把一个节点接到带包络的增益上，再接到主音量 */

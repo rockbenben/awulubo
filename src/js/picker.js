@@ -53,6 +53,7 @@ import { openPanel, closePanel } from './panels.js';
     grid.className = 'picker-grid';
     /* 记下这一格属于哪一册：面板开着时切了册，sync 据此重建。 */
     grid.setAttribute('data-book', book || '');
+    var frag = document.createDocumentFragment();
     list.forEach(function (page, i) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -66,8 +67,9 @@ import { openPanel, closePanel } from './panels.js';
       label.textContent = String(i + 1);
       btn.appendChild(label);
       btn.setAttribute('aria-label', '跳到第 ' + (i + 1) + ' 页');
-      grid.appendChild(btn);
+      frag.appendChild(btn);
     });
+    grid.appendChild(frag);
     panel.appendChild(grid);
     built = true;
     builtBook = book;

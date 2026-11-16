@@ -1,12 +1,15 @@
 /* 六类代表跨页，以及离页、连点和静态输出的回归。 */
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { verifyReaderTouch, verifyLegacyFullscreen } from './reader-touch.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const browser = await chromium.launch();
 try {
+  await verifyReaderTouch(browser);
+  await verifyLegacyFullscreen(browser);
   const page = await browser.newPage({ viewport: { width: 900, height: 900 } });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -18,6 +21,58 @@ try {
   async function waitId(expected) {
     await page.waitForFunction(value => window.Book.page().dataset.id === value, expected);
   }
+  // 全屏操作不翻页；浏览器自行退出时按钮也必须同步。
+  await open('awulubo', 'p04');
+  assert.equal(await page.locator('#fullscreen-btn').count(), 1, '网页应有全屏入口');
+  await page.locator('#fullscreen-btn').click();
+  await page.waitForFunction(() => document.fullscreenElement === document.documentElement);
+  assert.equal(await id(), 'p04');
+  assert.equal(await page.locator('#fullscreen-btn').innerText(), '退出');
+  await page.evaluate(() => document.exitFullscreen());
+  await page.waitForFunction(() => document.querySelector('#fullscreen-btn').textContent === '全屏');
+  await page.keyboard.press('f');
+  await page.waitForFunction(() => !!document.fullscreenElement);
+  await page.keyboard.press('f');
+  await page.waitForFunction(() => !document.fullscreenElement);
+  await page.locator('#fullscreen-btn').focus();
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => !!document.fullscreenElement);
+  await page.locator('#page-btn').click();
+  await page.keyboard.press('f');
+  assert.equal(await page.evaluate(() => !!document.fullscreenElement), true, '浮层内快捷键不能穿透');
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => document.fullscreenElement && document.exitFullscreen());
+  await page.waitForFunction(() => !document.fullscreenElement);
+  assert.equal(await id(), 'p04');
+  assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).touchAction), 'manipulation');
+  assert.equal(await page.locator('#stage').evaluate(el => getComputedStyle(el).userSelect), 'none');
+  assert.equal(await page.locator('#stage').evaluate(el => el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))), false);
+  // 不支持与请求失败都是可恢复状态，不能冒充已经全屏或改变书页。
+  for (const unavailable of [true, false]) {
+    const fallback = await browser.newPage();
+    await fallback.addInitScript(unavailable => {
+      Object.defineProperty(document, 'fullscreenEnabled', { value: !unavailable });
+      Object.defineProperty(document, 'webkitFullscreenEnabled', { value: false });
+      Element.prototype.requestFullscreen = () => Promise.reject(new Error('测试拒绝全屏'));
+    }, unavailable);
+    await fallback.goto(pathToFileURL(path.join(root, 'dist/index.html')).href + '?book=awulubo#p04');
+    await fallback.locator('#fullscreen-btn').click();
+    await fallback.waitForFunction(() => document.querySelector('#fullscreen-status').textContent.length > 0);
+    assert.match(await fallback.locator('#fullscreen-status').innerText(), unavailable ? /不支持全屏/ : /再试一次/);
+    assert.equal(await fallback.evaluate(() => Book.page().dataset.id), 'p04');
+    assert.equal(await fallback.locator('#fullscreen-btn').innerText(), '全屏');
+    assert.equal(await fallback.locator('#fullscreen-btn').getAttribute('aria-disabled'), null);
+    await fallback.close();
+  }
+  // 真触摸连续轻点书外留白，也不能触发浏览器放大。
+  const touchPage = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await touchPage.goto(pathToFileURL(path.join(root, 'dist/index.html')).href + '?book=awulubo#p20');
+  await touchPage.touchscreen.tap(195, 760);
+  await touchPage.touchscreen.tap(195, 760);
+  await touchPage.waitForTimeout(400);
+  assert.equal(await touchPage.evaluate(() => visualViewport.scale), 1);
+  await touchPage.close();
+
   // 传球的结果只能出现一次。
   await open('yiqiwan', 'p34');
   await page.locator('.is-active [data-action=pass]').dblclick({ delay: 50 });
@@ -212,6 +267,7 @@ try {
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#page-btn').evaluate(el => el === document.activeElement), true);
   await open('awulubo', 'p26', 'print');
+  assert.equal(await page.locator('#fullscreen-btn').count(), 0);
   assert.equal(await page.locator('button.hotspot').count(), 0);
   assert.equal(await page.evaluate(() => document.getAnimations().filter(animation => animation.playState === 'running').length), 0);
   await page.locator('[data-id=p26][data-book=awulubo] .hotspot').click();
@@ -219,6 +275,15 @@ try {
   assert.equal(await page.locator('.is-dim').count(), 0);
   assert.deepEqual(errors, []);
   console.log('✓ 六类代表跨页、重复输入、离页重返、浮层和印刷入口通过');
+  if (process.argv.includes('--webkit')) {
+    const safariEngine = await webkit.launch();
+    try {
+      await verifyReaderTouch(safariEngine, false);
+      await verifyLegacyFullscreen(safariEngine);
+    } finally {
+      await safariEngine.close();
+    }
+  }
 } finally {
   await browser.close();
 }

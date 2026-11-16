@@ -342,6 +342,7 @@ import { gestures } from './model.ts';
     var down = null;
     var pointerId = null;
     var beforeGesture = null;
+    var currentDeg = 0;
 
     /* 点一下与"画了一笔"的界：手指/鼠标离按下的地方超过这么多像素，
        才算真的在画。原先用"角度变化超过 0.5°"来判断，
@@ -350,6 +351,7 @@ import { gestures } from './model.ts';
     var TAP_SLOP = 14;
 
     function turnTo(deg) {
+      currentDeg = deg;
       spiral.dataset.deg = String(deg);
       spiral.style.transform = 'rotate(' + deg.toFixed(1) + 'deg)';
     }
@@ -362,7 +364,7 @@ import { gestures } from './model.ts';
         /* 点一下也算揉：螺旋转一格，孩子看得见反应。
            "在肚子上画个圈"是 3 岁孩子做不到的动作，连点三下的兜底不能是"点了没反应"；
            转 3 格 = 360°，正好也过"画满一圈"那关。 */
-        turnTo(parseFloat(spiral.dataset.deg || '0') + gestures.rub.tapDegrees);
+        turnTo(currentDeg + gestures.rub.tapDegrees);
       }
       last = null;
       down = null;
@@ -378,6 +380,7 @@ import { gestures } from './model.ts';
         spiral.dataset.deg = beforeGesture.degrees;
         spiral.style.transform = beforeGesture.transform;
         spiral.classList.toggle('is-rubbing', beforeGesture.rubbing);
+        currentDeg = parseFloat(beforeGesture.degrees || '0');
       }
       last = null;
       down = null;
@@ -393,6 +396,7 @@ import { gestures } from './model.ts';
       if (!global.BookEffects.begin(page)) return;
       pointerId = ev.pointerId;
       gestureValid = global.BookEffects.capture(page);
+      currentDeg = parseFloat(spiral.dataset.deg || '0');
       beforeGesture = {
         degrees: spiral.dataset.deg || '0',
         transform: spiral.style.transform,
@@ -434,7 +438,9 @@ import { gestures } from './model.ts';
       if (d > 180) d -= 360;
       if (d < -180) d += 360;
       /* 累计角度不取模：画满一圈要能看出"转过了 300°" */
-      turnTo(parseFloat(spiral.dataset.deg || '0') + d);
+      currentDeg += d;
+      spiral.dataset.deg = String(currentDeg);
+      spiral.style.transform = 'rotate(' + currentDeg.toFixed(1) + 'deg)';
       last = a;
     });
     hotspot.addEventListener('pointerup', endGesture);

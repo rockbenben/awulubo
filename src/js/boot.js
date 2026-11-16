@@ -5,3 +5,4 @@ import '../js/interactions.js';
 import '../js/book.js';
 import '../js/picker.js';
 import '../js/shell.js';
+import '../js/fullscreen.js';

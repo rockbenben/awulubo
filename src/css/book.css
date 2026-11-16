@@ -58,15 +58,69 @@ body {
    注意只作用于"互动的屏幕版"：校样（proof）是 body.screen.static，
    它靠 grid 平铺全书页面，被 flex 一顶就全叠到一起了。 */
 body.screen:not(.static) {
-  --page: min(100vw, 100dvh);
+  /* 连续轻点不触发浏览器双击放大，仍允许双指缩放。 */
+  touch-action: manipulation;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --reader-w: calc(100vw - var(--safe-left) - var(--safe-right));
+  --reader-h: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  --page: min(var(--reader-w), var(--reader-h));
   /* 舞台有多宽：单页时就是一页，摊开成跨页时是两页。
      按钮的位置按它算——否则宽屏上按钮会飘到书外面去。 */
   --stage-w: var(--page);
+  --chrome-top: calc(var(--safe-top) + (var(--reader-h) - var(--page)) / 2 + 12px);
+  --chrome-left: calc(var(--safe-left) + (var(--reader-w) - var(--stage-w)) / 2 + 12px);
+  --chrome-right: calc(var(--safe-right) + (var(--reader-w) - var(--stage-w)) / 2 + 12px);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
+  height: 100dvh;
+  box-sizing: border-box;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
   position: relative;
+}
+
+body.screen:not(.static) .stage,
+body.screen:not(.static) .shell-toggle,
+body.screen:not(.static) .chrome-btn,
+body.screen:not(.static) .page-btn {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+body.screen:not(.static) .stage {
+  --page: inherit;
+}
+
+body.screen:not(.static) .fullscreen-toggle {
+  left: var(--chrome-left);
+  right: auto;
+  font: inherit;
+  font-size: 15px;
+}
+
+body.screen:not(.static) .fullscreen-status {
+  position: fixed;
+  top: max(68px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 10;
+  width: fit-content;
+  max-width: calc(100vw - 48px);
+  margin: 0 auto;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  pointer-events: none;
+}
+
+body.screen:not(.static) .fullscreen-status:empty {
+  display: none;
 }
 
 /* 静音键贴着书的右上角。
@@ -74,8 +128,8 @@ body.screen:not(.static) {
    像一个飘在旁边的悬浮物。 */
 body.screen:not(.static) .chrome-btn {
   position: absolute;
-  top: calc((100dvh - var(--page)) / 2 + 12px);
-  right: calc((100vw - var(--stage-w)) / 2 + 12px);
+  top: var(--chrome-top);
+  right: var(--chrome-right);
 }
 
 /* —— 选页器 ——
@@ -87,8 +141,8 @@ body.screen:not(.static) .chrome-btn {
    所以缩到指甲盖大小也不糊——SVG 有 viewBox，放多大都对。 */
 .page-btn {
   position: absolute;
-  top: calc((100dvh - var(--page)) / 2 + 12px);
-  right: calc((100vw - var(--stage-w)) / 2 + 66px);
+  top: var(--chrome-top);
+  right: calc(var(--chrome-right) + 54px);
   min-width: 44px;
   height: 44px;
   padding: 0 12px;
@@ -114,6 +168,8 @@ body.screen:not(.static) .chrome-btn {
   inset: 0;
   z-index: 20;
   overflow-y: auto;
+  contain: paint;
+  -webkit-overflow-scrolling: touch;
   padding: 24px 16px 40px;
   background: rgba(31, 31, 31, 0.72);
 }
@@ -136,6 +192,16 @@ body.screen:not(.static) .chrome-btn {
   background: var(--paper);
   cursor: pointer;
   aspect-ratio: 1;
+  content-visibility: auto;
+  contain-intrinsic-size: 96px 96px;
+}
+
+/* 选页器缩略图：纯静态预览，彻底关闭一切动画与过渡，节约 CPU 与 GPU */
+.picker *,
+.picker *::before,
+.picker *::after {
+  animation: none !important;
+  transition: none !important;
 }
 
 .picker-cell svg {
@@ -167,8 +233,8 @@ body.screen:not(.static) .chrome-btn {
    选册之后可以切到打印版（整册摊平，直接送印厂）。 */
 .shell-toggle {
   position: absolute;
-  top: calc((100dvh - var(--page)) / 2 + 12px);
-  right: calc((100vw - var(--stage-w)) / 2 + 120px);
+  top: var(--chrome-top);
+  right: calc(var(--chrome-right) + 148px);
   width: 44px;
   height: 44px;
   padding: 0;
@@ -299,14 +365,13 @@ body.screen .page.is-active {
    ⚠️ 断点与 book.js 的 SPREAD_QUERY 要一致，两处一起改。 */
 @media (min-width: 1100px) {
   body.screen:not(.static) {
-    --page: min(50vw, 100dvh);
+    --page: min(calc(var(--reader-w) / 2), var(--reader-h));
     --stage-w: calc(var(--page) * 2);
   }
 
-  /* 舞台自己也要改一份：.stage 上有一行 --page（给印刷版、拼版用），
-     它会把从 body 继承下来的值盖掉。 */
+  /* 舞台与工具栏共用 body 的安全区尺寸；静态入口保留自己的页宽。 */
   body.screen:not(.static) .stage {
-    --page: min(50vw, 100dvh);
+    --page: inherit;
     --stage-w: calc(var(--page) * 2);
     width: var(--stage-w);
   }
@@ -424,6 +489,7 @@ body.screen .page.is-active {
    用 translate 而不是 transform：道具的位置写在 SVG 的 transform 属性上，
    用 transform 做动画会把那个属性整个顶掉，苹果会跳回原点。 */
 .count-item.is-counted {
+  will-change: translate;
   animation: count-bounce 520ms ease;
 }
 
@@ -435,6 +501,7 @@ body.screen .page.is-active {
 /* 螺旋：屏幕上慢转，印刷与减少动效时不动 */
 .spiral {
   transform-origin: 50% 67%;
+  will-change: transform;
   animation: spiral-spin 9s linear infinite;
 }
 
@@ -451,6 +518,7 @@ body.screen .page.is-active {
 }
 
 .is-wobble {
+  will-change: translate, rotate;
   animation: char-wobble 700ms ease-in-out;
 }
 
@@ -461,6 +529,7 @@ body.screen .page.is-active {
 }
 
 .is-flying {
+  will-change: translate, scale, opacity;
   animation: prop-fly 700ms ease-in forwards;
   transform-box: fill-box;
   transform-origin: center;
@@ -474,6 +543,7 @@ body.screen .page.is-active {
 }
 
 .is-shake {
+  will-change: translate;
   animation: char-shake 420ms ease-in-out;
 }
 
@@ -517,6 +587,7 @@ body.screen .page.is-active {
   .is-flying,
   .is-shake {
     animation: none !important;
+    will-change: auto !important;
   }
 
   .confetti-flower,
@@ -562,6 +633,7 @@ body.print *::before,
 body.print *::after {
   animation: none !important;
   transition: none !important;
+  will-change: auto !important;
 }
 
 body.static .chrome-btn {

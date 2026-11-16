@@ -162,6 +162,14 @@ async function invariants(step) {
 /* ---- 幼儿会做的操作 ---- */
 const KEYS = ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', ' ', 'Enter', 'Home', 'End', 'm', 'a', '1'];
 
+async function resizeWindow(size) {
+  // 全屏时用户须先退出才能拖窗口；Chromium 的窗口协议也要求这个顺序。
+  await page.evaluate(async () => {
+    if (document.fullscreenElement) await document.exitFullscreen();
+  });
+  await page.setViewportSize(size);
+}
+
 const ops = {
   async 点空白() {
     await page.mouse.click(rint(5, 895), rint(5, 895));
@@ -198,9 +206,9 @@ const ops = {
   },
   async 拖窗口() {
     const size = rint(560, 1300);
-    await page.setViewportSize({ width: size, height: rint(560, 1300) });
+    await resizeWindow({ width: size, height: rint(560, 1300) });
     await page.waitForTimeout(40);
-    await page.setViewportSize({ width: 900, height: 900 });
+    await resizeWindow({ width: 900, height: 900 });
   },
   async 点静音() {
     const box = await page.evaluate(() => {
@@ -236,7 +244,7 @@ if (problems.length === 0) {
    这里把窗口拉到 1440 再乱来一场，用的还是同一组不变量（已按「这一跨」算）。 */
 {
   const WIDE_STEPS = Number(argOf('wide-steps', 120));
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await resizeWindow({ width: 1440, height: 900 });
   await page.waitForTimeout(150);
   check(await page.evaluate(() => window.Book.isSpread()), '跨页那一段真的摊开了');
 
@@ -304,7 +312,7 @@ if (problems.length === 0) {
     '跨页乱读收尾时两个浮层都收起了'
   );
   /* 后面的几段钉着单页的语义，把窗口收回 900 再走 */
-  await page.setViewportSize({ width: 900, height: 900 });
+  await resizeWindow({ width: 900, height: 900 });
   await page.waitForTimeout(200);
 }
 

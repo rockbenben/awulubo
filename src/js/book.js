@@ -11,6 +11,7 @@ import { physicalSpreads } from './model.ts';
   var activeBook = null;
   var pages = allPages.slice();
   var current = 0;
+  var activeGroup = null;
   /* 跨页：当前册摊开的样子——一项是一页或两页。
      见 buildSpreads 的说明：哪两页对在一起是物理决定的。 */
   var spreads = { groups: [], owner: [] };
@@ -67,6 +68,7 @@ import { physicalSpreads } from './model.ts';
 
   function setBookPages(id) {
     activeBook = id;
+    activeGroup = null;
     var own = allPages.filter(function (p) {
       return p.getAttribute('data-book') === id;
     });
@@ -176,11 +178,27 @@ import { physicalSpreads } from './model.ts';
     var ni = pages.indexOf(first);
     if (ni >= 0) n = ni;
     group = groupOf(n);
-    for (var k = 0; k < allPages.length; k++) {
-      var on = group.indexOf(allPages[k]) >= 0;
-      allPages[k].classList.toggle('is-active', on);
-      if (!on) allPages[k].removeAttribute('data-side');
+    /* 仅对发生变化的页面进行 DOM 更新，避免每翻一页都全量遍历 300 个页面 */
+    if (activeGroup) {
+      for (var a = 0; a < activeGroup.length; a++) {
+        var prevPage = activeGroup[a];
+        if (group.indexOf(prevPage) < 0) {
+          prevPage.classList.remove('is-active');
+          prevPage.removeAttribute('data-side');
+        }
+      }
+    } else {
+      for (var k = 0; k < allPages.length; k++) {
+        if (group.indexOf(allPages[k]) < 0) {
+          allPages[k].classList.remove('is-active');
+          allPages[k].removeAttribute('data-side');
+        }
+      }
     }
+    for (var g = 0; g < group.length; g++) {
+      group[g].classList.add('is-active');
+    }
+    activeGroup = group.slice();
     /* 左页右页要摆对：跨页里的第一页在左，第二页在右。
        页面在 DOM 里是平铺的（.page 绝对定位，铺满整个舞台），
        左右得显式说一声，CSS 才摆得开。
@@ -471,9 +489,13 @@ import { physicalSpreads } from './model.ts';
     var startX = null;
     var startY = null;
     var startOnHotspot = false;
+    var swipeValid = function () { return false; };
     document.addEventListener('touchstart', function (ev) {
       startX = null;
-      if (panelIsOpen() || ev.target.closest('#picker, #shell') || ev.touches.length !== 1) return;
+      startOnHotspot = false;
+      if (panelIsOpen() || ev.target.closest('button, a, #picker, #shell') || ev.touches.length !== 1) return;
+      if (global.visualViewport && global.visualViewport.scale > 1.01) return;
+      swipeValid = global.BookEffects.capture(pages[current]);
       startX = ev.touches[0].clientX;
       startY = ev.touches[0].clientY;
       /* 手势起点在热区上就别翻页：
@@ -487,7 +509,10 @@ import { physicalSpreads } from './model.ts';
     }, { passive: true });
 
     document.addEventListener('touchend', function (ev) {
-      if (panelIsOpen()) { startX = null; return; }
+      if (panelIsOpen() || !swipeValid() || (global.visualViewport && global.visualViewport.scale > 1.01)) {
+        startX = null;
+        return;
+      }
       if (startX === null) return;
       var t = ev.changedTouches[0];
       var dx = t ? t.clientX - startX : 0;

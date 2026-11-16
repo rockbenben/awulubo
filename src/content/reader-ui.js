@@ -13,4 +13,10 @@ export const readerLabels = {
   adultDefault: '旁白念给孩子听，拟声词让孩子跟着说。',
   bookPrefix: '第 ',
   bookSuffix: ' 册',
+  fullscreen: '全屏',
+  fullscreenExit: '退出',
+  fullscreenEnterHint: '进入全屏（F）',
+  fullscreenExitHint: '退出全屏（F 或 Esc）',
+  fullscreenUnavailable: '此浏览器暂不支持全屏，可继续阅读。',
+  fullscreenFailed: '未能切换全屏，请再试一次。',
 };

@@ -104,6 +104,8 @@ P1-3共读映射使用 `node tools/verify-reading.mjs`，已接入 `verify:teeth
 
 ## 完整验收
 
+`npm run verify:reader` 包含手机横竖屏、平板单页与跨页的 Chromium 原生触摸回归，以及旧 WebKit 全屏回调夹具。触摸用浏览器输入协议验证画圈、取消、滑动、双指输入、工具按钮和离页重返，不用 DOM 事件冒充原生触摸；放大后平移通过设置浏览器页面倍率再发送原生单指输入验证，无头浏览器不能替代实机双指缩放。安全区由浏览器模拟刘海边距并截图核对。需要补充 WebKit 引擎检查时，先运行 `npx playwright install webkit`，再运行 `npm run verify:reader -- --webkit`；WebKit 的滑动与画圈使用 DOM 事件检查处理逻辑，不能替代 Safari、iPhone 或 iPad 的实机手势与全屏验收。浏览器全屏检查需按引擎顺序执行，避免其他浏览器窗口抢焦点导致全屏被系统退出。
+
 ```bash
 npm run build
 npm run site
