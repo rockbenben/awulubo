@@ -1,6 +1,12 @@
 node_modules
 dist
+dist-print/
+dist-site
 .git
 .gstack
 *.log
 src/fonts/.charset.txt
+
+docs/reference/
+.qoder-credits/
+.claude/

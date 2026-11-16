@@ -6,8 +6,5 @@ book.example.com {
 	file_server
 
 	# 改版后别让浏览器卡在旧版
-	header Cache-Control "no-cache" /index.html
-
-	# PDF 的类型要对，浏览器才能翻页预览而不是强制下载
-	header Content-Type application/pdf *.pdf
+	header /index.html Cache-Control "no-cache"
 }
