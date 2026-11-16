@@ -5,6 +5,8 @@
 
 # 文本文件按仓库里存的样子入库（LF），检出时由 core.autocrlf 决定。
 *.md text
+# 冻结的 R7 原稿：指纹按原始字节计算（不作换行归一化），必须在所有环境检出保持原稿 CRLF 字节
+docs/superpowers/specs/2026-11-15-script-r7-*.md text eol=crlf
 *.mjs text
 *.js text
 *.json text
