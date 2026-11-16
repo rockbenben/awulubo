@@ -9,7 +9,7 @@
 #
 # ── 为什么还要 Python ──
 #
-# `npm run check` 里有两步要 Python：字体覆盖检查（tools/check-text.py 读子集的 cmap）。
+# 字体覆盖检查（tools/check-text.py 读子集的 cmap）、截图检查和成品 PDF 解析使用 Python。
 # 子集本身是**提交进仓库**的（src/fonts/*.woff2），CI 不用重新切字，
 # 但要核对"子集有没有覆盖当前用字"——这一步就是漏字退回系统字体的那道闸门。
 #
@@ -34,8 +34,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
-# 这个 workflow 只读代码：不发包、不写分支、不碰 issue。
-# 默认令牌的权限比这大得多，收窄是白拿的。
+# 验收只读源码；只有 main 的发布 job 获得分支写权限。
 permissions:
   contents: read
 
@@ -58,7 +57,7 @@ jobs:
 
       - run: npm ci
 
-      # Python 只为字体那两步
+      # Python 用于字体、截图与成品 PDF 验收。
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -76,21 +75,31 @@ jobs:
       # 检查排在构建前面就必然报"找不到 dist/proof.html"，CI 永远是红的。
       # 顺序反过一次，代价是一条推不上去的流水线。
       - run: npm run build
+      - run: npm run site
 
       # 结构 / 内容审查 / 热区 / 版式 / 授权 / 字体覆盖 + 子集是不是最新
       # （npm run check 里含 check-hotspots.mjs：每个热区都要罩住它指的东西的墨迹，
       #   且在 320px 小屏上不小于 44 CSS px——孩子按不准就等于没有这个热区）
       - run: npm run check
 
+      # 剧本体检：同一句在同页或相邻页出现两遍（读起来像卡带）
+      - run: node tools/audit-script.mjs
+
+      # 跨页重复：同一件事不许在相邻两页各说一遍
+      # （对仗不算重复——「它看见你啦！」×「我看见你啦！」是两个孩子各说一句）
+      - run: npm run check:repeat
+
       # 印刷 PDF 也要验：页数必须是 4 的倍数（骑马钉排得出帖）、
       # 字体只能是那两套授权子集（漏字会混进未授权的系统字体）
       - run: npm run pdf
 
       # 骑马钉拼版（家里双面打印对折即成书的那份）也要验：
-      # 页数与字体跟单页 PDF 是两套检查，不跑它就等于没人管
+      # A4/A3 分别核对所有页面的实际纸型、嵌入字体、Type3 和标题。
       - run: npm run pdf:booklet
+      - run: npm run pdf:booklet -- --a3
 
       # 交互冒烟（Playwright，几十项断言）
+      - run: npm run verify:reader
       - run: npm run smoke
 
       # 幼儿乱读压力测试：随机种子可复现
@@ -107,3 +116,31 @@ jobs:
       # 文字对比度闸门：按真实像素量文字底下是什么颜色
       # （正文 ≥ 4.5:1，大字 ≥ 3:1）；屏幕版与印刷版都量。
       - run: npm run check:contrast
+
+      # 给闸门验牙齿：故意弄坏一处 → 闸门必须报错 → 改回去。
+      # 四道闸门的牙齿脚本一起跑（内容审查 / 色系 / 对比度 / 跨页重复）。
+      # 放在最后：它会改源文件再恢复（trap 里 restore），
+      # 排在其他检查前面的话，万一中途被杀掉，后面的检查量到的就是
+      # 被弄坏的那一版页面。
+      # 牙齿脚本自己带 broke() 守卫：破坏没生效（sed 没匹配上）会直接判失败，
+      # 不会把「根本没验」当成「闸门没牙齿」。
+      - run: npm run verify:teeth
+
+      # dist-site 在验收开始前从同一次构建取出，牙齿脚本只会重建本地 dist。
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: npm run check:publish
+      - if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-site
+          path: dist-site/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 3
+
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/deploy.yml

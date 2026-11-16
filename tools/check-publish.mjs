@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { checkSite } from './site-files.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -17,21 +18,23 @@ const notes = [];
 
 function git(args) {
   try {
-    return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
+    return execFileSync('git', args, {
+      cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
   } catch {
     return '';
   }
 }
 
-/* ---- 1. 仓库得有 remote ---- */
-const remote = git(['remote', '-v']);
+/* ---- 1. 发布目标 origin 必须有地址，诊断只输出固定名称 ---- */
+const remote = git(['config', '--get', 'remote.origin.url']);
 if (!remote) {
   problems.push(
-    'git remote 还是空的——发布前要先建仓并推上去：' +
+    'git remote origin 缺少有效地址——发布前请配置：' +
       'git remote add origin <仓库地址>'
   );
 } else {
-  notes.push(`✓ git remote：${remote.split('\n')[0]}`);
+  notes.push('✓ git remote：origin');
 }
 
 /* ---- 2. 商业授权的联系方式不能是占位符 ---- */
@@ -50,34 +53,19 @@ if (!fs.existsSync(contentPath)) {
   }
 }
 
-/* ---- 3. 印刷 PDF 不能进公开站 ---- */
-/* 屏幕版公开只是「孩子能读」；印刷 PDF 公开 = 任何人拿到链接都能下载打印成品。
-   `npm run pdf` 的产物就落在 dist/，而 deploy.yml 推的正是 dist/——
-   本地印完顺手一推，印刷版就免费发出去了，而且撤不回来。 */
-const dist = path.join(root, 'dist');
-if (fs.existsSync(dist)) {
-  const pdfs = fs
-    .readdirSync(dist)
-    .filter((f) => f.toLowerCase().endsWith('.pdf'))
-    .map((f) => `dist/${f}`);
-  if (pdfs.length) {
-    problems.push(
-      `dist/ 里有印刷 PDF（${pdfs.join('、')}）——` +
-        'deploy.yml 推的正是 dist/，推上去就撤不回来了。' +
-        '要上架只传 index.html（印刷 PDF 单独放自己的站点或网盘）'
-    );
-  } else {
-    notes.push('✓ dist/ 里没有印刷 PDF');
-  }
-} else {
-  notes.push('· dist/ 还不存在（还没构建，跳过 PDF 检查）');
+/* ---- 3. 检查即将发布的目录 ---- */
+try {
+  checkSite(path.resolve(root, process.argv[2] || 'dist-site'));
+  notes.push('✓ 发布目录只有清单内的五个文件');
+} catch (error) {
+  problems.push(error.message);
 }
 
 /* ---- 4. 社交预览图 ---- */
 /* GitHub 只存一张，上传即覆盖、旧图不可找回——所以发之前先确认这张就是想要的。
    认的是仓库里那份（docs/images/og.png）：它进版本库，不会被 clean 掉，
    上传到 Settings → Social preview 的也是它。
-   dist/og.png 是同一张的部署副本（dist/ 不进版本库），缺了只是提醒。 */
+   品牌工具另存的 dist/og.png 供本地使用。 */
 const og = path.join(root, 'docs/images/og.png');
 if (!fs.existsSync(og)) {
   problems.push(
@@ -96,9 +84,6 @@ if (!fs.existsSync(og)) {
     problems.push(`社交预览图 ${kb} KB，超过 GitHub 的 1 MB 上限`);
   }
   notes.push(`✓ 社交预览图：${w}×${h}，${kb} KB`);
-  if (!fs.existsSync(path.join(dist, 'og.png'))) {
-    notes.push('· dist/og.png 不在（npm run og 会一起写一份，部署站要用）');
-  }
 }
 
 notes.forEach((n) => console.log(`  ${n}`));

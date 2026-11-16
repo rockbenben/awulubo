@@ -1,4 +1,4 @@
-"""字体覆盖检查：全书渲染出来的每个字符，都必须在字体子集里。
+"""字体覆盖检查：书稿与界面渲染出来的每个字符，都必须在对应字体子集里。
 
 用法：python tools/check-text.py
 失败即退出码 1——漏字时浏览器会退回系统字体（SimSun / STKaiti），
@@ -16,15 +16,14 @@ ROOT = os.path.join(HERE, "..")
 SRC = os.path.join(ROOT, "src")
 FONTS = os.path.join(SRC, "fonts")
 
-# 正文用 LXGW 文楷，拟声词用站酷快乐体；两个子集都要覆盖全书用字，
-# 因为构建时任何缺字都会退回系统字体。
+# 旁白、成人文字、数字与界面用文楷，拟声词和动作提示用站酷快乐体；按各自子集检查。
 FALLBACKS = ("simsun", "stkaiti", "simhei", "microsoftyahei", "dengxian")
 
 
 def page_texts():
     """收集所有会被渲染出来的文字，按字体分工分类。
 
-    文字来自页面数据（tools/dump-text.mjs --json），旁白/大人提示用霞鹜文楷，
+    文字来自 tools/dump-text.mjs --json 的 pages 与 interface，旁白/大人提示/数字/界面用霞鹜文楷，
     拟声词/动作提示用站酷快乐体——两类文字要各自在自己的子集里查到，不能只看并集。
 
     读不出来就返回 None：返回空字典会被当成"一个字都不用查"，
@@ -49,12 +48,18 @@ def page_texts():
     except json.JSONDecodeError as err:
         print("✗ 页面文字不是合法 JSON：", err)
         return None
+    if not data.get("pages") or not any(
+        "".join(item.get("lines", [])).strip()
+        for page in data["pages"] for item in page.get("items", [])
+    ):
+        print("✗ 一页正文文字都没读到——界面文字不能代替书稿覆盖检查")
+        return None
     seen = {}
-    for page in data["pages"]:
+    for page in data["pages"] + data.get("interface", []):
         for item in page["items"]:
-            key = "kai" if item["key"] in ("narration", "adult") else "kuaile"
-            # 页码在册内独立（两册都有 p05），所以键里要带上册 id——
-            # 只按页码归并会把两册同一页的文字混成一条，报错时指不出是哪一册。
+            key = "kai" if item["key"] in ("narration", "adult", "number") else "kuaile"
+            # 页码在册内独立（每册都有 p05），所以键里要带上册 id——
+            # 只按页码归并会把不同册同一页的文字混成一条，报错时指不出是哪一册。
             pid = (page.get("book", ""), page["id"])
             seen.setdefault((key, pid), "")
             seen[(key, pid)] += "".join(item["lines"])
@@ -106,7 +111,7 @@ def main():
             print(f"  {ch!r} (U+{ord(ch):04X}) 缺 {font}，出现在 {where}")
         return 1
 
-    print(f"✓ 字体覆盖检查通过：全书 {total} 个字符，按字体分工全部命中子集")
+    print(f"✓ 字体覆盖检查通过：书稿与界面 {total} 个字符，按字体分工全部命中子集")
     print(f"  提示：子集外不得出现 {', '.join(FALLBACKS)} 等系统字体")
     return 0
 

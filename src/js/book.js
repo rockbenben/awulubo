@@ -1,3 +1,5 @@
+import { panelIsOpen } from './panels.js';
+import { physicalSpreads } from './model.ts';
 /* 《啊呜噜啵！》页面状态机：翻页、导航、朗读播报。
    页面切换规则见设计规格 §7.5；键盘与无障碍见 §7.9。 */
 (function (global) {
@@ -33,21 +35,12 @@
   }
 
   function buildSpreads(list) {
-    var groups = [];
-    var owner = []; /* 每个页序号属于第几个跨页 */
-    for (var i = 0; i < list.length; i++) {
-      var n = pageNum(list[i]);
-      var next = list[i + 1];
-      if (n > 0 && n % 2 === 0 && next && pageNum(next) === n + 1) {
-        groups.push([list[i], next]);
-        owner.push(groups.length - 1);
-        owner.push(groups.length - 1);
-        i++;
-      } else {
-        groups.push([list[i]]);
-        owner.push(groups.length - 1);
-      }
-    }
+    var groups = physicalSpreads(list.map(function (page) {
+      return { id: page.getAttribute('data-id'), element: page };
+    })).map(function (group) { return group.map(function (item) { return item.element; }); });
+    var owner = list.map(function (page) {
+      return groups.findIndex(function (group) { return group.indexOf(page) >= 0; });
+    });
     return { groups: groups, owner: owner };
   }
 
@@ -86,7 +79,7 @@
   }
 
   /* 别册的页面藏起来。
-     打印/拼版模式下页面是平铺的，不藏就会把两册拼在一起印——
+     打印/拼版模式下页面是平铺的，不藏就会把几册拼在一起印——
      每一册都是一本独立的书，骑马钉的帖序也在册内各算各的。 */
   function applyBookVisibility(id) {
     for (var k = 0; k < allPages.length; k++) {
@@ -142,11 +135,6 @@
       document.title = sub ? books[k].title + '｜' + sub : books[k].title;
       return;
     }
-  }
-
-  function currentPageId() {
-    var p = pages[current];
-    return p ? p.getAttribute('data-id') : null;
   }
 
   /* 某一页是不是还在读者眼前：
@@ -208,14 +196,15 @@
     if (stage) stage.setAttribute('data-pages', String(group.length));
     current = n;
     var id = pages[current].getAttribute('data-id');
-    /* 换页：上一页还在计时的效果、还没兑现的翻页请求，都作废 */
-    clearPending();
+    /* 换页：上一页还在计时的效果、还没兑现的翻页请求、还没响的进场音，都作废 */
+    global.BookEffects.enter(group);
     clearQueued();
+    clearSounds();
     if (id && location.hash.slice(1) !== id) {
       history.replaceState(null, '', '#' + id);
     }
-    /* 进入页面时把这一页的互动计数清零：读者会走回头路（p29 摸噜啵、p62 再读一次
-       都会跳回 p05 重读），不清零的话第二遍读到"按顺序点三样"就会永远卡住。
+    /* 进入页面时把这一页的互动计数清零：读者会走回头路（p28 摸噜啵、p62 再读一次
+       都会跳回 p04 重读），不清零的话第二遍读到"按顺序点三样"就会永远卡住。
        跨页时两页都要复位：右边那页也可能带着计数。 */
     if (global.BookInteractions && global.BookInteractions.reset) {
       for (var r = 0; r < group.length; r++) {
@@ -224,10 +213,11 @@
     }
     /* 这一页自己的音效：页面数据里写了 sound 就播出来（大字拟声词的声音）。
        以前只有互动动作有声音，这一层是空的——data-sound 写进了 DOM 却没人读它，
-       全书的拟声词从来没响过。 */
+       全书的拟声词从来没响过。
+       摊开时两页都可能带音：右页是**还没读到的那一页**，两个音色同时起会糊成一坨，
+       而且「结果」抢在「动作」前面响等于剧透——所以右页延后半拍。 */
     for (var s = 0; s < group.length; s++) {
-      var pageSound = group[s].getAttribute('data-sound');
-      if (pageSound) global.AudioBook.play(pageSound);
+      scheduleSound(group[s], s * SOUND_STAGGER_MS);
     }
     announce();
     notifyChange();
@@ -348,75 +338,47 @@
   /* 待定计时器按页各存一个。
      以前只有一个全局计时器：上一页还没播完的效果会被下一页的点击吃掉——
      "跳过效果"变成了"跳过上一页、翻到下一页"，读起来像按钮失灵。
-     存 {timer, fn} 是为了让"跳过"能执行效果本来的结局（翻页 or 回到 p05），
+     存 {timer, fn} 是为了让"跳过"能执行效果本来的结局（翻页 or 跳转 exit 目标页如 p04），
      而不是一律 next()。 */
-  var pendingTimers = {};
-
-  /* 计时器的键必须是页面的 data-id 字符串。
-     调用方有的传页面元素（interactions.js 传的是 page 元素）、有的传 id 字符串，
-     混着传会让 key 退化成 "[object HTMLDivElement]"——所有页面挤进同一个键，
-     于是"这一页的效果"和"别页的效果"分不开。统一在这里归一化。 */
-  function pageKey(page) {
-    if (!page) return 'default';
-    if (typeof page === 'string') return page;
-    if (typeof page.getAttribute === 'function') {
-      return page.getAttribute('data-id') || 'default';
-    }
-    /* 静默当成 'default' 会把所有页面挤进同一个键，计时器互相打架。
-       直接报错，让人一眼看出是调用方传错了类型。 */
-    throw new Error('pageKey: 期望页 id 字符串或页面元素，收到 ' + typeof page);
-  }
-
-  /* 效果进行中：计时器 + 跳过。
-     page 传页面元素或 data-id 都行，内部归一化成 id。 */
   function after(ms, fn, page) {
-    var key = pageKey(page);
-    /* 页面开始演一个效果，就说明读者要的是这个互动，不是"翻一页"——
-       排队里的翻页请求这时该作废，否则它会把这个效果腰斩
-       （孩子点肚子，120ms 后就被翻到下一页，咕噜声还没演完）。 */
     clearQueued();
-    if (pendingTimers[key]) clearTimeout(pendingTimers[key].timer);
-    var entry = { timer: null, fn: fn };
-    entry.timer = setTimeout(function () {
-      delete pendingTimers[key];
-      /* 到期时读者可能已经翻到别的页（走回头路，或另一页的效果还在播）。
-         这时再翻页，翻的是"读者正在看的那页"——不是这个效果该去的页，
-         读者会莫名其妙被翻走。页面对不上就丢弃。
-         ⚠️ 跨页时跟**这一组**比：效果演在右页上时，current 记的是左页。 */
-      if (key !== 'default' && !inCurrentGroup(key)) return;
-      fn();
-    }, ms);
-    pendingTimers[key] = entry;
+    global.BookEffects.after(ms, fn, page);
   }
-
-  /* 跳过本页还没播完的效果：返回该效果本来的结局（没有待定效果则 false） */
   function skipPending(page) {
-    var key = pageKey(page);
-    var entry = pendingTimers[key];
-    if (!entry) return false;
-    clearTimeout(entry.timer);
-    delete pendingTimers[key];
-    return entry.fn;
+    return global.BookEffects.skip(typeof page === 'string' ? page : page.getAttribute('data-id'));
   }
 
-  /* 换页即作废在飞效果。
-     不变量：任一时刻最多只有一个待定效果，且它一定属于读者当前所在页。
-     以前换页不清计时器，读者离开后上一页的"翻页"还会继续计时；
-     等他回头再进那一页，计时器到期会把他莫名翻走。 */
-  function clearPending() {
-    for (var k in pendingTimers) {
-      if (Object.prototype.hasOwnProperty.call(pendingTimers, k)) {
-        clearTimeout(pendingTimers[k].timer);
-      }
+  /* 进场音的延后半拍单独记一组计时器，不进 pendingTimers：
+     「同一时刻最多只有一个待定效果」那条不变量管的是**会翻页**的效果，
+     把只出声的也算进去，那条判据就常年被误伤、变得没人信。
+     换页照样要作废它——不然读者早翻走了，上一页右半句的声音还在后面响。 */
+  var SOUND_STAGGER_MS = 220;
+  var soundTimers = [];
+
+  function clearSounds() {
+    for (var k = 0; k < soundTimers.length; k++) clearTimeout(soundTimers[k]);
+    soundTimers = [];
+  }
+
+  function scheduleSound(page, delay) {
+    var sound = page.getAttribute('data-sound');
+    if (!sound) return;
+    if (!delay) {
+      global.AudioBook.play(sound);
+      return;
     }
-    pendingTimers = {};
+    soundTimers.push(setTimeout(function () {
+      global.AudioBook.play(sound);
+    }, delay));
   }
 
   function bind() {
     if (isStatic()) return;
 
     document.addEventListener('click', function (ev) {
-      if (ev.target.closest('.hotspot, button, a')) return;
+      /* 浮层自己那一层不算「点书页继续」：选页器/外壳摊开时铺满整屏，
+         点它空白处只想把面板关掉，顺手把书翻过去等于替孩子做了决定。 */
+      if (panelIsOpen() || ev.target.closest('.hotspot, button, a, #picker, #shell')) return;
       /* 点在哪一页上，就按那一页的规矩来：
          跨页模式下两页各有各的热区与「点空白不翻页」的规则。 */
       var hit = ev.target.closest ? ev.target.closest('.page') : null;
@@ -459,7 +421,7 @@
          （纸书上读者随时可以翻叶；屏幕上这道闸门是防手滑的。）
 
          ⚠️ 这道闸门只拦「往前」：方向键与往右滑都走的是 prev()，不受它管。
-         点左页往回在 trap 跨页上走不到——两册的 trap 页**全在跨页的左边**，
+         点左页往回在 trap 跨页上走不到——各册的 trap 页**全在跨页的左边**，
          点左页就是「点在这一页上点空了」，该摇一下头；
          往回走反而把孩子带离任务，前面攒下的进度也会被清掉。
          （下面那条「往回走放行」的分支要等 trap 页落在右边才走得到。） */
@@ -484,9 +446,10 @@
     });
 
     document.addEventListener('keydown', function (ev) {
+      if (!document.getElementById('picker').hidden || !document.getElementById('shell').hidden) return;
       var k = ev.key;
       if (k === 'ArrowRight' || k === 'PageDown' || k === ' ' || k === 'Enter') {
-        if (ev.target.closest('button')) return;
+        if (ev.target.closest('button, a')) return;
         ev.preventDefault();
         withLock(skipPendingInGroup() || next);
       } else if (k === 'ArrowLeft' || k === 'PageUp') {
@@ -509,7 +472,8 @@
     var startY = null;
     var startOnHotspot = false;
     document.addEventListener('touchstart', function (ev) {
-      if (ev.touches.length !== 1) return;
+      startX = null;
+      if (panelIsOpen() || ev.target.closest('#picker, #shell') || ev.touches.length !== 1) return;
       startX = ev.touches[0].clientX;
       startY = ev.touches[0].clientY;
       /* 手势起点在热区上就别翻页：
@@ -523,6 +487,7 @@
     }, { passive: true });
 
     document.addEventListener('touchend', function (ev) {
+      if (panelIsOpen()) { startX = null; return; }
       if (startX === null) return;
       var t = ev.changedTouches[0];
       var dx = t ? t.clientX - startX : 0;
@@ -545,6 +510,8 @@
         }
       }
     }, { passive: true });
+
+    document.addEventListener('touchcancel', function () { startX = null; startOnHotspot = false; });
 
     global.addEventListener('hashchange', function () {
       var id = location.hash.slice(1);
@@ -569,7 +536,7 @@
        页码在册内独立，所以「哪一册」必须单独带——
        只留 #p31 的话，打开的是哪一册说不清。
        放在最前面：拼版（static）与印刷版也要按册过滤，
-       否则两册的页面会拼在一起印。 */
+       否则几册的页面会拼在一起印。 */
     var ids = [];
     for (var b = 0; b < allPages.length; b++) {
       var bid = allPages[b].getAttribute('data-book');
@@ -594,10 +561,10 @@
     }
 
     /* 印刷版不需要交互 */
-    if (document.body.classList.contains('print')) return;
+    if (isStatic() || document.body.classList.contains('print')) return;
 
     /* 屏幕版：地址栏写明是哪一册。
-       拼版（static）是联系表，两册都摊开，写册 id 反而误导；印刷版的册是
+       拼版（static）是联系表，所有册都摊开，写册 id 反而误导；印刷版的册是
        由链接里的 ?book= 决定的（外壳切模式时带上），不用在这里改地址栏。 */
     syncBookQuery(wanted);
 
@@ -651,7 +618,7 @@
   }
 
   global.Book = {
-    pages: pages,
+    cancelTurn: clearQueued,
     next: next,
     prev: prev,
     show: show,
@@ -666,7 +633,7 @@
     /* 带节流的翻页：最短 350 ms 一页，但期间的请求会被记住而不是丢掉 */
     turn: withLock,
     goToId: function (id, book) {
-      /* 页码在册内独立：两册都有 p05，只给页码会跳到**当前册**的那一页。
+      /* 页码在册内独立：每册都有 p05，只给页码会跳到**当前册**的那一页。
          带册 id 进来时先切册——检查脚本要按册逐页量，量错册等于没量。 */
       if (book && book !== activeBook) {
         setBookPages(book);
@@ -698,9 +665,6 @@
         if (b && ids.indexOf(b) < 0) ids.push(b);
       }
       return ids;
-    },
-    current: function () {
-      return current;
     },
     /* 选页器用：当前页的序号（从 0 起） */
     currentIndex: function () {
@@ -742,7 +706,7 @@
        正常情况下最多一个，而且必定是读者当前所在页——
        这条不变量破了，说明换页没作废在飞效果。 */
     pendingPages: function () {
-      return Object.keys(pendingTimers);
+      return global.BookEffects.pending();
     }
   };
 

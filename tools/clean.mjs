@@ -1,4 +1,4 @@
-/* 清理产物目录（dist/）。平时构建不清空，截图与 PDF 留在里面。
+/* 清理产物目录（dist/）。平时构建不清空，截图留在里面，印刷输出单独存放。
    用法：node tools/clean.mjs */
 import fs from 'node:fs';
 import path from 'node:path';

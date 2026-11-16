@@ -1,5 +1,5 @@
 /* 《啊呜噜啵！》音效：全部用 Web Audio 合成，不用任何音频文件。
-   音色表见设计规格 §14.6：gulu / chomp / burp / snore / pop。 */
+   25 种音色见设计规格 §14.6（角色动作与场景音效共 25 种合成配方）。 */
 (function (global) {
   'use strict';
 

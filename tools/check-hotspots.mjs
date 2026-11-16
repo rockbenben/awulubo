@@ -25,6 +25,13 @@ if (!fs.existsSync(file)) {
 
 const specs = await loadSpecs();
 const problems = [];
+const screenSpecs = specs.filter(spec => spec.screen !== false);
+const hotspotsOf = spec => (Array.isArray(spec.hotspot) ? spec.hotspot : [spec.hotspot]).filter(Boolean);
+const expectedHotspots = screenSpecs.reduce((sum, spec) => sum + hotspotsOf(spec).length, 0);
+if (!screenSpecs.length || !expectedHotspots) {
+  console.error('✗ 没有读到预期屏幕页或热区，请检查册清单与书稿；读空不能算通过');
+  process.exit(1);
+}
 
 const browser = await chromium.launch();
 /* 视口要装得下整页（书页 --page = min(100vw, 100dvh)），
@@ -33,15 +40,23 @@ const page = await browser.newPage({ viewport: { width: 1000, height: 1000 } });
 await page.goto('file:///' + file.replace(/\\/g, '/'), { waitUntil: 'load' });
 await page.evaluate(() => document.fonts.ready);
 
-for (const spec of specs) {
-  if (spec.screen === false) continue;
+for (const spec of screenSpecs) {
   await page.evaluate((a) => window.Book.goToId(a.id, a.book), { id: spec.id, book: spec.book });
   await page.waitForTimeout(80);
 
-  const rows = await page.evaluate(({ id, book }) => {
+  const rows = await page.evaluate(({ id, book, expected }) => {
     const p = document.querySelector(`[data-id="${id}"][data-book="${book}"]`);
+    if (!p) return [{ error: '预期页面不存在，请重新构建' }];
     const pr = p.getBoundingClientRect();
+    if (!pr.width || !pr.height) return [{ error: '预期页面无布局，请检查阅读状态与样式' }];
     const u = pr.width / 1000;
+    const buttons = [...p.querySelectorAll('.hotspot')];
+    const key = h => h.action + '/' + h.targetId;
+    const actualKeys = buttons.map(h => key(h.dataset)).sort();
+    const expectedKeys = expected.map(key).sort();
+    if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
+      return [{ error: '热区与书稿预期不一致，请检查 action/targetId 并重新构建' }];
+    }
     /* 采样时把热区让开：不然每个点最上层都是热区按钮，问不出墨在哪 */
     const style = document.createElement('style');
     style.textContent = '.hotspot{pointer-events:none !important}';
@@ -49,33 +64,26 @@ for (const spec of specs) {
 
     const GRID = 40;
     const out = [];
-    for (const h of p.querySelectorAll('.hotspot')) {
-      const target = h.dataset.target || '';
-      let sel = null;
-      if (target === 'char') sel = '.char';
-      else if (!['belly', 'confetti', 'sound'].includes(target)) sel = `.prop-${target}`;
-      if (!sel) continue;
-
-      const hb = h.getBoundingClientRect();
-      const hcx = hb.x + hb.width / 2;
-      const hcy = hb.y + hb.height / 2;
-
-      /* 同一个 target 可能有好几个（数一数那页三个苹果）：
-         取离热区中心最近的那个——热区本来就是为某一个道具摆的 */
-      let ob = null;
-      let bestD = Infinity;
-      for (const cand of p.querySelectorAll(sel)) {
-        const cb = cand.getBoundingClientRect();
-        if (!cb.width) continue;
-        const d = Math.hypot(cb.x + cb.width / 2 - hcx, cb.y + cb.height / 2 - hcy);
-        if (d < bestD) {
-          bestD = d;
-          ob = cand;
-        }
+    for (const h of buttons) {
+      const target = h.dataset.targetId;
+      // 与 interactions.js 相同，按对象身份定位；不借同类的其他道具代测。
+      const objects = target === 'page' ? [p] : [...p.querySelectorAll('[data-object]')]
+        .filter(element => element.dataset.object === target);
+      if (objects.length !== 1) {
+        out.push({ error: `${target} 对象${objects.length ? '身份不唯一' : '不存在'}，请检查 data-object 并重新构建` });
+        continue;
       }
-      if (!ob) continue;
+      const ob = objects[0];
       const b = ob.getBoundingClientRect();
-      if (!b.width) continue;
+      const appearance = getComputedStyle(ob);
+      if (!b.width || !b.height || appearance.visibility === 'hidden' || Number(appearance.opacity) === 0) {
+        out.push({ error: `${target} 目标无布局或不可见，请检查目标样式并重新构建` });
+        continue;
+      }
+      // 这些动作只点击局部或整页空白，不要求热区包住整个角色、背景或大字。
+      // 仍核对对象存在且可见，不能用 target 类别标签绕过道具的墨迹检查。
+      if (target === 'page' || ['belly', 'rub', 'confetti', 'shout'].includes(h.dataset.action)) continue;
+      const hb = h.getBoundingClientRect();
 
       let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity, ink = 0, inHot = 0;
       for (let gy = 0; gy < GRID; gy++) {
@@ -84,7 +92,7 @@ for (const spec of specs) {
           const y = b.y + ((gy + 0.5) / GRID) * b.height;
           const top = document.elementFromPoint(x, y);
           if (!top || !top.closest) continue;
-          const onTarget = target === 'char' ? !!top.closest('.char') : !!top.closest(`.prop-${target}`);
+          const onTarget = top === ob || ob.contains(top);
           if (!onTarget) continue;
           ink++;
           if (x < x1) x1 = x;
@@ -108,11 +116,16 @@ for (const spec of specs) {
        中途撤了，后面的热区会挡住墨迹，量出来是"没有墨" */
     style.remove();
     return out;
-  }, { id: spec.id, book: spec.book });
+  }, { id: spec.id, book: spec.book,
+    expected: hotspotsOf(spec).map(h => ({ action: h.action, targetId: h.targetId })) });
 
   for (const r of rows) {
+    if (r.error) {
+      problems.push(`[${spec.book}/${spec.id}] ${r.error}`);
+      continue;
+    }
     if (!r.ink) {
-      problems.push(`[${spec.id}] ${r.action}/${r.target} 量不到墨迹（元素没渲染？）`);
+      problems.push(`[${spec.book}/${spec.id}] ${r.action}/${r.target} 量不到墨迹（元素没渲染？）`);
       continue;
     }
     const b = r.inkBox;
@@ -122,7 +135,7 @@ for (const spec of specs) {
     if (!covered) {
       const need = Math.max(b.w, b.h) + 16;
       problems.push(
-        `[${spec.id}] ${r.action}/${r.target} 热区没罩住目标的墨迹` +
+        `[${spec.book}/${spec.id}] ${r.action}/${r.target} 热区没罩住目标的墨迹` +
           `（墨迹 ${b.x},${b.y} ${b.w}×${b.h}，热区 ${r.hot.x},${r.hot.y} ${r.hot.w}见方，` +
           `罩住 ${pct}%）→ 建议 at:[${Math.round(b.x + b.w / 2 - need / 2)},` +
           `${Math.round(b.y + b.h / 2 - need / 2)}] size:${Math.round(need)}`
@@ -142,8 +155,7 @@ const MIN_TAP = 44;
   const small = await browser.newPage({ viewport: { width: 320, height: 640 } });
   await small.goto('file:///' + file.replace(/\\/g, '/'), { waitUntil: 'load' });
   await small.evaluate(() => document.fonts.ready);
-  for (const spec of specs) {
-    if (spec.screen === false) continue;
+  for (const spec of screenSpecs) {
     await small.evaluate((a) => window.Book.goToId(a.id, a.book), { id: spec.id, book: spec.book });
     await small.waitForTimeout(50);
     const hs = await small.evaluate(({ id, book }) => {
@@ -168,10 +180,10 @@ const MIN_TAP = 44;
 
 await browser.close();
 
-const screenPages = specs.filter((s) => s.screen !== false).length;
+const screenPages = screenSpecs.length;
 if (problems.length) {
   console.error(`\n✗ 热区检查：${problems.length} 处没罩住目标`);
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-console.log(`✓ 热区检查通过：${screenPages} 个屏幕页，每个热区都罩住了它指的东西`);
+console.log(`✓ 热区检查通过：${screenPages} 个屏幕页、${expectedHotspots} 个预期热区，对象身份与可点范围正确`);

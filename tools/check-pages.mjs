@@ -5,10 +5,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBooks, loadSpecs } from './load-specs.mjs';
-import { EFFECT_GEOM, EFFECT_ID, PROP_ID } from './render-page.mjs';
+import { loadGeometry, PROP_ID } from './render-page.mjs';
 import { PRINT_PAGES, SCREEN_PAGES } from './layout-constants.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const geometry = loadGeometry();
 const srcDir = path.join(root, 'src');
 const src = srcDir;
 const dist = path.join(root, 'dist');
@@ -28,7 +29,7 @@ function availableIds() {
   const ids = new Set();
   for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.svg'))) {
     const text = fs.readFileSync(path.join(dir, file), 'utf8');
-    for (const m of text.matchAll(/<(?:symbol|g)\b[^>]*\bid="([^"]+)"/g)) ids.add(m[1]);
+    for (const m of text.matchAll(/<(?:symbol|g|clipPath)\b[^>]*\bid="([^"]+)"/g)) ids.add(m[1]);
   }
   return ids;
 }
@@ -146,11 +147,11 @@ async function main() {
     }
 
     /* 背景：种类与焦点 */
-    if (page.bg && page.bg.kind && !EFFECT_GEOM[page.bg.kind]) {
+    if (page.bg && page.bg.kind && page.bg.kind !== 'none' && !geometry[page.bg.kind]) {
       fail(`[${page.id}] 未知的背景种类：${page.bg.kind}`);
     } else if (page.bg && page.bg.kind && page.bg.kind !== 'none') {
-      if (!ids.has(EFFECT_ID[page.bg.kind])) {
-        fail(`[${page.id}] 背景引用了不存在的符号 #${EFFECT_ID[page.bg.kind]}`);
+      if (!ids.has(geometry[page.bg.kind].symbol)) {
+        fail(`[${page.id}] 背景引用了不存在的符号 #${geometry[page.bg.kind].symbol}`);
       }
       /* 满版底色场：背景要"布满全局"，色块就得长在页面上，
          不能是浮在白纸上的孤岛。有背景的页必须声明底色场。 */
@@ -168,6 +169,13 @@ async function main() {
     }
 
     /* 角色与道具的符号必须存在 */
+    if (page.scene) {
+      const kind = page.scene.kind;
+      if (!ids.has(`scene-${kind}`)) fail(`[${page.id}] 缺少场景组件 #scene-${kind}，请恢复src/components/scenes.svg中的对应零件`);
+      if (!ids.has('scene-page-clip')) fail(`[${page.id}] 缺少场景组件 #scene-page-clip，必须保留单页裁切以免跨页溢出`);
+      if (kind === 'grass' && !ids.has('scene-grass-front')) fail(`[${page.id}] 缺少场景组件 #scene-grass-front，草丛藏露需要前景层`);
+      if (!tokens.has(page.bg?.wash || '--paper')) fail(`[${page.id}] 场景底色不是已有色板变量，请修正background.wash`);
+    }
     if (page.char && !ids.has(`pose-${page.char.pose}`)) {
       fail(`[${page.id}] 引用了不存在的姿态 #pose-${page.char.pose}`);
     }
@@ -268,22 +276,78 @@ async function main() {
 
       /* 一跨 = 一个页面数据文件的两页。骑马钉的书永远翻到「偶数页 | 奇数页」，
          所以**同一跨的两页必须来自同一个文件**。
-         文件要是从奇数页起，它的两页就分落在两跨里：左页配的是上一场的右页、
-         右页配的是下一场的左页——一翻开是两个故事拼在一起，而且每一跨都错开一页。
          2026-11-01 真发生过：版权页占着 p4，正文从 p5 起，整本书的跨页全错位；
          页数、字数、版式、热区四道闸门全绿，因为它们量的都是单页。
-         这条闸门量的是「谁跟谁对在一起」，单页怎么量都量不出来。 */
-      const byNum = new Map(b.pages.map((p) => [Number(p.id.slice(1)), p]));
-      for (const [num, left] of byNum) {
-        if (num % 2 !== 0) continue;
-        const right = byNum.get(num + 1);
-        if (!right) continue; /* 末页独自成页（封底） */
-        if (left.file !== right.file) {
+
+         ⚠️ 判据必须跟 src/js/book.js 的 buildSpreads 一模一样：**按页面顺序**走，
+         偶数页配上紧跟着的「偶数页 + 1」才算一跨。别改成「按页号建表配对」——
+         建表会把文件内部的次序抹掉：同一个文件里两页只是写反了顺序，
+         按页号配仍然是「同一跨」（闸门绿着），可按顺序配的那一份（网页里）
+         却把它们拆成两个独页，翻开来看见的是两个故事。
+         ⚠️ 印刷版与屏幕版各量一遍：屏幕版跳了几页，搭档关系跟印刷版不一定一样。 */
+      const pageNum = (p) => {
+        const m = /^p(\d+)$/.exec(p.id);
+        return m ? parseInt(m[1], 10) : 0;
+      };
+      const scopes = [['印刷版', b.pages], ['屏幕版', b.pages.filter((p) => p.screen !== false)]];
+
+      /* 一、运行时真会摊开的那一跨：两页得来自同一个文件 */
+      for (const [scope, list] of scopes) {
+        for (let i = 0; i + 1 < list.length; i++) {
+          const left = list[i];
+          const right = list[i + 1];
+          const n = pageNum(left);
+          if (!(n > 0 && n % 2 === 0 && pageNum(right) === n + 1)) continue;
+          i++; /* 一跨吃掉两页 */
+          if (left.file !== right.file) {
+            fail(
+              `册 ${b.id}（${scope}）：p${n}|p${n + 1} 这一跨的两页来自不同文件` +
+                `（${left.file} / ${right.file}）——一跨要是一个文件里的两页，` +
+                `否则翻开来左右两页是两个故事`
+            );
+          }
+        }
+      }
+
+      /* 二、一个文件声明的那一跨：运行时得真摊得开（两页挨着、偶数在前）。
+         前置与后置是一个文件好几页，不归「一跨」管。 */
+      const filePages = new Map();
+      for (const p of b.pages) {
+        if (!filePages.has(p.file)) filePages.set(p.file, []);
+        filePages.get(p.file).push(p);
+      }
+      const where = scopes.map(([scope, list]) => [
+        scope,
+        new Map(list.map((p, k) => [p.id, k])),
+      ]);
+      for (const fp of filePages.values()) {
+        if (fp.length !== 2) continue;
+        const [a, c] = fp;
+        const n = pageNum(a);
+        if (!(n > 0 && n % 2 === 0 && pageNum(c) === n + 1)) {
           fail(
-            `册 ${b.id}：p${num}|p${num + 1} 这一跨的两页来自不同文件` +
-              `（${left.file} / ${right.file}）——一跨要是一个文件里的两页，` +
-              `否则翻开来左右两页是两个故事`
+            `册 ${b.id}：${a.file} 的两页是 ${a.id}/${c.id}，不是「偶数页 + 紧随的奇数页」` +
+              `——一跨要从偶数页起，否则每一跨都错开一页（AGENTS §3 规则 13）`
           );
+          continue;
+        }
+        for (const [scope, at] of where) {
+          const ka = at.get(a.id);
+          const kc = at.get(c.id);
+          if (ka === undefined && kc === undefined) continue; /* 整跨都不在这个版本里 */
+          if (ka === undefined || kc === undefined) {
+            fail(
+              `册 ${b.id}（${scope}）：${a.file} 声明的一跨 ${a.id}|${c.id} 缺了一页` +
+                `——剩下那页独自成页，一跨散成两屏；要跳就整跨一起跳`
+            );
+            continue;
+          }
+          if (kc - ka !== 1) {
+            fail(
+              `册 ${b.id}（${scope}）：${a.file} 的两页 ${a.id}/${c.id} 在清单里不挨着（第 ${ka}、${kc} 位）` +
+                `——运行时按顺序配跨，会把它们拆成两个独页`
+            );
+          }
         }
       }
     }

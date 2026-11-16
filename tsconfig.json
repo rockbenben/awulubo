@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true
+  },
+  "include": [
+    "src/js/model.ts",
+    "src/js/effects.ts",
+    "src/content/books/*/specs/*.js"
+  ]
+}

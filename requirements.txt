@@ -1,12 +1,15 @@
-# Python 侧依赖：字体那两步 + 截图那两步需要。
+# Python 侧依赖：字体、截图与成品 PDF 验收需要。
 #
 #   npm run fonts              → pyftsubset 切字体子集（woff2 需要 brotli）
 #   python tools/check-text.py → 读子集的 cmap，核对全书用字是否都命中
 #   npm run check:shots        → tools/check-shots.py 读 PNG，算每页墨迹占比（Pillow）
 #   python tools/contact_sheet.py → 拼联系表（Pillow）
+#   npm run pdf / npm run pdf:booklet → 成品结构验收（pypdf）
 #
 # 装法：python -m pip install -r requirements.txt
 # 版本用范围，不用精确钉死——已测版本是 4.68 / 1.2 / 10.x，向上兼容即可。
 fonttools>=4.68
 brotli>=1.2
 pillow>=10.0
+# 成品 PDF 的页树、纸型、嵌入字体与标题验收（制作环境）。
+pypdf>=6.21.4,<7

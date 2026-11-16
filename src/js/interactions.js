@@ -1,53 +1,56 @@
+import { panelIsOpen } from './panels.js';
+import { gestures } from './model.ts';
 /* 《啊呜噜啵！》互动：热点 → 反馈 → 翻页。
    互动表见设计规格 §7.6：每页一个动作，互动只做庆祝性反馈，不做分支。 */
 (function (global) {
   'use strict';
 
-  /* 每页的临时计数（喂了三样、吃了几口、找到几个）。
-     读者会走回头路：p28 摸噜啵、p62 再读一次，都会跳回 p04 重读一遍。
-     所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
-     计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。 */
-  var counters = {};
-
-  /* 点错次数**单独记**，不能混进 counters：
-     p14 的"按顺序点三样"、p16 的"喂三口"都共用 counters，
-     点错一下就把顺序挤偏——孩子的第一次正确点击会被判成"顺序错了"（摇头、苹果不吃）。 */
-  var misses = {};
-
+  /* 次数属于当前页的本次进入，切册同页号与离页重返互不影响。 */
   function missCount(page) {
-    var id = page.getAttribute('data-id');
-    if (misses[id] === undefined) misses[id] = 0;
-    return misses[id];
+    return global.BookEffects.progress(page).misses;
   }
 
-  /* 有进展就清零：点错是"连续"的，中间隔了一次正确操作就不算连着错 */
   function clearMisses(page) {
-    misses[page.getAttribute('data-id')] = 0;
+    global.BookEffects.progress(page).misses = 0;
   }
 
   function countOf(page) {
-    var id = page.getAttribute('data-id');
-    if (counters[id] === undefined) counters[id] = 0;
-    return counters[id];
+    return global.BookEffects.progress(page).count;
   }
 
   function bump(page) {
-    var id = page.getAttribute('data-id');
-    counters[id] = countOf(page) + 1;
-    return counters[id];
+    var state = global.BookEffects.progress(page);
+    state.count += 1;
+    return state.count;
+  }
+
+  /* 正常输入与放行共用同一次数要求，跟随动作和角色声明。 */
+  function requiredRepeats(page, action) {
+    return action === 'shout' || (action === 'feed' && page.querySelector('#grow-char')) ? 3 : 1;
+  }
+
+  function finishRub(page) {
+    var spiral = page.querySelector('.spiral');
+    if (Math.abs(Number(spiral.dataset.deg || 0)) < gestures.rub.threshold) return;
+    global.BookEffects.after(700, function () {
+      global.BookEffects.finish(page);
+    }, page);
+    return true;
   }
 
   /* 进入页面时把这一页的互动状态复位。
      读者会走回头路：p28 摸噜啵、p62 再读一次，都会跳回 p04 重读一遍。
      所以**进入某页时要把这页的计数清零**，否则第二遍读到这里时，
-     计数已经满了，"按顺序点三样"会因为顺序对不上而永远卡住。
+     计数已经满了，"三样都点一点"会因为三样都还记成点过而永远卡住。
      同理，这一页"已经演出过的效果"也要复位：p26 的灯变暗、p22 的彩纸开花、
      p20 的螺旋角度、p16 的越吃越圆——不复位的话，读者第二次进来会看到
      "效果已经演过了"的样子：点月亮没反应、点肚子直接就翻页，看起来像坏了。 */
   function reset(page) {
-    counters[page.getAttribute('data-id')] = 0;
+    global.BookEffects.progress(page).count = 0;
+    global.BookEffects.progress(page).assisting = false;
     clearMisses(page);
     page.removeAttribute('data-found');
+    page.removeAttribute('data-fed');
     /* 「这一页好了」的标记也要复位：读者会走回头路，
        第二遍读到这一页时，它得重新要一次互动——
        不复位的话，p22 的彩纸演完就永远带着「好了」，
@@ -92,6 +95,19 @@
       flown[f].classList.remove('is-flying');
     }
 
+    /* 挪动过的道具（第三册传过来的球、第五册收进篮子的东西）回到原处：
+       它们的原位置记在 data-prop-transform 上，第一次动之前存下来的。 */
+    var moved = page.querySelectorAll('[data-prop-transform]');
+    for (var m = 0; m < moved.length; m++) {
+      var mv = moved[m];
+      mv.setAttribute('transform', mv.getAttribute('data-prop-transform'));
+      mv.style.opacity = '';
+      mv.removeAttribute('data-tidied');
+    }
+    page.removeAttribute('data-breathing');
+    page.removeAttribute('data-passing');
+    page.querySelectorAll('[data-pointer-handled]').forEach(function (button) { delete button.dataset.pointerHandled; });
+
     /* 数一数：数字与"数过了"的痕迹都要复位。
        不复位的话，回头再进这一页，数字已经全亮着——数一遍就翻页，没法再数。
        只复位"数数"这一页自己的数字：答案页（p41）那个「3」是**静态亮着**的
@@ -117,6 +133,46 @@
     if (rub) bindRub(page, rub);
   }
 
+  /* 放人走之前，把这一页答应孩子的事补上。
+     连错五下是要放人走，不是让书撒谎：找一找一个都没找到，
+     下一页却写着「全找到啦！」——三岁孩子会记得刚才没找着。
+     本页有几个热区就演几遍：多步页（找一找 / 点三样 / 数一数 / 收篮子）
+     已完成的对象由动作自身跳过；连续喂食和喊声只补剩余次数。
+     出口类（再读一次、摸噜啵）不替孩子按，放行只是翻过去。 */
+  function completePending(page) {
+    var btns = page.querySelectorAll('.hotspot[data-action]');
+    var jobs = [];
+    for (var i = 0; i < btns.length; i++) {
+      var action = btns[i].getAttribute('data-action');
+      if (action === 'again' || action === 'yawn') continue;
+      if (!actions[action]) continue;
+      jobs.push([btns[i], action]);
+    }
+    if (!jobs.length) return false;
+    for (var j = 0; j < jobs.length; j++) {
+      var btn = jobs[j][0];
+      var name = jobs[j][1];
+      if (name === 'rub') {
+        var spiral = page.querySelector('.spiral');
+        var degrees = Math.ceil(gestures.rub.threshold / gestures.rub.tapDegrees) * gestures.rub.tapDegrees;
+        degrees = Math.max(degrees, Math.abs(Number(spiral.dataset.deg || 0)));
+        if (Number(spiral.dataset.deg) < 0) degrees = -degrees;
+        spiral.dataset.deg = String(degrees);
+        spiral.style.transform = 'rotate(' + degrees + 'deg)';
+        spiral.classList.add('is-rubbing');
+        actions.rub(page);
+        finishRub(page);
+        continue;
+      }
+      var rounds = name === 'feed' || name === 'shout'
+        ? Math.max(0, requiredRepeats(page, name) - countOf(page)) : 1;
+      for (var r = 0; r < rounds; r++) {
+        actions[name](page, btn.getAttribute('data-target') || '', btn);
+      }
+    }
+    return true;
+  }
+
   /* 点错地方：摇一下头，让孩子接着找。
      规格 §7.6「找一找：点对计数发音，点错摇头」。
      以前点错会直接落到"翻页"逻辑上：多步互动的页面（按顺序点三样 / 再喂一口 /
@@ -124,43 +180,53 @@
      孩子一个都没找到，书却问他找到了没有。
      标了 trap 的页面：点空白（书页内外都算）不翻页，只摇一下头。 */
   function wrong(page) {
+    var state = global.BookEffects.progress(page);
+    if (state.assisting || page.getAttribute('data-done') === '1') return;
     global.AudioBook.play('pop');
     shake(page);
     /* 连着点错 5 下就放人走——别把人困在这一页。
        这里原来挂了个 600 ms 计时器，继续点就把计时器一直顶掉，
        于是"点错 5 次就翻页"永远不触发，这一页就成了死路。
-       现在直接翻，不留计时器。 */
-    var id = page.getAttribute('data-id');
-    misses[id] = missCount(page) + 1;
-    if (misses[id] < 5) return;
-    misses[id] = 0;
+       五次后只触发一次补演，由动作自己的反馈报告完成。 */
+    state.misses = missCount(page) + 1;
+    if (state.misses < 5) return;
+    state.misses = 0;
+    state.assisting = true;
     /* 放人走：这一页当作好了（孩子放弃了这一关）。
        ⚠️ 放走的是**这一页**，不是这一跨：跨页时旁边那一页若还有互动，
        就先留在这一跨上——翻过去等于把那一页也跳过去。
        finish() 只给这一页盖 data-done，整组都好了才翻（见 Book.turnIfDone）。 */
-    global.Book.finish(page);
+    if (!completePending(page)) global.BookEffects.finish(page);
   }
 
   /* 拍一拍：点在噜啵身上 → 它晃一下、叫一声 → 照样翻页。
-     孩子最先戳的就是它。不回应的话，它在全书都只是一张贴图——
-     "点它有反应"这件事，只在喂食那几页成立。
-     翻页照旧：点了有反应、页也翻了，孩子不会觉得卡住。
+     孩子最先戳的就是它。不回应的话，它在全书都只是一张贴图。
 
-     ⚠️ **拍一拍算「这一页好了」**，跟从前一样：
-     p08 那种「既要喂苹果、又能拍角色」的页，孩子拍了一下就翻过去，
-     苹果那一口不喂——这是从前就有的行为，单页模式与跨页模式都一样，
-     不要顺手改掉它（改了就是拿窄屏的旧行为去换宽屏的新行为，
-     两边对不上，比原来更糟）。
+     ⚠️ 但**本页要做的那一件事不能被这一拍带走**：
+     p08 那种「既要喂苹果、又能拍角色」的页，从前拍一下角色就翻到
+     「噜啵变红啦！」，可苹果根本没吃——下一页在说一件没发生的事。
+     现在若本页有且只有一个专属热区，拍角色就顺手把那个动作演一遍，
+     由动作自己报告完成（翻页时机不变，单页与跨页模式仍然一样）。
+     多步页都标了 trap，book.js 不会把 trap 页交给 pat，走的是点空逻辑。
 
-     ⚠️ 但**旁边那一页**不能被这一拍带走：跨页模式下左页拍一拍，
+     ⚠️ **旁边那一页**不能被这一拍带走：跨页模式下左页拍一拍，
      右页自己的那一拍还没演呢（p44 拍一拍 → p45 的「我看见你啦！」没了）。
      所以这里调 finish() 而不是 next()：它给**这一页**盖上「好了」，
      整组都好了才翻——右页还有互动，就先留在这一跨上。 */
   function pat(page) {
     global.AudioBook.play('boing');
     wobble(page);
-    global.Book.after(450, function () {
-      global.Book.finish(page);
+    var btns = page.querySelectorAll('.hotspot[data-action]');
+    if (btns.length === 1) {
+      var action = btns[0].getAttribute('data-action');
+      if (action !== 'again' && actions[action]) {
+        clearMisses(page);
+        actions[action](page, btns[0].getAttribute('data-target') || '', btns[0]);
+        return;
+      }
+    }
+    global.BookEffects.after(450, function () {
+      global.BookEffects.finish(page);
     }, page);
   }
 
@@ -174,9 +240,26 @@
     char.classList.add('is-wobble');
   }
 
-  function fly(page, target) {
-    var el = page.querySelector('.prop-' + target);
-    if (!el) return;
+  function targetElement(page, button) {
+    return page.querySelector('[data-object="' + button.dataset.targetId + '"]');
+  }
+
+  function fly(page, target, button) {
+    var object = targetElement(page, button);
+    if (!object) return;
+    // 原构图在外层；新共读喂食只动画无原始变换的内层。
+    var el = object.querySelector('[data-feed-ink]') || object;
+    if (page.dataset.reading === 'simulate' && /^(feed|feed3)$/.test(button.dataset.action)) {
+      var mouth = page.querySelector('[data-mouth]');
+      if (mouth) {
+        var to = mouth.getBoundingClientRect(), from = el.getBoundingClientRect();
+        var inverse = el.parentNode.getScreenCTM().inverse();
+        var start = new DOMPoint(from.x + from.width / 2, from.y + from.height / 2).matrixTransform(inverse);
+        var end = new DOMPoint(to.x + to.width / 2, to.y + to.height / 2).matrixTransform(inverse);
+        el.style.setProperty('--feed-x', (end.x - start.x) + 'px');
+        el.style.setProperty('--feed-y', (end.y - start.y) + 'px');
+      }
+    }
     el.classList.remove('is-flying');
     void el.getBoundingClientRect();
     el.classList.add('is-flying');
@@ -186,12 +269,12 @@
      p16 要连喂三口：第一口之后苹果就停在 10% 不透明度、缩成 1/4，看不见了，
      可提示还写着"再喂一口！"——孩子面前没有东西可喂，只能去戳那颗不能点的星星，
      一戳就翻页，"越吃越圆"这场戏没了。喂完一口就把道具放回原位。 */
-  function restoreProp(page, target, delay) {
-    var el = page.querySelector('.prop-' + target);
+  function restoreProp(page, target, button, delay) {
+    var el = targetElement(page, button);
     if (!el) return;
-    setTimeout(function () {
+    global.BookEffects.delay(page, delay || 720, function () {
       el.classList.remove('is-flying');
-    }, delay || 720);
+    });
   }
 
   function popConfetti(page) {
@@ -212,6 +295,7 @@
      **判定放在手势结束时做，不靠 click**：触屏上拖动画圈不会产生 click，
      只在 click 里判定的话，平板/手机上的孩子永远过不了这一关。 */
   function bindRub(page, hotspot) {
+    if (!document.body.classList.contains("screen") || document.body.classList.contains("static")) return;
     var spiral = page.querySelector('.spiral');
     if (!spiral || spiral.dataset.rubBound === '1') return;
     spiral.dataset.rubBound = '1';
@@ -228,6 +312,7 @@
        换算走角色的 <g>：它带着角色的位移与缩放，角色摆到哪儿中心就跟到哪儿。
        每次手势开始时重算一次：窗口大小变了、页面滚了，旧坐标就不准了。 */
     var pivot = null;
+    var gestureValid = function () { return false; };
 
     function computePivot() {
       var bb = spiral.getBBox();
@@ -255,6 +340,8 @@
     var last = null;
     var moved = false;
     var down = null;
+    var pointerId = null;
+    var beforeGesture = null;
 
     /* 点一下与"画了一笔"的界：手指/鼠标离按下的地方超过这么多像素，
        才算真的在画。原先用"角度变化超过 0.5°"来判断，
@@ -267,26 +354,50 @@
       spiral.style.transform = 'rotate(' + deg.toFixed(1) + 'deg)';
     }
 
-    function endGesture() {
+    function endGesture(ev) {
+      if (ev && ev.pointerId !== pointerId) return;
       if (last === null) return;
+      if (!gestureValid()) { last = null; return; }
       if (!moved) {
         /* 点一下也算揉：螺旋转一格，孩子看得见反应。
            "在肚子上画个圈"是 3 岁孩子做不到的动作，连点三下的兜底不能是"点了没反应"；
            转 3 格 = 360°，正好也过"画满一圈"那关。 */
-        turnTo(parseFloat(spiral.dataset.deg || '0') + 120);
+        turnTo(parseFloat(spiral.dataset.deg || '0') + gestures.rub.tapDegrees);
       }
       last = null;
+      down = null;
+      pointerId = null;
       /* 画满一圈（累计 300° 以上）就过关——在手势结束时判定，
          不依赖 click（触屏拖动没有 click）。 */
-      if (Math.abs(parseFloat(spiral.dataset.deg || '0')) >= 300) {
-        global.AudioBook.play('gulu');
-        global.Book.after(700, function () {
-          global.Book.finish(page);
-        }, page);
+      if (finishRub(page)) global.AudioBook.play('gulu');
+    }
+
+    function cancelGesture(ev) {
+      if (ev.pointerId !== pointerId || last === null) return;
+      if (gestureValid()) {
+        spiral.dataset.deg = beforeGesture.degrees;
+        spiral.style.transform = beforeGesture.transform;
+        spiral.classList.toggle('is-rubbing', beforeGesture.rubbing);
+      }
+      last = null;
+      down = null;
+      var canceledPointer = pointerId;
+      pointerId = null;
+      if (hotspot.hasPointerCapture && hotspot.hasPointerCapture(canceledPointer)) {
+        hotspot.releasePointerCapture(canceledPointer);
       }
     }
 
     hotspot.addEventListener('pointerdown', function (ev) {
+      if (panelIsOpen() || (last !== null && gestureValid())) return;
+      if (!global.BookEffects.begin(page)) return;
+      pointerId = ev.pointerId;
+      gestureValid = global.BookEffects.capture(page);
+      beforeGesture = {
+        degrees: spiral.dataset.deg || '0',
+        transform: spiral.style.transform,
+        rubbing: spiral.classList.contains('is-rubbing')
+      };
       spiral.classList.add('is-rubbing');
       /* 每次手势都重算一次旋转中心：窗口大小变了、页面滚了，旧坐标就不准 */
       pivot = null;
@@ -310,7 +421,8 @@
       }
     });
     hotspot.addEventListener('pointermove', function (ev) {
-      if (last === null) return;
+      if (!gestureValid()) { last = null; return; }
+      if (last === null || ev.pointerId !== pointerId) return;
       if (down) {
         var dx = ev.clientX - down.x;
         var dy = ev.clientY - down.y;
@@ -326,12 +438,13 @@
       last = a;
     });
     hotspot.addEventListener('pointerup', endGesture);
-    hotspot.addEventListener('pointercancel', endGesture);
+
     /* 手势在热区外结束也要收尾：不然 last 留着陈旧的角度，
        之后只是把鼠标在肚子上晃（不按）也会累加，
        攒够 300° 后点一下就直接翻页。 */
     document.addEventListener('pointerup', endGesture);
-    document.addEventListener('pointercancel', endGesture);
+    document.addEventListener('pointercancel', cancelGesture);
+    hotspot.addEventListener('lostpointercapture', cancelGesture);
   }
 
   /* 每样东西有自己的声音：苹果咔嚓、小鱼哗啦、星星叮一声。
@@ -383,14 +496,96 @@
       frame(1);
       return;
     }
+    var page = char.closest('.page');
     var start = null;
     function step(ts) {
       if (start === null) start = ts;
       var t = Math.min(1, (ts - start) / duration);
       frame(t);
-      if (t < 1) global.requestAnimationFrame(step);
+      if (t < 1) global.BookEffects.frame(page, step);
     }
-    global.requestAnimationFrame(step);
+    global.BookEffects.frame(page, step);
+  }
+
+  /* 道具自己挪地方（第三册的传球、第五册的收进篮子）。
+     位移写在道具的 style 里（--go-x / --go-y，单位是页面单位），
+     页面数据自己说"球滚多远""东西放进篮子要挪多少"。
+
+     为什么不用 CSS 动画：CSS 的 transform 会把 SVG 的 transform 属性整个顶掉，
+     道具会跳回本地原点、缩放也跟着没了（transform 属性里的 scale(0.36) 就不算了）。
+     这里跟角色一样，逐帧改属性——改完还能原样改回去。 */
+  function goOffset(el) {
+    var x = parseFloat(el.style.getPropertyValue('--go-x'));
+    var y = parseFloat(el.style.getPropertyValue('--go-y'));
+    return { x: isNaN(x) ? 0 : x, y: isNaN(y) ? 0 : y };
+  }
+
+  function tweenProp(el, opt, done) {
+    var page = el.closest('.page');
+    var raw = el.getAttribute('transform') || '';
+    var tm = raw.match(/translate\(\s*(-?[\d.]+)[ ,]+(-?[\d.]+)\s*\)/);
+    if (!tm) {
+      if (done) done();
+      return;
+    }
+    var sm = raw.match(/scale\(\s*(-?[\d.]+)\s*\)/);
+    var tx = parseFloat(tm[1]);
+    var ty = parseFloat(tm[2]);
+    var sc = sm ? parseFloat(sm[1]) : 1;
+    var scTo = opt.scale != null ? opt.scale : sc;
+    var opTo = opt.opacity != null ? opt.opacity : 1;
+    var start = null;
+    function step(ts) {
+      if (start === null) start = ts;
+      var t = Math.min(1, (ts - start) / opt.dur);
+      var e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      var ns = sc + (scTo - sc) * e;
+      el.setAttribute(
+        'transform',
+        raw
+          .replace(
+            /translate\(\s*-?[\d.]+[ ,]+-?[\d.]+\s*\)/,
+            'translate(' + (tx + opt.dx * e).toFixed(1) + ',' + (ty + opt.dy * e - 4 * (opt.arc || 0) * e * (1 - e)).toFixed(1) + ')'
+          )
+          .replace(/scale\(\s*-?[\d.]+\s*\)/, 'scale(' + ns.toFixed(4) + ')')
+      );
+      el.style.opacity = (1 + (opTo - 1) * e).toFixed(2);
+      if (t < 1) global.BookEffects.frame(page, step);
+      else if (done) done();
+    }
+    if (reducedMotion()) {
+      /* 减动效：不演过程，直接落到终点（该在的地方还得在） */
+      el.setAttribute(
+        'transform',
+        raw
+          .replace(
+            /translate\(\s*-?[\d.]+[ ,]+-?[\d.]+\s*\)/,
+            'translate(' + (tx + opt.dx).toFixed(1) + ',' + (ty + opt.dy).toFixed(1) + ')'
+          )
+          .replace(/scale\(\s*-?[\d.]+\s*\)/, 'scale(' + scTo.toFixed(4) + ')')
+      );
+      el.style.opacity = String(opTo);
+      if (done) done();
+      return;
+    }
+    global.BookEffects.frame(page, step);
+  }
+
+  /* 记住道具原来的位置：读者会走回头路，
+     回头再进这一页时它得回到原处（不然看着像坏了）。 */
+  function rememberProp(el) {
+    if (!el.getAttribute('data-prop-transform')) {
+      el.setAttribute('data-prop-transform', el.getAttribute('transform') || '');
+    }
+  }
+
+  /* 这一页的角色画的是哪个姿态：姿态写在 .char 里第一个 <use> 的 href 上。
+     要按画面判断事情的时候用它，别拿页号当判据——页号在册内独立，
+     每一册都有 p16、p17。 */
+  function charPose(page) {
+    var use = page.querySelector('.char use');
+    var m = use && String(use.getAttribute('href') || '').match(/^#pose-([\w-]+)$/);
+    return m ? m[1] : '';
   }
 
   var actions = {
@@ -398,77 +593,72 @@
     start: function (page) {
       global.AudioBook.unlock();
       global.AudioBook.play('chirp');
-      global.Book.finish(page);
+      global.BookEffects.finish(page);
     },
 
     /* 点肚子：咕噜声 + 噜啵晃一下 → 翻页 */
     belly: function (page) {
-      /* 同一套动作，两种声音：
-         p04 是"肚子饿了"的咕噜；p17 是"越吃越圆"，身子弹一下（果冻声）。 */
-      if (page.getAttribute('data-id') === 'p17') {
-        global.AudioBook.play('boing');
-      } else {
-        global.AudioBook.play('gulu');
-      }
+      /* 同一套动作，两种声音：饿得咕咕叫，和吃饱了身子一弹的果冻声。
+         判据认画面上的姿态（pose-full），不认页号——页号在册内独立，
+         每一册都有 p17，绑在页号上就是给下一册埋雷。 */
+      global.AudioBook.play(charPose(page) === 'full' ? 'boing' : 'gulu');
       wobble(page);
-      global.Book.after(750, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(750, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
     /* 点食物：食物自己的声音 + 飞进嘴 → 翻页 */
-    feed: function (page, target) {
+    feed: function (page, target, btn) {
       global.AudioBook.play(thingSound(target));
-      fly(page, target);
+      fly(page, target, btn);
       clearMisses(page);
       var n = bump(page);
-      if (page.getAttribute('data-id') === 'p16') {
-        /* 「越吃越圆」是**这一册**第 5 跨页的特殊演法：
-           喂三口，角色一次比一次大。
-           判据是页面里有没有 #grow-char，不是页码——
-           第二册也有一页叫 p16（喂水），按页码判会把它当成「越吃越圆」那一页：
-           喂一口就退回去，孩子永远过不去。 */
-        var char = page.querySelector('#grow-char');
-        if (char) {
-          /* 基准缩放取 data-base-scale（页面数据里的原值），
-             不能读当前 transform——那已经是上一次改过的值，会越叠越大。 */
-          var baseScale = parseFloat(char.dataset.baseScale || '0.56');
-          var scale = Math.min(baseScale + n * 0.06, baseScale + 0.18);
-          var base = char.getAttribute('transform') || '';
-          char.setAttribute(
-            'transform',
-            base.replace(/scale\([\d.]+\)/, 'scale(' + scale.toFixed(2) + ')')
-          );
-          if (n < 3) {
-            /* 还要喂：把苹果放回原位，下一口还有东西可喂 */
-            restoreProp(page, target);
-            return;
-          }
+      /* 「越吃越圆」的演法认的是画面：这一页的角色挂着 #grow-char，
+         才一口比一次大。判据不写页号——第二册也有一页叫 p16（喂水），
+         按页号判会把它当成「越吃越圆」：喂一口就退回去，孩子永远过不去。 */
+      var char = page.querySelector('#grow-char');
+      if (char) {
+        /* 基准缩放取 data-base-scale（页面数据里的原值），
+           不能读当前 transform——那已经是上一次改过的值，会越叠越大。 */
+        var baseScale = parseFloat(char.dataset.baseScale || '0.56');
+        var scale = Math.min(baseScale + n * 0.06, baseScale + 0.18);
+        var base = char.getAttribute('transform') || '';
+        char.setAttribute(
+          'transform',
+          base.replace(/scale\([\d.]+\)/, 'scale(' + scale.toFixed(2) + ')')
+        );
+        if (n < requiredRepeats(page, 'feed')) {
+          /* 还要喂：把苹果放回原位，下一口还有东西可喂 */
+          restoreProp(page, target, btn);
+          return;
         }
       }
-      global.Book.after(750, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(750, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
-    /* 三样依次点：数 1、2、3 → 第三样后翻到彩虹页 */
-    feed3: function (page, target) {
-      var order = ['apple', 'fish', 'star'];
-      var n = countOf(page);
-      if (order[n] !== target) {
-        /* 顺序不对：摇一下头，不计数 */
-        shake(page);
+    /* 三样都点一点：数 1、2、3 → 三样齐了翻到彩虹页。
+       三岁记不住「先苹果再小鱼再星星」这种顺序，也不该因为点错顺序被摇头：
+       任意顺序点齐就算数，同一样点两下只给个响、不重复计数。
+       已点过的记在 data-fed 上，reset() 会在重进这一页时清掉。 */
+    feed3: function (page, target, btn) {
+      var fed = (page.getAttribute('data-fed') || '').split(',').filter(Boolean);
+      if (fed.indexOf(target) >= 0) {
         global.AudioBook.play('pop');
         return;
       }
       global.AudioBook.play(thingSound(target));
-      fly(page, target);
+      fly(page, target, btn);
       clearMisses(page);
-      bump(page);
-      if (countOf(page) >= 3) {
+      fed.push(target);
+      page.setAttribute('data-fed', fed.join(','));
+      var n = bump(page);
+      if (n >= 3) {
         global.AudioBook.play('rainbow');
-        global.Book.after(800, function () {
-          global.Book.finish(page);
+        global.BookEffects.after(800, function () {
+          global.BookEffects.finish(page);
         }, page);
       }
     },
@@ -485,8 +675,8 @@
     confetti: function (page) {
       global.AudioBook.play('pop');
       popConfetti(page);
-      global.Book.after(700, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(700, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -494,8 +684,8 @@
     moon: function (page) {
       global.AudioBook.play('snore');
       page.classList.add('is-dim');
-      global.Book.after(800, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(800, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -504,28 +694,34 @@
       global.AudioBook.play('gulu');
       global.AudioBook.play('chirp');
       wobble(page);
-      global.Book.after(800, function () {
-        global.Book.goToId('p04');
+      global.BookEffects.after(800, function () {
+        global.BookEffects.exit(page);
       }, page);
     },
 
     /* 找一找：点对计数发音，点错摇一下头 */
-    find: function (page, target) {
-      /* 数"找到几个"，不能拿拼起来的字符串长度当数量
-         （'apple' 就有 5 个字符，找到一个就会被误判成找齐了）。 */
+    find: function (page, target, btn) {
+      /* 按本页声明的对象身份寻找：单一毯角与三个物件共用同一动作。
+         同类不同对象分别计数，重复点同一个对象不重复兑现。 */
+      var expected = Array.from(page.querySelectorAll('.hotspot[data-action="find"]'))
+        .map(function (button) { return button.getAttribute('data-target-id'); })
+        .filter(Boolean);
+      var identity = btn && btn.getAttribute('data-target-id');
+      if (!identity || expected.indexOf(identity) < 0) return;
       var found = (page.getAttribute('data-found') || '').split(',').filter(Boolean);
-      if (found.indexOf(target) >= 0) {
+      if (found.indexOf(identity) >= 0) {
         global.AudioBook.play('pop');
         return;
       }
       global.AudioBook.play(thingSound(target));
       clearMisses(page);
-      found.push(target);
+      found.push(identity);
       page.setAttribute('data-found', found.join(','));
-      fly(page, target);
-      if (found.length >= 3) {
-        global.Book.after(700, function () {
-          global.Book.finish(page);
+      /* 指毯角只确认找到，毯子留在原处；下一页露脚回应，不能先飞走。 */
+      if (target !== 'blanket' && page.dataset.reading !== 'observe') fly(page, target, btn);
+      if (expected.every(function (id) { return found.indexOf(id) >= 0; })) {
+        global.BookEffects.after(700, function () {
+          global.BookEffects.finish(page);
         }, page);
       }
     },
@@ -546,7 +742,7 @@
       clearMisses(page);
       global.AudioBook.play('chirp');
       if (num) num.classList.add('is-on');
-      var item = page.querySelectorAll('.count-item')[index - 1];
+      var item = targetElement(page, btn);
       if (item) {
         item.classList.remove('is-counted');
         void item.getBoundingClientRect();
@@ -555,8 +751,8 @@
       if (n >= 3) {
         /* 数对了：鼓个掌——给的是大人的鼓励声，不是机器人的 */
         global.AudioBook.play('clap');
-        global.Book.after(700, function () {
-          global.Book.finish(page);
+        global.BookEffects.after(700, function () {
+          global.BookEffects.finish(page);
         }, page);
       }
     },
@@ -579,17 +775,18 @@
           );
         });
       }
-      global.Book.after(950, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(950, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
     /* 拍手：它拍一下手，啪一声。孩子跟着拍。 */
     clap: function (page) {
       global.AudioBook.play('clap');
-      wobble(page);
-      global.Book.after(800, function () {
-        global.Book.finish(page);
+      // 共读拍手的是孩子，角色的摇身在紧邻结果页，不能提前演出。
+      if (page.dataset.reading !== 'simulate') wobble(page);
+      global.BookEffects.after(800, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -608,8 +805,8 @@
           );
         });
       }
-      global.Book.after(850, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(850, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -643,8 +840,8 @@
           { duration: 340, easing: 'ease-in-out' }
         );
       }
-      global.Book.after(820, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(820, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -665,9 +862,9 @@
           { duration: 700, easing: 'ease-out' }
         );
       }
-      if (n >= 3) {
-        global.Book.after(700, function () {
-          global.Book.finish(page);
+      if (n >= requiredRepeats(page, 'shout')) {
+        global.BookEffects.after(700, function () {
+          global.BookEffects.finish(page);
         }, page);
       }
     },
@@ -688,8 +885,8 @@
           );
         });
       }
-      global.Book.after(800, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(800, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -697,8 +894,19 @@
     name: function (page) {
       global.AudioBook.play('giggle');
       wobble(page);
-      global.Book.after(750, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(750, function () {
+        global.BookEffects.finish(page);
+      }, page);
+    },
+
+    /* 点它一下：后三册叙事段补的通用互动。
+       不承诺剧情、不做分支，只是「点了有反应」——规格 §1 的庆祝性反馈。
+       没有专属任务的页用它，孩子不必每翻一页都只能点空白。 */
+    poke: function (page) {
+      global.AudioBook.play('boing');
+      if (!page.dataset.reading) wobble(page);
+      global.BookEffects.after(450, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -706,8 +914,8 @@
     massage: function (page) {
       global.AudioBook.play('gulu');
       wobble(page);
-      global.Book.after(750, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(750, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -717,26 +925,26 @@
     gift: function (page) {
       global.AudioBook.play('rainbow');
       wobble(page);
-      global.Book.after(900, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(900, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
     /* 盖毯子（第二册）：孩子把毯子拉过去，它暖和了一点 */
     cover: function (page) {
       global.AudioBook.play('paper');
-      wobble(page);
-      global.Book.after(800, function () {
-        global.Book.finish(page);
+      if (!page.dataset.reading) wobble(page);
+      global.BookEffects.after(800, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
     /* 喂水（第二册）：它终于喝了一小口 */
     water: function (page) {
-      global.AudioBook.play('bubble');
-      wobble(page);
-      global.Book.after(900, function () {
-        global.Book.finish(page);
+      global.AudioBook.play(page.dataset.reading ? 'paper' : 'bubble');
+      if (!page.dataset.reading) wobble(page);
+      global.BookEffects.after(900, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -744,8 +952,8 @@
     medicine: function (page) {
       global.AudioBook.play('slurp');
       wobble(page);
-      global.Book.after(900, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(900, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -753,8 +961,8 @@
     cough: function (page) {
       global.AudioBook.play('sigh');
       shake(page);
-      global.Book.after(800, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(800, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
@@ -762,28 +970,114 @@
     sleepy: function (page) {
       global.AudioBook.play('sigh');
       wobble(page);
-      global.Book.after(800, function () {
-        global.Book.finish(page);
+      global.BookEffects.after(800, function () {
+        global.BookEffects.finish(page);
       }, page);
     },
 
     /* 再读一次：转回第一跨页 */
     again: function (page) {
       global.AudioBook.play('chirp');
-      global.Book.after(400, function () {
-        global.Book.goToId('p04');
+      global.BookEffects.after(400, function () {
+        global.BookEffects.exit(page);
       }, page);
+    },
+
+    /* 传球（第三册《一起玩！》）：球从这边滚到那边——轮流就靠这一页说清楚。
+       球滚多远写在道具的 style 里（--go-x / --go-y），页面数据自己定。 */
+    pass: function (page, target, btn) {
+      var el = targetElement(page, btn);
+      if (!el) return;
+      global.AudioBook.play('pop');
+      clearMisses(page);
+      if (page.hasAttribute('data-passing')) return;
+      page.setAttribute('data-passing', '1');
+      rememberProp(el);
+      var off = goOffset(el);
+      var arc = parseFloat(el.style.getPropertyValue('--go-arc')) || 0;
+      tweenProp(el, { dx: off.x, dy: off.y, arc: arc, dur: 700 }, function () {
+        global.BookEffects.finish(page);
+      });
+    },
+
+    /* 一起深呼吸（第四册《生气啦！》）：它跟着你一起吸气，慢慢变大再变小。
+       这一页的节奏交给孩子——按住多久都行，不算做错。 */
+    breathe: function (page) {
+      var char = page.querySelector('.char');
+      if (!char) return;
+      if (page.getAttribute('data-breathing')) return;
+      page.setAttribute('data-breathing', '1');
+      global.AudioBook.play('sigh');
+      clearMisses(page);
+      var base = charBase(char);
+      if (!base) {
+        /* 量不到角色的原始 transform（数据坏了）也不能卡住：
+           data-breathing 已经写上了，不摘掉就永远等不到"好了"——
+           这一页要是 trap，就成了死路。 */
+        page.removeAttribute('data-breathing');
+        global.BookEffects.finish(page);
+        return;
+      }
+      var c = charCenter(char);
+      var cycles = page.dataset.reading === 'simulate' ? 1 : 2;
+      tweenChar(char, 2600, function (t) {
+        /* 明确共读的一口只起伏一次；未分类旧稿保留原来的两次。 */
+        var s = 1 + 0.07 * (0.5 - 0.5 * Math.cos(t * Math.PI * 2 * cycles));
+        var k = base.sc * s;
+        /* 绕自己的中心变大：不然它会朝左上角长出去 */
+        char.setAttribute(
+          'transform',
+          'translate(' + base.tx + ',' + base.ty + ') translate(' +
+            (base.sc * (1 - s) * c[0]).toFixed(1) + ',' + (base.sc * (1 - s) * c[1]).toFixed(1) +
+            ') scale(' + k.toFixed(3) + ')'
+        );
+      });
+      /* 减少动效时不演过程（tweenChar 直接落到终点），
+         就别让读者对着静止的一页等 2.6 秒——留够听见那口气的时间即可。 */
+      global.BookEffects.after(reducedMotion() ? 400 : 2600, function () {
+        page.removeAttribute('data-breathing');
+        global.BookEffects.finish(page);
+      }, page);
+    },
+
+    /* 收起来：只等待本页声明的待收对象，篮里已有的物件不再参与。
+       挪多远写在道具的style里，既有三物书稿仍等待原来的三个对象。 */
+    tidy: function (page, target, btn) {
+      var expected = new Set(Array.from(page.querySelectorAll('.hotspot[data-action="tidy"]'))
+        .map(function (button) { return button.dataset.targetId; }).filter(Boolean));
+      if (!btn || !expected.has(btn.dataset.targetId)) return;
+      var el = targetElement(page, btn);
+      if (!el) return;
+      if (el.getAttribute('data-tidied')) return;
+      el.setAttribute('data-tidied', '1');
+      global.AudioBook.play('paper');
+      clearMisses(page);
+      rememberProp(el);
+      var off = goOffset(el);
+      // 明确共读保持同物尺度与可见性；未分类旧三物稿仍保留原缩小反馈。
+      var move = { dx: off.x, dy: off.y, dur: 620 };
+      if (page.dataset.reading !== 'simulate') { move.scale = 0.16; move.opacity = 0.25; }
+      tweenProp(el, move, function () {
+        var n = bump(page);
+        if (n >= expected.size) {
+          global.BookEffects.after(500, function () {
+            global.BookEffects.finish(page);
+          }, page);
+        }
+      });
     }
   };
 
   function handle(ev) {
     var btn = ev.target.closest('.hotspot');
-    if (!btn) return;
+    if (!btn || panelIsOpen() || !global.BookEffects.begin(btn.closest('.page'))) return;
     ev.stopPropagation();
     ev.preventDefault();
 
     var page = btn.closest('.page');
     var pageId = page ? page.getAttribute('data-id') : null;
+    if (btn.dataset.pointerHandled === '1') { delete btn.dataset.pointerHandled; return; }
+
 
     /* 只跳过"本页"还没播完的效果：上一页残留的计时器不该吃掉这一页的点击。
        跳过时执行效果本来的结局——摸噜啵/再读一次是"回到 p04"，不是"翻下一页"。
@@ -800,15 +1094,39 @@
     if (!fn || !page) {
       /* 没有动作可演（页面数据里写了一个互动表里没有的动作）：
          当作这一页好了，往下走。找不到页面就没法「好了」这一说。 */
-      if (page) global.Book.finish(page);
+      if (page) global.BookEffects.finish(page);
       else global.Book.next();
       return;
     }
-    if (action === 'rub') bindRub(page, btn);
+    if (action === 'rub') {
+      bindRub(page, btn);
+      if (ev.detail === 0) {
+        var spiral = page.querySelector('.spiral');
+        spiral.dataset.deg = String(Number(spiral.dataset.deg || 0) + gestures.rub.tapDegrees);
+        spiral.style.transform = 'rotate(' + spiral.dataset.deg + 'deg)';
+        finishRub(page);
+      }
+    }
     fn(page, target, btn);
   }
 
   function bind() {
+    if (!document.body.classList.contains('screen') || document.body.classList.contains('static')) return;
+    document.addEventListener('pointerdown', function (ev) {
+      var btn = ev.target.closest('[data-action="breathe"]');
+      if (!btn || panelIsOpen() || !global.BookEffects.begin(btn.closest('.page'))) return;
+      btn.dataset.pointerHandled = '1';
+      actions.breathe(btn.closest('.page'));
+    });
+    document.addEventListener('pointerup', function () {
+      document.querySelectorAll('[data-pointer-handled]').forEach(function (btn) {
+        global.BookEffects.delay(btn.closest('.page'), 0, function () { delete btn.dataset.pointerHandled; });
+      });
+    });
+    document.addEventListener('pointercancel', function (ev) {
+      var btn = ev.target.closest('[data-pointer-handled]');
+      if (btn) delete btn.dataset.pointerHandled;
+    });
     document.addEventListener('click', handle, true);
   }
 

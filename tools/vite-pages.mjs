@@ -7,7 +7,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadBooks } from './load-specs.mjs';
-import { renderPage } from './render-page.mjs';
+import { createPageRenderer } from './render-page.mjs';
+import { normalizePath } from 'vite';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -33,7 +34,7 @@ function buildDefs() {
 }
 
 export function bookPages() {
-  let books = null;
+  let buildBooks;
 
   return {
     name: 'awulubo-book-pages',
@@ -42,39 +43,37 @@ export function bookPages() {
        所以改了它们，Vite 不会自己发现——HTML 那层没被标记为过期。
        这里明确告诉它：内容变了就整页重载。少了这段，
        「改一句台词 → 刷新浏览器 → 什么都没变」，只能重启 dev。 */
-    handleHotUpdate(ctx) {
-      const file = ctx.file || '';
-      const isContent = file.includes(`${path.sep}src${path.sep}content${path.sep}`);
-      const isComponent = file.includes(`${path.sep}src${path.sep}components${path.sep}`);
-      if (!isContent && !isComponent) return;
-      books = null; /* 下一次 transform 重新读盘 */
-      if (ctx.server) ctx.server.ws.send({ type: 'full-reload' });
+    configureServer(server) {
+      server.watcher.on('all', (event, file) => {
+        if (!['add', 'change', 'unlink'].includes(event)) return;
+        const relative = normalizePath(path.relative(ROOT, file));
+        if (/^src\/(content|components|templates)\//.test(relative)) {
+          server.ws.send({ type: 'full-reload' });
+        }
+      });
     },
 
     async transformIndexHtml(html, ctx) {
       /* 开发模式每次都重读：页面数据是改得最多的东西，
          缓存住它等于改一版要重启一次服务器。 */
       const isDev = !!ctx.server;
-      if (isDev || !books) books = await loadBooks();
+      if (!isDev && !buildBooks) buildBooks = loadBooks();
+      const books = await (isDev ? loadBooks() : buildBooks);
+      const renderPage = createPageRenderer();
       const file = ctx.path || '';
       /* 屏幕版只出 60 页（跳过版权页、给大人的话、后环衬、封底）；印刷版与拼版出全部 64 页 */
       const scope = /print|proof|booklet/.test(file) ? 'print' : 'screen';
-      const pages = books
-        .map((b) => b.pages.filter((p) => scope === 'print' || p.screen !== false))
-        .flat();
-
       let markup;
       if (/booklet/.test(file)) {
         /* 骑马钉拼版按册分块排：每册是一本独立的书，
            帖序在册内从头算（最外一张是那一册的封面与封底）。 */
         markup = books
-          .map((b) => {
-            const bp = b.pages.filter((p) => scope === 'print' || p.screen !== false);
-            return bookletSheets(bp, scope, b.id);
-          })
+          .map((b) => bookletSheets(b.pages, b.id, renderPage))
           .join('\n');
       } else {
-        markup = pages.map((p) => renderPage(p, scope)).join('\n\n');
+        markup = books.flatMap((b) => b.pages)
+          .filter((p) => scope === 'print' || p.screen !== false)
+          .map((p) => renderPage(p, scope)).join('\n\n');
       }
 
       /* 册清单（浏览器端拿不到文件系统，册的列表必须显式带进去） */
@@ -83,6 +82,7 @@ export function bookPages() {
         no: i + 1,
         title: b.meta.title || b.id,
         subtitle: b.meta.subtitle || '',
+        adultTip: b.meta.adultTip || '',
       }));
 
       return html
@@ -99,7 +99,7 @@ export function bookPages() {
 /* A4 双面骑马钉拼版：一张纸的两面，每面并排两个书页，对折就是书。
    页序按骑马钉来——最外一张是封面与封底，往里依次往中间收。
    （每帖 4 页，N 页的书要 N/4 张纸、双面印，一共 N/2 个 A4 面。） */
-function bookletSheets(pages, scope, bookId) {
+function bookletSheets(pages, bookId, renderPage) {
   const n = pages.length;
   const sides = [];
   for (let k = 1; k <= n / 4; k++) {
@@ -109,7 +109,7 @@ function bookletSheets(pages, scope, bookId) {
   return sides
     .map((side) => {
       const cells = side
-        .map((i) => `      <div class="cell">${renderPage(pages[i - 1], scope)}</div>`)
+        .map((i) => `      <div class="cell">${renderPage(pages[i - 1], 'print')}</div>`)
         .join('\n');
       return `    <div class="sheet" data-book="${bookId}">\n${cells}\n    </div>`;
     })

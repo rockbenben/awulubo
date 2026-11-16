@@ -1,3 +1,4 @@
+import { openPanel, closePanel } from './panels.js';
 /* 选页器：让孩子（和大人）能直接跳到任意一页，不必一页一页翻。
    —— 44 页版只有「上一页 / 下一页 / 回第一页」三种走法，
       想找「数一数」那页要从头翻十几页。64 页版更得有个入口。
@@ -19,7 +20,7 @@
     return document.body.classList.contains('static');
   }
 
-  /* 只列**当前册**的页：两册的页码各自从 p01 开始，
+  /* 只列**当前册**的页：每册的页码各自从 p01 开始，
      铺在一起会出现两个 p01——点哪个都说不清是哪一册的哪一页。 */
   function pages() {
     var book = global.Book && global.Book.book ? global.Book.book() : '';
@@ -50,6 +51,8 @@
     var list = pages();
     grid = document.createElement('div');
     grid.className = 'picker-grid';
+    /* 记下这一格属于哪一册：面板开着时切了册，sync 据此重建。 */
+    grid.setAttribute('data-book', book || '');
     list.forEach(function (page, i) {
       var btn = document.createElement('button');
       btn.type = 'button';
@@ -72,6 +75,14 @@
 
   function sync(panel) {
     if (!grid) return;
+    /* 面板开着的时候切了册：格子里还是上一册的缩略图，重建。
+       （格子是懒建的，切册后不重建的话，点格子跳到的是新册的同序号页，
+       缩略图却还是旧册的——看着像书页被换了内容。） */
+    var book = global.Book && global.Book.book ? global.Book.book() : '';
+    if (builtBook !== book) {
+      build(panel);
+      if (!grid) return;
+    }
     /* 摊开成跨页时，当前一组有两页：两个格子都要亮。
        只亮一个的话，读者看着满屏两页、却只有一个格子被框住，像坏了。 */
     var group = global.Book && global.Book.currentGroup ? global.Book.currentGroup() : null;
@@ -93,16 +104,12 @@
 
   function open(panel, btn) {
     build(panel);
-    panel.hidden = false;
-    panel.classList.add('is-open');
-    btn.setAttribute('aria-expanded', 'true');
+    openPanel(panel, btn);
     sync(panel);
   }
 
   function close(panel, btn) {
-    panel.hidden = true;
-    panel.classList.remove('is-open');
-    btn.setAttribute('aria-expanded', 'false');
+    closePanel(panel);
   }
 
   function init() {
@@ -139,9 +146,10 @@
        按印刷页码编号的话格子会缺 4、61、63、64 几个数，看着像坏了。
        摊开成跨页时显示的是**这一组**：8–9/60。 */
     var label = document.getElementById('page-num');
-    var total = pages().length;
     function setLabel(i) {
       if (!label) return;
+      /* 总页数按当前册现算：写死成 init 时的值，换册后就不对了。 */
+      var total = pages().length;
       var range = global.Book && global.Book.currentRange ? global.Book.currentRange() : null;
       var text;
       if (range && range.length > 1) {
@@ -167,6 +175,4 @@
   } else {
     init();
   }
-
-  global.BookPicker = { sync: sync };
 })(window);

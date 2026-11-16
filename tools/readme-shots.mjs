@@ -67,15 +67,17 @@ if (sourceTime > fs.statSync(input).mtimeMs) {
 
 fs.mkdirSync(outDir, { recursive: true });
 
-/* 首屏横幅的四格：两册各两页。门面得让人知道这是**两本书**——
-   只摊第一册，读者的第一反应是「怎么只有一个绘本」。
-   挑页：每册的高潮那页（p21 彩纸喷发、p49 变红），封面也各留一个——
-   门面要同时说清「有两册」和「每一册都有戏」。 */
+/* 首屏横幅的五格：五册的封面各一格。
+   门面得让人知道这是**一个系列、五本书**——只摊第一册，
+   读者的第一反应是「怎么只有一个绘本」。
+   五格全放封面：一册一格，一眼数得出是五本；
+   每一册里面都有戏，那由下面的图库说。 */
 const HERO = [
   { name: 'hero-1', book: 'awulubo', id: 'p01' },
-  { name: 'hero-2', book: 'awulubo', id: 'p21' },
-  { name: 'hero-3', book: 'labuluo', id: 'p01' },
-  { name: 'hero-4', book: 'labuluo', id: 'p49' },
+  { name: 'hero-2', book: 'labuluo', id: 'p01' },
+  { name: 'hero-3', book: 'yiqiwan', id: 'p01' },
+  { name: 'hero-4', book: 'shengqi', id: 'p01' },
+  { name: 'hero-5', book: 'wuzilai', id: 'p01' },
 ];
 
 /* 图库：四个互不重复的玩法 */
@@ -93,6 +95,9 @@ const GALLERY = [
   },
   { name: 'seen', book: 'awulubo', id: 'p45' },
   { name: 'gift', book: 'awulubo', id: 'p47' },
+  /* 第四册的高潮：满版红。门面上要能看出「后面几册不是前头的重复」——
+     前面四张全是第一册的玩法，这一张是第四册的画风。 */
+  { name: 'angry', book: 'shengqi', id: 'p20' },
 ];
 
 /* 摊开的两页：网页版真正的样子（宽屏才摊开，窄屏是一页一屏）。

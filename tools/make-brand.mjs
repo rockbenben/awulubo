@@ -2,7 +2,7 @@
    用法：
      node tools/make-brand.mjs --explore   # 候选对比图（挑样式用）
      node tools/make-brand.mjs --logo      # → docs/images/logo.svg
-     node tools/make-brand.mjs --card      # → dist/og.png（1280×640）
+     node tools/make-brand.mjs --card      # → dist/og.png 与 docs/images/og.png（1280×640）
      node tools/make-brand.mjs --all       # 三个都做
 
    为什么自己写：logo 是**品牌资产**，不能是"角色改了它也跟着变"的活物。
@@ -146,18 +146,15 @@ function flatten(id, inherited = {}, extraVars = {}, depth = 0) {
   });
 }
 
-/* 角色：按顺序摊平零件。state 决定身体颜色，arms 决定手往哪儿伸。 */
-function critter(state, { arms = 'up', spiral = true } = {}) {
+/* 角色：按顺序摊平无手零件。state决定身体颜色，沿用原构图。 */
+function critter(state, { spiral = true } = {}) {
   const vars = {
     '--body': state === 'paper' ? TOKENS['--paper'] : TOKENS[`--${state}`],
     '--spiral': TOKENS['--ink'],
     '--glint': TOKENS['--paper'],
   };
-  const up = arms === 'up';
   const order = [
     'ch-feet',
-    up ? 'ch-arm-l-up' : 'ch-arm-l-down',
-    up ? 'ch-arm-r-up' : 'ch-arm-r-down',
     'ch-body',
     'ch-brows-excited',
     'ch-eyes-happy',
@@ -202,14 +199,14 @@ function effectLayer(kind, centerX, centerY, zoom, colors) {
 }
 
 /* ============================================================
-   logo：噜啵举着黄星星
-   —— 为什么举在头顶而不是塞进嘴里：脸被眼睛、眉毛、嘴占满了，
+   logo：噜啵望着头顶黄星星
+   —— 为什么星星留在头顶而不是塞进嘴里：脸被眼睛、眉毛、嘴占满了，
       量过脸部空隙只有 x 440–560 / y 300–425，塞不下一颗看得见的星星。
-      举过头顶反而最清楚：那颗黄星就是整个 mark 的视觉焦点，
+      星星留在头顶上方最清楚：那颗黄星就是整个 mark 的视觉焦点，
       缩到 40 px（GitHub 仓库头像的实际大小）也还认得出。
    ============================================================ */
 function logoSvg() {
-  /* 角色的实际外框：脚底 y=840（含描边），举起的手 x 113–887 */
+  /* 角色的实际外框：脚底 y=840（含描边），圆身与双脚沿用原坐标 */
   const star = heldProp('prop-star', 0.3, 516, 62, -12);
   const body = critter('paper');
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 -46 820 906" width="820" height="906">

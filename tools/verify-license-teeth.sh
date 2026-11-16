@@ -22,7 +22,6 @@ done
 restore() {
   for f in "$LIC" "$README" "$LICENSE"; do cp "$BAK/$f" "$f"; done
   rm -rf src/teeth-probe
-  rm -f dist/teeth-probe.pdf
 }
 # 退出时恢复现场（备份目录最后才删）
 cleanup() {
@@ -53,9 +52,26 @@ check_absent() {
     echo "✓ $name → 不报了"
   fi
 }
+# 破坏真的生效了吗？跟备份比一比。
+# 写死的 sed 在文档改版后会悄悄匹配不上——文件没被破坏，闸门当然还是绿的，
+# 于是「没报错」被当成了「闸门没牙齿」，真实的情况是根本没验。
+broke() {
+  local f="$1"
+  if cmp -s "$f" "$BAK/$(basename "$f")"; then
+    echo "✗ 破坏没生效：$f 跟备份一模一样——这一条根本没验"
+    fail=1
+    return 1
+  fi
+  return 0
+}
 
 run_lic() { node tools/check-licenses.mjs 2>&1; }
-run_pub() { node tools/check-publish.mjs 2>&1; }
+SITE="$BAK/site"
+mkdir "$SITE" || exit 1
+for f in index.html print.html proof.html booklet.html edgeone.json; do
+  cp "dist/$f" "$SITE/$f" || exit 1
+done
+run_pub() { node tools/check-publish.mjs "$SITE" 2>&1; }
 
 echo "=== 1. 作品内容许可文件不见了 ==="
 restore
@@ -66,26 +82,34 @@ restore
 echo "=== 2. 内容许可写成了别的协议 ==="
 restore
 sed -i 's/CC BY-NC-ND 4\.0/CC BY-NC 4.0/g' "$LIC"
-check "内容许可不是 BY-NC-ND" "没有写明 CC BY-NC-ND 4.0" "$(run_lic)"
+if broke "$LIC"; then
+  check "内容许可不是 BY-NC-ND" "没有写明 CC BY-NC-ND 4.0" "$(run_lic)"
+fi
 restore
 
 echo "=== 3. 适用范围漏了一个内容目录 ==="
 restore
 sed -i 's|`src/components/`|`src/角色/`|' "$LIC"
-check "适用范围漏写 src/components/" "适用范围里没写 src/components/" "$(run_lic)"
+if broke "$LIC"; then
+  check "适用范围漏写 src/components/" "适用范围里没写 src/components/" "$(run_lic)"
+fi
 restore
 
 echo "=== 4. README 不提作品内容那层 ==="
 restore
 sed -i 's|LICENSE-CONTENT\.md|LICENSE-MISSING.md|g' "$README"
-check "README 少了内容许可入口" "README 里没有指向 LICENSE-CONTENT.md 的入口" "$(run_lic)"
+if broke "$README"; then
+  check "README 少了内容许可入口" "README 里没有指向 LICENSE-CONTENT.md 的入口" "$(run_lic)"
+fi
 restore
 
 echo "=== 5. README 的授权一节只字不提内容许可 ==="
 restore
 # 只改「## 授权」到下一个二级标题之间的那一段，首屏徽章与支持范围表里的链接留着
-sed -i '/^## 授权$/,/^## 关于/{s|LICENSE-CONTENT\.md|LICENSE-MISSING.md|g}' "$README"
-check "授权一节没提内容那层" "README 的「授权」一节没提作品内容那层" "$(run_lic)"
+sed -i '/^## 授权[[:space:]]*$/,/^## 关于/{s|LICENSE-CONTENT\.md|LICENSE-MISSING.md|g}' "$README"
+if broke "$README"; then
+  check "授权一节没提内容那层" "README 的「授权」一节没提作品内容那层" "$(run_lic)"
+fi
 restore
 
 echo "=== 6. 仓库里写进了本机绝对路径 ==="
@@ -98,7 +122,9 @@ SAMPLE_PATH='Q:'"/Backup/Somewhere"
 printf '\n本机路径示例：%s\n' "$SAMPLE_PATH" >> "$README"
 # 认的是**失败时才会出现**的那半句。「有本机绝对路径」不能用——
 # 成功时那句「没有本机绝对路径」里也含这五个字，闸门没报也算通过（2026-11-01 修）。
-check "README 里出现本机路径" "公开仓库会把本机目录结构发出去" "$(run_lic)"
+if broke "$README"; then
+  check "README 里出现本机路径" "公开仓库会把本机目录结构发出去" "$(run_lic)"
+fi
 restore
 
 echo "=== 7. src/ 下多了个没归类的目录 ==="
@@ -110,23 +136,36 @@ restore
 echo "=== 8. LICENSE 不是 MIT 了 ==="
 restore
 sed -i 's/MIT License/Some Other License/' "$LICENSE"
-check "LICENSE 不是 MIT" "没有 MIT License 标题" "$(run_lic)"
+if broke "$LICENSE"; then
+  check "LICENSE 不是 MIT" "没有 MIT License 标题" "$(run_lic)"
+fi
 restore
 
-echo "=== 9. 印刷 PDF 混进了 dist/ ==="
-restore
-# dist/ 不进仓库，新克隆里没有这一层——先建出来再放 PDF
-mkdir -p dist
-printf '%%PDF-1.4\n' > dist/teeth-probe.pdf
-check "dist/ 里有 PDF" "dist/ 里有印刷 PDF" "$(run_pub)"
-rm -f dist/teeth-probe.pdf
+echo "=== 9. 公开目录只收齐全的五个文件 ==="
+for entry in book.pdf private; do
+  if [ "$entry" = private ]; then
+    mkdir "$SITE/private" && printf '%%PDF-1.4\n' > "$SITE/private/book.pdf" || exit 1
+  else
+    printf '%%PDF-1.4\n' > "$SITE/book.pdf" || exit 1
+  fi
+  if out=$(run_pub); then fail=1; fi
+  check "拒收 $entry" "发布目录含清单外文件或目录 $entry" "$out"
+  rm -rf "$SITE/$entry"
+done
+mv "$SITE/print.html" "$BAK/print.html" || exit 1
+if out=$(run_pub); then fail=1; fi
+check "缺少印刷入口" "缺少有效文件" "$out"
+mv "$BAK/print.html" "$SITE/print.html" || exit 1
+check_absent "恢复公开目录" "缺少有效文件" "$(run_pub)"
 
 echo "=== 10. 商业授权联系方式是占位符的时候要报 ==="
 restore
 # 把邮箱换成一个占位符——占位符还在就得报。
 # （不能靠文件里本来就有占位符：邮箱填好之后就没有了。）
 sed -i 's|联系：`[^`]*`|联系：`<!-- CONTACT -->`|' "$LIC"
-check "占位符还在会报" "联系方式还是占位符" "$(run_pub)"
+if broke "$LIC"; then
+  check "占位符还在会报" "联系方式还是占位符" "$(run_pub)"
+fi
 restore
 
 echo "=== 11. 联系方式填好了就不报 ==="

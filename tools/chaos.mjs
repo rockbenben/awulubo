@@ -5,14 +5,17 @@
    真小孩会把书倒着翻、从中间跳着看、同一页戳二十下。这四类路径最容易踩坏状态机。
 
    断言的不变量：
-   1. 永远恰好一页是活动页，且页面 id 合法；
-   2. 最多一个待定效果，且必定属于当前页（换页没作废在飞效果就会破）；
+   1. 活动页永远恰好构成「眼前这一跨」——窄屏一页、宽屏一到两页，页面 id 合法；
+   2. 待定效果都属于眼前这一组，且同一页最多挂一个（换页没作废在飞效果就会破）；
    3. 一次点击只翻一页，不能连跳；
    4. 乱走 400 步之后，三样依次点 / 揉肚子 / 找一找 仍然能通关（计数没被搞坏）；
    5. 从最后一页一路倒着走回封面，不报错、不卡死；
    6. 全程没有 JS 错误，DOM 里没有 undefined / NaN 渗进来。
 
-   用法：node tools/chaos.mjs [--seed 20261030] [--steps 400]
+   乱读跑两场：900px（一页一屏）与 1440px（摊成跨页）。
+   ⚠️ 跨页那一场不能省：一跨两页的判据在单页模式下整条是休眠的。
+
+   用法：node tools/chaos.mjs [--seed 20261030] [--steps 400] [--wide-steps 120]
    随机数用固定种子 → 失败可以复现。
 */
 import { chromium } from 'playwright';
@@ -71,11 +74,14 @@ const known = new Set(knownIds);
 const activeId = () =>
   page.evaluate(() => document.querySelector('.page.is-active')?.dataset.id);
 
-/* 每一步都检查的不变量 */
+/* 每一步都检查的不变量。
+   ⚠️ 跨页模式（宽屏）下「当前这一组」是两页，判据按组算：
+   活动页必须恰好构成 Book.currentGroup()，待定效果必须属于这一组。 */
 async function invariants(step) {
   const inv = await page.evaluate(() => {
-    const act = document.querySelectorAll('.page.is-active');
+    const act = Array.from(document.querySelectorAll('.page.is-active'));
     const cur = act[0];
+    const group = window.Book.currentGroup();
     const bad = [];
     for (const el of document.querySelectorAll('.page [style]')) {
       const s = el.getAttribute('style') || '';
@@ -90,6 +96,9 @@ async function invariants(step) {
     return {
       activeCount: act.length,
       id: cur?.dataset.id || null,
+      sides: act.map((p) => p.getAttribute('data-side') || '-'),
+      groupSize: group.length,
+      groupIds: group.map((p) => p.dataset.id),
       bad,
       transforms,
       deg,
@@ -99,8 +108,17 @@ async function invariants(step) {
     };
   });
 
-  if (inv.activeCount !== 1) {
-    problems.push(`✗ 第 ${step} 步：活动页有 ${inv.activeCount} 个（应为 1）`);
+  /* 活动页必须恰好是「读者眼前这一跨」：窄屏一页、宽屏一到两页 */
+  if (inv.activeCount !== inv.groupSize) {
+    problems.push(
+      `✗ 第 ${step} 步：活动页 ${inv.activeCount} 个（${inv.groupSize} 页的一跨）`
+    );
+  }
+  if (inv.groupSize > 2) {
+    problems.push(`✗ 第 ${step} 步：一跨有 ${inv.groupSize} 页（最多两页）`);
+  }
+  if (inv.groupSize === 2 && !(inv.sides[0] === 'left' && inv.sides[1] === 'right')) {
+    problems.push(`✗ 第 ${step} 步：两页的左右标记是 ${inv.sides.join('/')}`);
   }
   if (!known.has(inv.id)) {
     problems.push(`✗ 第 ${step} 步：活动页 id "${inv.id}" 不合法`);
@@ -120,13 +138,22 @@ async function invariants(step) {
   if (/undefined|NaN/.test(inv.text)) {
     problems.push(`✗ 第 ${step} 步：页面文字里出现 undefined/NaN`);
   }
-  /* 核心不变量：最多一个待定效果，且必属当前页 */
-  if (inv.pending.length > 1) {
-    problems.push(`✗ 第 ${step} 步：同时有 ${inv.pending.length} 个待定效果（${inv.pending.join(',')}）`);
-  }
-  if (inv.pending.length === 1 && inv.pending[0] !== inv.id) {
+  /* 核心不变量：待定效果必须都属于眼前这一组，且同一页最多挂一个。
+     ⚠️ 跨页时**两页各挂一个是常态**——孩子把左右两页都戳一下，
+     两边的动作都得演完才翻页。原来那条「同时最多一个」是按单页写的，
+     摊开成跨页就不成立（2026-11-06 由跨页那一场乱读撞出来，第 26 步：p04、p05 各一个）。
+     修法是把判据按组重写，不是让后一个效果把前一个顶掉——顶掉会吞掉右页那一拍。 */
+  const stale = inv.pending.filter(
+    (k) => k !== 'default' && !inv.groupIds.includes(k)
+  );
+  if (stale.length) {
     problems.push(
-      `✗ 第 ${step} 步：待定效果属于 ${inv.pending[0]}，但读者在 ${inv.id}`
+      `✗ 第 ${step} 步：待定效果 ${stale.join(',')} 不在眼前这一组（${inv.groupIds.join('|')}）`
+    );
+  }
+  if (inv.pending.length > inv.groupSize) {
+    problems.push(
+      `✗ 第 ${step} 步：${inv.groupSize} 页的一跨挂了 ${inv.pending.length} 个待定效果（${inv.pending.join(',')}）`
     );
   }
   return inv;
@@ -201,6 +228,84 @@ for (let step = 1; step <= STEPS; step++) {
 check(problems.length === 0, `乱来 ${STEPS} 步不变量全程成立`);
 if (problems.length === 0) {
   notes.push(`  乱来结束时在 ${await activeId()}`);
+}
+
+/* ---- 第 1.5 阶段：摊成跨页再乱来一遍 ----
+   跨页是这本书最年轻的一层逻辑（一跨两页、左页演完不许把右页那一拍带走、
+   点哪边往哪边走），可上面那段乱读跑在 900px——跨页模式从没被压过。
+   这里把窗口拉到 1440 再乱来一场，用的还是同一组不变量（已按「这一跨」算）。 */
+{
+  const WIDE_STEPS = Number(argOf('wide-steps', 120));
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(150);
+  check(await page.evaluate(() => window.Book.isSpread()), '跨页那一段真的摊开了');
+
+  const wideOps = [
+    () => page.keyboard.press(pick(KEYS)),
+    () => page.mouse.click(rint(80, 1360), rint(160, 780)),
+    async () => {
+      /* 点这一跨里某一个热区：个数先在页面里数，取哪个由种子随机数定，
+         这样失败还能按同一个 seed 复现 */
+      const count = await page.evaluate(() =>
+        window.Book.currentGroup().reduce((n, p) => n + p.querySelectorAll('.hotspot').length, 0)
+      );
+      if (!count) return;
+      const idx = rint(0, count - 1);
+      const box = await page.evaluate(
+        ([k]) => {
+          const hs = window.Book.currentGroup().flatMap((p) =>
+            Array.from(p.querySelectorAll('.hotspot'))
+          );
+          const el = hs[k];
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+        },
+        [idx]
+      );
+      if (box) await page.mouse.click(box.x, box.y);
+    },
+    async () => {
+      /* 左右滑：摊开时一滑是一整跨 */
+      const x = rint(400, 1000);
+      await page.mouse.move(x, 450);
+      await page.mouse.down();
+      await page.mouse.move(x + rint(-400, 400), 450, { steps: 6 });
+      await page.mouse.up();
+    },
+    () =>
+      page.evaluate(
+        ([fwd]) => (fwd ? window.Book.next() : window.Book.prev()),
+        [rand() < 0.5]
+      ),
+  ];
+
+  for (let step = 1; step <= WIDE_STEPS; step++) {
+    const op = pick(wideOps);
+    await op();
+    await page.waitForTimeout(30);
+    await invariants(step);
+    if (problems.length) break;
+  }
+  check(problems.length === 0, `摊成跨页乱来 ${WIDE_STEPS} 步不变量全程成立`);
+  if (problems.length === 0) {
+    notes.push(`  跨页乱读结束时在 ${await activeId()}`);
+  }
+  /* 乱按 Enter / 空格可能把选页器或外壳面板打开了。
+     后面几段要直接点书页，别让面板盖在热区上——按 Escape 走的是真的收起路径。 */
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(120);
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(120);
+  check(
+    await page.evaluate(() =>
+      ['#picker', '#shell'].every((s) => document.querySelector(s).hidden)
+    ),
+    '跨页乱读收尾时两个浮层都收起了'
+  );
+  /* 后面的几段钉着单页的语义，把窗口收回 900 再走 */
+  await page.setViewportSize({ width: 900, height: 900 });
+  await page.waitForTimeout(200);
 }
 
 /* ---- 第二阶段：乱走之后还能不能通关 ---- */

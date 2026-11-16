@@ -47,7 +47,7 @@ const CONTENT_PATHS = [
   'src/content/',
   'docs/superpowers/specs/',
   'docs/images/',
-  'docs/M0-样张记录.md',
+  'docs/archive/M0-样张记录.md',
 ];
 
 /* src/ 下每个顶层目录归哪一层。加了新目录而忘了归类 → 闸门报错。 */
@@ -71,11 +71,11 @@ const DRIVE_PATH = /(?<![A-Za-z0-9])[A-Za-z]:[\\/]/;
 
 /* 扫哪些文件：跟 git 跟踪的一致（那就是会进仓库、会公开的东西）。 */
 const TEXT_EXT = new Set([
-  '.md', '.mjs', '.js', '.json', '.yml', '.yaml', '.html', '.css', '.txt',
+  '.md', '.mjs', '.ts', '.js', '.json', '.yml', '.yaml', '.html', '.css', '.txt',
   '.py', '.svg', '.sh', '.conf', '.stamp',
 ]);
 
-const SKIP_DIRS = new Set(['node_modules', 'dist', 'dist-site', '.git', 'reference', 'shots']);
+const SKIP_DIRS = new Set(['node_modules', 'dist', 'dist-print', 'dist-site', '.git', 'reference', 'shots']);
 
 function read(file) {
   const p = path.join(root, file);

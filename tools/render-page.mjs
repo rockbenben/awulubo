@@ -1,3 +1,4 @@
+import { validateReading, validateFraming } from '../src/js/model.ts';
 /* 页面渲染：页面数据 → HTML。
  *
  * 模板用 Handlebars（src/templates/page.hbs），这里只做两件模板不擅长的事：
@@ -11,6 +12,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Handlebars from 'handlebars';
 import { PAGE, MARGIN } from './layout-constants.mjs';
+import { rigView } from './character-rig.mjs';
+import { sceneView } from './scenes.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const TEMPLATE = path.join(HERE, '..', 'src', 'templates', 'page.hbs');
@@ -19,24 +22,44 @@ const GEOMETRY = path.join(HERE, '..', 'src', 'components', 'effects.json');
 /* 每种特效的几何（圆心与外半径）。
    由 tools/gen-effects.py 和图形一起生成——以前这里另抄了一份半径表，
    改了图形忘了改表，"自动放大"就按错的半径算，背景盖不满整页。 */
-function loadGeometry() {
+export function loadGeometry() {
   if (!fs.existsSync(GEOMETRY)) {
     throw new Error(`缺少 ${GEOMETRY}：先跑 python tools/gen-effects.py 生成特效与几何表`);
   }
   return JSON.parse(fs.readFileSync(GEOMETRY, 'utf8'));
 }
 
-const GEOM = loadGeometry();
-
-/** 背景种类 → 组件符号 id */
-export const EFFECT_ID = Object.fromEntries(
-  Object.entries(GEOM).map(([kind, g]) => [kind, g.symbol])
-);
-
-/** 背景种类 → { symbol, cx, cy, r } */
-export const EFFECT_GEOM = GEOM;
-
 const PROP_ID = {
+  'basket-side': 'prop-basket-side',
+  'basket-fallen': 'prop-basket-fallen',
+  'child-cradle': 'prop-child-cradle',
+  'child-reach-left': 'prop-child-reach-left',
+  scarf: 'prop-scarf',
+  'child-foot': 'prop-child-foot',
+  'color-edge': 'prop-color-edge',
+  'ball-squeezed': 'prop-ball-squeezed',
+  'child-reach': 'prop-child-reach',
+  headband: 'ch-wear-head-front',
+  'wall-foot': 'prop-wall-foot',
+  castle: 'scene-fantasy-castle',
+  'blanket-lap-open': 'prop-blanket-lap-open',
+  'blanket-lap-shared': 'prop-blanket-lap-shared',
+  'foot-pushing': 'prop-foot-pushing',
+
+  'blanket-lap': 'prop-blanket-lap',
+  'blanket-fold': 'prop-blanket-fold',
+  'blanket-hood': 'prop-blanket-hood',
+  'blanket-drape': 'prop-blanket-drape',
+  'blanket-shared': 'prop-blanket-shared',
+  'apple-bitten': 'prop-apple-bitten',
+  'medicine-adult': 'prop-medicine-adult',
+
+  foot: 'ch-foot-planted',
+  paper: 'prop-paper',
+  'paper-red': 'prop-paper-red',
+  'paper-blue': 'prop-paper-blue',
+  'paper-yellow': 'prop-paper-yellow',
+  palm: 'prop-palm',
   apple: 'prop-apple',
   fish: 'prop-fish',
   star: 'prop-star',
@@ -48,19 +71,16 @@ const PROP_ID = {
   flower: 'prop-flower',
   /* 第二册《噜啵生病啦！》新增的三件道具 */
   blanket: 'prop-blanket',
+  'blanket-corner': 'prop-blanket-corner',
   cup: 'prop-cup',
   pill: 'prop-pill',
   zzz: 'prop-zzz',
+  /* 第三到第五册新增的三件道具 */
+  ball: 'prop-ball',
+  block: 'prop-block',
+  basket: 'prop-basket',
 };
 export { PROP_ID };
-
-let compiled = null;
-function template() {
-  if (!compiled) {
-    compiled = Handlebars.compile(fs.readFileSync(TEMPLATE, 'utf8'), { noEscape: true });
-  }
-  return compiled;
-}
 
 function num(v) {
   return Math.round(v * 100) / 100;
@@ -101,9 +121,9 @@ function jitter(text) {
     .join('');
 }
 
-function viewBackground(bg) {
+function viewBackground(bg, geometry) {
   if (!bg || !bg.kind || bg.kind === 'none') return null;
-  const geom = EFFECT_GEOM[bg.kind];
+  const geom = geometry[bg.kind];
   if (!geom) throw new Error(`未知的背景种类：${bg.kind}`);
   const radius = geom.r;
   const focus = bg.focus || [500, 500];
@@ -127,7 +147,7 @@ function viewBackground(bg) {
   if (bg.kind === 'disc' && bg.colors && bg.colors[0]) vars.push(`--disc: var(${bg.colors[0]})`);
 
   const out = {
-    symbol: EFFECT_ID[bg.kind],
+    symbol: geom.symbol,
     transform: `translate(${num(tx)},${num(ty)}) scale(${num(zoom)})`,
     vars: vars.join('; '),
     wash: null,
@@ -137,14 +157,14 @@ function viewBackground(bg) {
      它的半径大于页面对角线的一半，所以"铺满整页（含出血）"是几何保证，
      不靠逐页手调放大倍数——这正是之前没做到的那件事。 */
   if (bg.wash) {
-    const w = EFFECT_GEOM.wash;
+    const w = geometry.wash;
     const wzoom = Math.max(1, requiredSpan([500, 500], 'all') / w.r);
     const wtx = 500 - w.cx * wzoom;
     const wty = 500 - w.cy * wzoom;
     vars.push(`--wash: var(${bg.wash})`);
     out.vars = vars.join('; ');
     out.wash = {
-      symbol: EFFECT_ID.wash,
+      symbol: w.symbol,
       transform: `translate(${num(wtx)},${num(wty)}) scale(${num(wzoom)})`,
     };
   }
@@ -160,17 +180,20 @@ function viewCharacter(char) {
     at0: char.at[0],
     at1: char.at[1],
     scale: char.scale,
-    spiral: Boolean(char.spiral),
+    ...rigView(char),
     /* 角色的原始位置：飞、转圈、跺脚都会改 transform 属性，
        回头再进这一页要能原样放回去（见 interactions.js 的 reset）。 */
     baseTransform: `translate(${num(char.at[0])},${num(char.at[1])}) scale(${num(char.scale)})`,
   };
 }
 
-function viewProps(props) {
+function viewProps(props, movingIds = []) {
   if (!props || !props.length) return [];
   return props.map((p) => ({
     symbol: PROP_ID[p.kind],
+    objectId: p.id,
+    behind: p.layer === 'behind',
+    motion: movingIds.includes(p.id),
     class: p.class || '',
     style: p.style || '',
     at0: p.at[0],
@@ -237,29 +260,33 @@ function viewTexts(text, scope) {
   return out;
 }
 
-function viewHotspots(hotspot) {
+function viewHotspots(hotspot, scope, framing) {
   if (!hotspot) return [];
   const list = Array.isArray(hotspot) ? hotspot : [hotspot];
   return list.map((h) => ({
+    tag: scope === 'screen' ? 'button' : 'div',
+    static: scope !== 'screen',
     action: h.action,
     target: h.target || '',
+    targetId: h.targetId,
     index: h.index || 0,
-    left: pct(h.at[0]),
-    top: pct(h.at[1]),
-    width: pct(h.size),
-    height: pct(h.size),
+    left: pct(h.at[0] * (framing?.scale ?? 1) + (framing?.at[0] ?? 0)),
+    top: pct(h.at[1] * (framing?.scale ?? 1) + (framing?.at[1] ?? 0)),
+    width: pct(h.size * (framing?.scale ?? 1)),
+    height: pct(h.size * (framing?.scale ?? 1)),
     label: h.label,
   }));
 }
 
 /* 数字：数一数那页用。一开始藏起来，数到一个才在那个苹果旁边冒出来。 */
-function viewNumbers(numbers) {
+function viewNumbers(numbers, framing) {
   if (!numbers || !numbers.length) return [];
   return numbers.map((n, i) => {
-    const style = [`left:${pct(n.at[0])}`, `top:${pct(n.at[1])}`];
-    if (n.width) style.push(`width:${pct(n.width)}`);
+    const scale = framing?.scale ?? 1;
+    const style = [`left:${pct(n.at[0] * scale + (framing?.at[0] ?? 0))}`, `top:${pct(n.at[1] * scale + (framing?.at[1] ?? 0))}`];
+    if (n.width) style.push(`width:${pct(n.width * scale)}`);
     if (n.align) style.push(`text-align:${n.align}`);
-    if (n.size) style.push(`font-size:calc(var(--u) * ${num(n.size)})`);
+    if (n.size) style.push(`font-size:calc(var(--u) * ${num(n.size * scale)})`);
     if (n.rotate) style.push(`transform:rotate(${num(n.rotate)}deg)`);
     return {
       cls: `num-${i + 1}${n.on ? ' is-on' : ''}`,
@@ -269,27 +296,48 @@ function viewNumbers(numbers) {
   });
 }
 
-/* 整页。scope = 'screen' | 'print'：印刷版可以用自己的文案 */
-export function renderPage(spec, scope = 'screen') {
-  const hotspots = viewHotspots(spec.hotspot);
+/* 每次 HTML 渲染共用一份模板和几何表。下次开发预览会读取最新版本。 */
+export function createPageRenderer() {
+  const geometry = loadGeometry();
+  const template = Handlebars.compile(fs.readFileSync(TEMPLATE, 'utf8'), { noEscape: true });
+  return (spec, scope = 'screen') => template(pageView(spec, scope, geometry));
+}
+
+function pageView(spec, scope, geometry) {
+  validateReading(spec);
+  validateFraming(spec);
+  const hotspots = viewHotspots(spec.hotspot, scope, spec.framing);
+  const movingIds = spec.reading ? hotspots.filter(h => ['feed', 'feed3'].includes(h.action)).map(h => h.targetId) : [];
   /* 「拍一拍」：这一页能不能点角色就有反应。
      角色自己就是互动目标时（摸噜啵那张脸）不算——那一下该干别的事。 */
   const pat = Boolean(
-    spec.char && !hotspots.some((h) => h.target === 'char')
+    spec.char && spec.reading === undefined && spec.pat !== false && !hotspots.some((h) => h.target === 'char')
   );
-  return template()({
+  const scene = sceneView(spec.scene, spec.bg);
+  // 场景是一幅跨书脊的画；左半幅须补偿页宽，不能把两张局部镜头分别缩成两个舞台。
+  if (scene && spec.framing) {
+    const [x, y] = spec.framing.at, scale = spec.framing.scale;
+    scene.framing = `translate(${num(x + (spec.scene.side === 'left' ? 1000 * (1 - scale) : 0))},${num(y)}) scale(${num(scale)})`;
+  }
+  return {
     id: spec.id,
+    framing: spec.framing ? `translate(${num(spec.framing.at[0])},${num(spec.framing.at[1])}) scale(${num(spec.framing.scale)})` : null,
+    reading: spec.reading || '',
+    responseTo: spec.responseTo || '',
     book: spec.book || '',
+    exit: spec.exit || '',
     template: spec.template || 't-dialog',
     sound: spec.sound || '',
     trap: Boolean(spec.trap),
     pat,
     aria: spec.aria || '',
-    bg: viewBackground(spec.bg),
+    bg: viewBackground(spec.bg, geometry),
+    scene,
     char: viewCharacter(spec.char),
-    props: viewProps(spec.props),
+    backProps: viewProps(spec.props, movingIds).filter(p => p.behind),
+    props: viewProps(spec.props, movingIds).filter(p => !p.behind),
     texts: viewTexts(spec.text, scope),
-    numbers: viewNumbers(spec.numbers),
+    numbers: viewNumbers(spec.numbers, spec.framing),
     hotspots,
-  });
+  };
 }

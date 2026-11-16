@@ -6,11 +6,12 @@
 # 而 Playwright 只会截 PNG。WebP 是同一张图的一半体积。
 #
 # 产物（进仓库）：
-#   docs/images/hero.webp      1600 × 400，首屏横幅，四格
+#   docs/images/hero.webp      1600 × 320，首屏横幅，五格（五册的封面各一格）
 #   docs/images/find.webp       720 × 720，图库
 #   docs/images/count.webp
 #   docs/images/seen.webp
 #   docs/images/gift.webp
+#   docs/images/angry.webp      第四册《生气啦！》的满版红
 #   docs/images/spread.webp     1280 × 800，摊开的两页
 import os
 import sys
@@ -20,8 +21,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'dist', 'readme')
 DST = os.path.join(ROOT, 'docs', 'images')
 
-HERO = ['hero-1', 'hero-2', 'hero-3', 'hero-4']
-GALLERY = ['find', 'count', 'seen', 'gift']
+HERO = ['hero-1', 'hero-2', 'hero-3', 'hero-4', 'hero-5']
+GALLERY = ['find', 'count', 'seen', 'gift', 'angry']
 
 
 def load(name):
@@ -40,13 +41,13 @@ def save(img, name):
                                     os.path.getsize(out) / 1024))
 
 
-# 首屏横幅：四格，每格 400 × 400。页面本来就是正方形，
+# 首屏横幅：五格，每格 320 × 320。页面本来就是正方形，
 # 缩到正方形再拼——不裁边，因为裁掉的正是贴着页边的字（「你好了 真棒。」那种）。
-hero = Image.new('RGB', (1600, 400), 'white')
+hero = Image.new('RGB', (1600, 320), 'white')
 for i, name in enumerate(HERO):
     panel = load(name)
-    panel = panel.resize((400, 400), Image.LANCZOS)
-    hero.paste(panel, (i * 400, 0))
+    panel = panel.resize((320, 320), Image.LANCZOS)
+    hero.paste(panel, (i * 320, 0))
 save(hero, 'hero')
 
 # 图库：四张正方图

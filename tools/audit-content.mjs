@@ -1,21 +1,21 @@
 /* 内容审查：把"人读数据"发现不了的错挡在构建期。
    用法：node tools/audit-content.mjs
 
-   审查六件事（每条都要有牙齿：写完先故意弄坏一处，确认它报错，再改回去）：
+   审查七件事（每条都要有牙齿：写完先故意弄坏一处，确认它报错，再改回去）：
 
-   1. 页号要连续（p01…p44）。跳号说明有一页被删了，可别的地方还指着它。
+   1. 页号要连续（p01…p64）。跳号说明有一页被删了，可别的地方还指着它。
    2. trap 页必须有热区。trap = 点空白不翻页；没有热区的话，
       孩子在这一页只能"摇一下头"，书走不下去。
-   3. 热区的 target 要在运行时解析得出来。fly() 找的是 `.prop-<target>`：
-      页面数据里道具改了名、忘了写 class，点下去"没有反应"，
-      而闸门全绿（声音照响、页照翻，就是东西没飞进嘴里）。
+   3. 热区的目标要能解析。find 按 targetId 找到对应类型的对象，
+      其他动作保留既有道具类型及 class 检查；具体身份另由热区闸门验证。
    4. 多步互动页要凑得齐：
-      find 要 3 个不同的目标（代码要求 found.length >= 3 才翻页）；
+      find 按本页声明的目标身份完成，不允许重复身份；
       feed3 要 apple/fish/star 三样（代码里顺序写死）；
       count 的 index 要 1…N 连续且不重复，页面也要有 N 个 .count-item
       和 N 个数字（点第三个苹果时数字冒不出来 = 数了个寂寞）。
-   5. 互动页上，文字里点名的物件要有热区罩住（"点一下红苹果"却没有苹果热区）。
-   6. 同一页的热区不能互相压住：上面那个会吃掉下面那个的点击。 */
+   5. 点按目标不能小于 25% 页宽（规格 §6.6）。
+   6. 互动页上，文字里点名的物件要有热区罩住（"点一下红苹果"却没有苹果热区）。
+   7. 同一页的热区不能互相压住：上面那个会吃掉下面那个的点击。 */
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadSpecs } from './load-specs.mjs';
@@ -109,6 +109,14 @@ async function main() {
 
     /* ── 3. target 要解析得出来 ── */
     for (const h of hs) {
+      if (h.action === 'find') {
+        const prop = (page.props || []).find(prop => prop.id === h.targetId);
+        if (!prop || !PROP_ID[prop.kind] || !(prop.kind === h.target ||
+          (h.target === 'blanket' && prop.kind === 'blanket-corner'))) {
+          fail(`${label} find 的 targetId "${h.targetId}" 未指向匹配目标 ${h.target} 的道具，请同步对象身份与热区`);
+        }
+        continue;
+      }
       if (!h.target) continue;
       if (NON_PROP_TARGETS.has(h.target)) continue;
       const kind = Object.keys(PROP_ID).find((k) => PROP_ID[k] === `prop-${h.target}`);
@@ -135,12 +143,9 @@ async function main() {
 
     const findHs = hs.filter((h) => h.action === 'find');
     if (findHs.length) {
-      const distinct = new Set(findHs.map((h) => h.target));
+      const distinct = new Set(findHs.map((h) => h.targetId));
       if (distinct.size !== findHs.length) {
-        fail(`${label} find 热区里有重复的 target（${[...targets].join(', ')}）——同一个只能数一次，这一页永远凑不齐`);
-      }
-      if (distinct.size < 3) {
-        fail(`${label} find 只有 ${distinct.size} 个目标，但代码要找到 3 个才翻页——这一页过不去`);
+        fail(`${label} find 热区里有重复的 targetId——请为不同目标声明独立对象身份`);
       }
     }
 
@@ -205,7 +210,7 @@ async function main() {
       }
     }
 
-    /* ── 6. 热区不能互相压住 ── */
+    /* ── 7. 热区不能互相压住 ── */
     for (let i = 0; i < hs.length; i++) {
       for (let j = i + 1; j < hs.length; j++) {
         /* 2% 就报。两个热区压在一起时，重叠的那一块归上面那个：

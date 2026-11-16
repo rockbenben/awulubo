@@ -12,7 +12,7 @@ cd "$(dirname "$0")/.." || exit 1
 SPEC=src/content/books/awulubo/specs
 BAK=$(mktemp -d)
 
-FILES="30-search.js 38-count.js 34-hide.js 14-rainbow.js 20-burp.js 42-shout.js"
+FILES="30-search.js 38-count.js 34-hide.js 14-rainbow.js 20-burp.js 42-shout.js 58-tomorrow.js"
 for f in $FILES; do
   # 备份失败就**立刻停**：否则下面的破坏改完恢复不回来，
   # 闸门变红是真的，可工作区已经被改坏了。
@@ -24,11 +24,11 @@ for f in $FILES; do
 done
 
 restore() {
-  for f in $FILES; do cp "$BAK/$f" "$SPEC/$f"; done
+  for f in $FILES; do cp "$BAK/$f" "$SPEC/$f" || return 1; done
 }
 # 退出时恢复现场（备份目录最后才删）
 cleanup() {
-  restore
+  restore || { echo "恢复失败，保留备份：$BAK"; return 1; }
   rm -rf "$BAK"
 }
 trap cleanup EXIT
@@ -44,110 +44,109 @@ check() {
     fail=1
   fi
 }
+# 破坏真的生效了吗？跟备份比一比。
+# 页面数据一改（挪了位置、改了写法），写死的 sed / replace 就悄悄匹配不上了——
+# 文件没被破坏，闸门当然还是绿的，于是「没报错」被当成了「闸门没牙齿」，
+# 真实的情况是**根本没验**（2026-11-02 补，跟对比度、色系那两道闸门同一个毛病）。
+broke() {
+  local f="$1"
+  if cmp -s "$f" "$BAK/$(basename "$f")"; then
+    echo "✗ 破坏没生效：$f 跟备份一模一样——这一条根本没验"
+    fail=1
+    return 1
+  fi
+  return 0
+}
 
 echo "=== 1. 页号不连续 ==="
 restore
-sed -i "s/id: 'p35'/id: 'p34b'/" $SPEC/34-hide.js
-out=$(node tools/audit-content.mjs 2>&1)
-check "页号跳号" "页号不连续" "$out"
+node tools/mutate-spec.mjs "$SPEC/34-hide.js" "delete record.scene;record.pages[1].id='p34b';"
+if broke "$SPEC/34-hide.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "页号跳号" "页号不连续" "$out"
+fi
 restore
 
 echo "=== 2. trap 页没有热区 ==="
 restore
-python - <<'PY'
-import io, re
-p='src/content/books/awulubo/specs/30-search.js'
-s=io.open(p,encoding='utf-8').read()
-# 把这一页的热区整个去掉（孩子会卡死在这一页）
-s=re.sub(r"    hotspot: \[\n(?:.*\n)*?    \],\n", "", s, count=1)
-io.open(p,'w',encoding='utf-8').write(s)
-PY
-out=$(node tools/audit-content.mjs 2>&1)
-check "trap 页无热区" "但本页没有任何热区" "$out"
+node tools/mutate-spec.mjs "$SPEC/30-search.js" "delete record.pages[0].reading;record.pages[0].trap=true;delete record.pages[0].hotspot;"
+if broke "$SPEC/30-search.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "trap 页无热区" "但本页没有任何热区" "$out"
+fi
 restore
 
-echo "=== 3. target 解析不出来（道具少了 class） ==="
+echo "=== 3. find 对象身份解析不出来 ==="
 restore
-sed -i "s/class: 'prop-apple' }/}/" $SPEC/30-search.js
-out=$(node tools/audit-content.mjs 2>&1)
-check "道具缺 class" "找不到 class 为 prop-apple 的道具" "$out"
+node tools/mutate-spec.mjs "$SPEC/30-search.js" "record.pages[0].hotspot[0].targetId='missing-apple';"
+if broke "$SPEC/30-search.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "find 指向缺失对象" '热区 targetId 不存在：missing-apple' "$out"
+fi
 restore
 
-echo "=== 4. find 目标凑不齐 ==="
+echo "=== 4. find 重复对象身份 ==="
 restore
-python - <<'PY'
-import io
-p='src/content/books/awulubo/specs/30-search.js'
-s=io.open(p,encoding='utf-8').read()
-s=s.replace("      { action: 'find', target: 'star', at: [540, 118], size: 250, label: '找黄星星' },\n","")
-io.open(p,'w',encoding='utf-8').write(s)
-PY
-out=$(node tools/audit-content.mjs 2>&1)
-check "find 少一个目标" "find 只有 2 个目标" "$out"
+node tools/mutate-spec.mjs "$SPEC/30-search.js" "record.pages[0].hotspot[2].targetId=record.pages[0].hotspot[0].targetId;"
+if broke "$SPEC/30-search.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "find 重复对象" "find 热区里有重复的 targetId" "$out"
+  check "find 目标类型不匹配" "未指向匹配目标 star 的道具" "$out"
+fi
 restore
 
 echo "=== 5. feed3 少了 apple ==="
 restore
-python - <<'PY'
-import io
-p='src/content/books/awulubo/specs/14-rainbow.js'
-s=io.open(p,encoding='utf-8').read()
-s=s.replace("      { action: 'feed3', target: 'apple', at: [143, 177], size: 250, label: '喂红苹果' },\n","")
-io.open(p,'w',encoding='utf-8').write(s)
-PY
-out=$(node tools/audit-content.mjs 2>&1)
-check "feed3 少一样" "feed3 少了「apple」" "$out"
+node tools/mutate-spec.mjs "$SPEC/14-rainbow.js" "record.pages[0].hotspot=record.pages[0].hotspot.filter(h=>h.target!=='apple');"
+if broke "$SPEC/14-rainbow.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "feed3 少一样" "feed3 少了「apple」" "$out"
+fi
 restore
 
 echo "=== 6. count 的 index 跳号 ==="
 restore
-sed -i "s/index: 2, at: \[634, 268\]/index: 4, at: [634, 268]/" $SPEC/38-count.js
-out=$(node tools/audit-content.mjs 2>&1)
-check "count index 跳号" "count 的 index 必须是 1 开始的连续数" "$out"
+node tools/mutate-spec.mjs "$SPEC/38-count.js" "record.pages[0].hotspot[1].index=4;"
+if broke "$SPEC/38-count.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "count index 跳号" "count 的 index 必须是 1 开始的连续数" "$out"
+fi
 restore
 
 echo "=== 7. count 的 .count-item 道具不够 ==="
 restore
-python - <<'PY'
-import io
-p='src/content/books/awulubo/specs/38-count.js'
-s=io.open(p,encoding='utf-8').read()
-s=s.replace("      { kind: 'apple', at: [370, 520], scale: 0.26, class: 'prop-apple count-item' },\n","",1)
-io.open(p,'w',encoding='utf-8').write(s)
-PY
-out=$(node tools/audit-content.mjs 2>&1)
-check "count-item 不够" "只有 2 个 .count-item 道具" "$out"
+node tools/mutate-spec.mjs "$SPEC/38-count.js" "record.pages[0].props[0].class='prop-apple';"
+if broke "$SPEC/38-count.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "count-item 不够" "只有 2 个 .count-item 道具" "$out"
+fi
 restore
 
 echo "=== 8. 文字点名的物件没有热区 ==="
 restore
-python - <<'PY'
-import io
-p='src/content/books/awulubo/specs/30-search.js'
-s=io.open(p,encoding='utf-8').read()
-s=s.replace("      { action: 'find', target: 'star', at: [540, 118], size: 250, label: '找黄星星' },\n","")
-s=s.replace("      { action: 'find', target: 'fish', at: [646, 596], size: 250, label: '找蓝小鱼' },",
-            "      { action: 'find', target: 'apple', at: [646, 596], size: 250, label: '找蓝小鱼' },")
-s=s.replace("{ kind: 'star', at: [600, 150], scale: 0.13, rotate: 18, class: 'prop-star' },",
-            "{ kind: 'star', at: [600, 150], scale: 0.13, rotate: 18 },")
-io.open(p,'w',encoding='utf-8').write(s)
-PY
-out=$(node tools/audit-content.mjs 2>&1)
-check "星星没热区" "本页却没有指向它的热区" "$out"
+node tools/mutate-spec.mjs "$SPEC/30-search.js" "record.pages[0].hotspot=record.pages[0].hotspot.filter(h=>h.target!=='star');"
+if broke "$SPEC/30-search.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "星星没热区" "本页却没有指向它的热区" "$out"
+fi
 restore
 
 echo "=== 9. 热区互相压住 ==="
 restore
-sed -i "s/at: \[540, 118\], size: 250, label: '找黄星星'/at: [300, 200], size: 250, label: '找黄星星'/" $SPEC/30-search.js
-out=$(node tools/audit-content.mjs 2>&1)
-check "热区重叠" "重叠" "$out"
+node tools/mutate-spec.mjs "$SPEC/30-search.js" "record.pages[0].hotspot[2].at=[...record.pages[0].hotspot[0].at];"
+if broke "$SPEC/30-search.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "热区重叠" "重叠" "$out"
+fi
 restore
 
 echo "=== 10. 热区小于 25% 页宽 ==="
 restore
-sed -i "s/at: \[104, 155\], size: 250, label: '找红苹果'/at: [104, 155], size: 200, label: '找红苹果'/" $SPEC/30-search.js
-out=$(node tools/audit-content.mjs 2>&1)
-check "热区太小" "小于 25% 页宽" "$out"
+node tools/mutate-spec.mjs "$SPEC/30-search.js" "record.pages[0].hotspot[0].size=200;"
+if broke "$SPEC/30-search.js"; then
+  out=$(node tools/audit-content.mjs 2>&1)
+  check "热区太小" "小于 25% 页宽" "$out"
+fi
 restore
 
 echo "=== 11. 页数不是 4 的倍数 ==="
@@ -160,6 +159,18 @@ check "页数不是 4 的倍数" "4 的倍数" "$out"
 mv "$BAK/58-tomorrow.js.moved" "$SPEC/58-tomorrow.js"
 restore
 
+echo "=== 12. 一个文件里两页的次序写反 ==="
+# 这条验的是「闸门的跨页判据跟网页里那份同源」：
+# 闸门要是按页号建表配对，文件内部写反次序它看不见（照样认为同一跨），
+# 可网页里按顺序配跨的那一份会把两页拆成两个独页——翻开来左右是两个故事。
+restore
+node tools/mutate-spec.mjs "$SPEC/34-hide.js" "delete record.scene;delete record.pages[1].responseTo;record.pages.reverse();"
+if broke "$SPEC/34-hide.js"; then
+  out=$(node tools/check-pages.mjs --full 2>&1)
+  check "文件内两页写反" "的两页是 p35/p34" "$out"
+fi
+restore
+
 echo
-if [ "$fail" = "0" ]; then echo "全部 11 条都有牙齿"; else echo "有闸门没牙齿"; fi
+if [ "$fail" = "0" ]; then echo "全部 12 条都有牙齿"; else echo "有闸门没牙齿"; fi
 exit $fail

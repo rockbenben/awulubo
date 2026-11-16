@@ -15,6 +15,7 @@
 页数不写死：tools/shots.mjs 渲染时写出 manifest.json，这里照着它核对。
 
 用法：python tools/check-shots.py [--min 0.01]
+单图诊断：python tools/check-shots.py --image path/to/page.png（不验收整册）
 失败即退出码 1。
 """
 import argparse
@@ -81,9 +82,27 @@ def edge_cover(path):
 def read_manifest(shots_dir):
     path = os.path.join(shots_dir, "manifest.json")
     if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        raise ValueError("缺少 manifest.json —— 先跑 npm run shots，单图诊断请显式使用 --image")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+    except (ValueError, OSError) as exc:
+        raise ValueError(f"截图清单读不出来：{exc} —— 重新运行 npm run shots") from exc
+    if not isinstance(manifest, list) or not manifest:
+        raise ValueError("截图清单必须是非空数组 —— 重新运行 npm run shots")
+    seen = set()
+    for item in manifest:
+        if not isinstance(item, dict) or any(
+            not isinstance(item.get(key), str) or not item[key].strip()
+            or item[key] in ('.', '..') or '/' in item[key] or '\\' in item[key]
+            for key in ('book', 'id')
+        ) or not isinstance(item.get('wash'), bool):
+            raise ValueError("截图清单必须包含有效册页 book/id 与 wash 标记 —— 重新运行 npm run shots")
+        key = (item['book'], item['id'])
+        if key in seen:
+            raise ValueError(f"截图清单有重复册页 {key[0]}/{key[1]} —— 重新运行 npm run shots")
+        seen.add(key)
+    return manifest
 
 
 def main():
@@ -91,25 +110,54 @@ def main():
     ap.add_argument("--min", type=float, default=0.01, help="每页最少要有多少墨迹")
     ap.add_argument("--expect", type=int, default=0, help="应该有多少页截图（0 = 以 manifest 为准）")
     ap.add_argument("--shots", default=SHOTS, help="截图目录")
+    ap.add_argument("--image", help="只诊断一张图的墨迹，不验收整册与背景铺满")
     args = ap.parse_args()
+    if not 0 <= args.min <= 1 or args.expect < 0:
+        ap.error("--min 必须在 0 到 1 之间，--expect 不能为负数")
+    if args.image:
+        if args.expect:
+            ap.error("--image 单图诊断不能与 --expect 整册验收混用")
+        try:
+            ratio = ink_ratio(args.image)
+        except Exception as exc:
+            print(f"✗ 单图诊断读不出来：{exc}")
+            return 1
+        if ratio < args.min:
+            print(f"✗ 单图诊断：几乎是白板（墨迹占比 {ratio:.3%}）")
+            return 1
+        print(f"✓ 单图诊断：墨迹占比 {ratio:.1%}（未验收整册与背景铺满）")
+        return 0
+
+    try:
+        manifest = read_manifest(args.shots)
+    except ValueError as exc:
+        print(f"✗ {exc}")
+        return 1
+    if args.expect and args.expect != len(manifest):
+        print(f"✗ --expect 为 {args.expect}，截图清单有 {len(manifest)} 页 —— 核对参数或重新运行 npm run shots")
+        return 1
 
     files = sorted(glob.glob(os.path.join(args.shots, "**", "*.png"), recursive=True))
     if not files:
         print("✗ 没有截图 —— 先跑 npm run shots")
         return 1
 
-    manifest = read_manifest(args.shots)
-    expected = args.expect or (len(manifest) if manifest else 0)
-    if expected and len(files) != expected:
-        print(f"✗ 截图只有 {len(files)} 张，应为 {expected} 张")
+    expected = {f"{item['book']}/{item['id']}.png": item for item in manifest}
+    actual = {os.path.relpath(file, args.shots).replace(os.sep, '/') for file in files}
+    missing = sorted(expected.keys() - actual)
+    extra = sorted(actual - expected.keys())
+    if missing or extra:
+        print("✗ 截图集合与清单不一致 —— 重新运行 npm run shots（印刷版用 npm run shots:print）")
+        if missing:
+            print("  缺少截图：" + '、'.join(missing))
+        if extra:
+            print("  多余截图：" + '、'.join(extra))
         return 1
-    if not manifest:
-        print("· 没有 manifest.json，跳过背景铺满检查（先跑 npm run shots）")
 
     problems = []
     ratios = []
     for f in files:
-        name = os.path.basename(f)
+        name = os.path.relpath(f, args.shots).replace(os.sep, '/')
         try:
             r = ink_ratio(f)
         except Exception as exc:  # 读不出来也算问题
@@ -120,26 +168,20 @@ def main():
             problems.append(f"{name} 几乎是白板（墨迹占比 {r:.3%}，低于 {args.min:.1%}）")
 
     # 背景铺满：声明了满版底色场的页，四条边都得有颜色
-    if manifest:
-        by_id = {(m.get("book", ""), m["id"]): m for m in manifest}
-        for f in files:
-            name = os.path.basename(f)
-            page_id = os.path.splitext(name)[0]
-            # 册 id 是截图所在目录名（每一册一个子目录）
-            book = os.path.basename(os.path.dirname(f))
-            meta = by_id.get((book, page_id))
-            if not meta or not meta.get("wash"):
-                continue
-            try:
-                cov = edge_cover(f)
-            except Exception as exc:
-                problems.append(f"{name} 量不了边缘：{exc}")
-                continue
-            bad = [edge for edge, ok in cov.items() if not ok]
-            if bad:
-                problems.append(
-                    f"{name} 背景没铺满全局（{'、'.join(bad)} 边的主色还是纸白）"
-                )
+    for f in files:
+        name = os.path.relpath(f, args.shots).replace(os.sep, '/')
+        if not expected[name]['wash']:
+            continue
+        try:
+            cov = edge_cover(f)
+        except Exception as exc:
+            problems.append(f"{name} 量不了边缘：{exc}")
+            continue
+        bad = [edge for edge, ok in cov.items() if not ok]
+        if bad:
+            problems.append(
+                f"{name} 背景没铺满全局（{'、'.join(bad)} 边的主色还是纸白）"
+            )
 
     if problems:
         print(f"✗ {len(problems)} 张截图有问题：")

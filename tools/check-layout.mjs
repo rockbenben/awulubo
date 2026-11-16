@@ -4,7 +4,7 @@
 
    **两个产物都要量**：
      · dist/proof.html —— 印刷/拼版口径（64 页，印刷版文案）
-     · dist/index.html —— 屏幕互动口径（40 页，屏幕版文案）——**这是读者真正拿到的那份**
+     · dist/index.html —— 屏幕互动口径（每册 60 页，屏幕版文案）——**这是读者真正拿到的那份**
    以前只量 proof.html，而 proof.html 走的是印刷口径：
    屏幕版的文案不一样（"纸上点不动"的提示要改写），
    于是屏幕版要是有一句字压到了别的东西上，全套闸门照样全绿。 */
@@ -14,6 +14,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MARGIN, UNIT, newestMtime } from './layout-constants.mjs';
 import { loadSpecs } from './load-specs.mjs';
+import { prepareNumbers } from './visual-numbers.mjs';
+import { pngPixels } from './png-pixels.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -37,8 +39,52 @@ function overlap(a, b) {
   return x * y;
 }
 
-const browser = await chromium.launch();
+async function captureNumbers(host, { unclipped = false, probe = false } = {}) {
+  const styles = unclipped || probe ? await host.locator('.number').evaluateAll((nodes, options) => nodes.map(node => {
+    const original = node.getAttribute('style');
+    if (options.unclipped) {
+      node.style.setProperty('overflow-x', 'visible', 'important');
+      node.style.setProperty('overflow-y', 'visible', 'important');
+    }
+    if (options.probe) node.style.setProperty('-webkit-text-fill-color', 'black', 'important');
+    return original;
+  }), { unclipped, probe }) : null;
+  try {
+    const image = pngPixels(await host.screenshot({ animations: 'disabled' }));
+    if (probe) await host.locator('.number').evaluateAll(nodes => nodes.forEach(node =>
+      node.style.setProperty('-webkit-text-fill-color', 'white', 'important')));
+    else await host.evaluate(el => el.classList.add('numbers-off'));
+    try { return { image, bare: pngPixels(await host.screenshot({ animations: 'disabled' })) }; }
+    finally { if (!probe) await host.evaluate(el => el.classList.remove('numbers-off')); }
+  } finally {
+    if (styles) await host.locator('.number').evaluateAll((nodes, originals) => nodes.forEach((node, i) => {
+      if (originals[i] === null) node.removeAttribute('style');
+      else node.setAttribute('style', originals[i]);
+    }), styles);
+  }
+}
+
+function numberInkBounds({ image, bare }, text, scale, probe = false) {
+  let left = image.width, top = image.height, right = -1, bottom = -1;
+  for (let y = Math.max(0, Math.floor(text.y * scale)); y < Math.min(image.height, Math.ceil((text.y + text.height) * scale)); y++) {
+    for (let x = Math.max(0, Math.floor(text.x * scale)); x < Math.min(image.width, Math.ceil((text.x + text.width) * scale)); x++) {
+      const a = (y * image.width + x) * image.channels;
+      const b = (y * bare.width + x) * bare.channels;
+      const difference = [0, 1, 2].map(c => Math.abs(image.data[a + c] - bare.data[b + c]));
+      // 字形探针排除背景重绘噪声；保留一个 8bit 量化级的舍入余量。
+      if (probe ? difference.some(value => value < Math.max(16, Math.floor(255 * text.opacity) - 1))
+        : difference.every(value => value < 16)) continue;
+      left = Math.min(left, x); right = Math.max(right, x);
+      top = Math.min(top, y); bottom = Math.max(bottom, y);
+    }
+  }
+  return right < left ? null : { x: left / scale, y: top / scale,
+    width: (right + 1 - left) / scale, height: (bottom + 1 - top) / scale };
+}
+
 const pages = await loadSpecs();
+if (!pages.length) throw new Error('书稿页面预期为空，请检查册清单与 loadSpecs，不能跳过版式验收');
+const browser = await chromium.launch();
 let checked = 0;
 
 for (const target of TARGETS) {
@@ -67,6 +113,12 @@ for (const target of TARGETS) {
     await page.evaluate(() => document.body.classList.add('static'));
   }
 
+  const numbers = await prepareNumbers(page,
+    pages.filter(spec => target.scope !== 'screen' || spec.screen !== false), target.scope);
+  problems.push(...numbers.problems);
+  notes.push(`✓ ${target.label}数字：书稿 ${numbers.declared} 条，显示状态 ${numbers.shown} 条（屏幕含互动显示）`);
+  await page.addStyleTag({ content: '.numbers-off .number{visibility:hidden!important}' });
+
   for (const spec of pages) {
     if (target.scope === 'screen' && spec.screen === false) continue;
 
@@ -74,7 +126,9 @@ for (const target of TARGETS) {
       const el = document.querySelector(`[data-id="${id}"][data-book="${book}"]`);
       if (!el) return null;
       const box = el.getBoundingClientRect();
-      const texts = [...el.querySelectorAll('.narration, .sound, .prompt, .adult')].map((t) => {
+      const texts = [...el.querySelectorAll('.narration, .sound, .prompt, .adult, .number')].filter(t =>
+        !t.classList.contains('number') || t.checkVisibility({ opacityProperty: true, visibilityProperty: true })
+      ).map((t) => {
         /* 用 Range 量墨迹范围：居中排版的盒子比文字宽得多，量盒子会误判 */
         const range = document.createRange();
         range.selectNodeContents(t);
@@ -83,8 +137,16 @@ for (const target of TARGETS) {
         const y = rects.length ? Math.min(...rects.map((r) => r.y)) - box.y : 0;
         const right = rects.length ? Math.max(...rects.map((r) => r.right)) - box.x : 0;
         const bottom = rects.length ? Math.max(...rects.map((r) => r.bottom)) - box.y : 0;
+        let opacity = 1;
+        if (t.classList.contains('number')) {
+          for (let parent = t; parent; parent = parent.parentElement) opacity *= Number(getComputedStyle(parent).opacity);
+        }
         return {
           cls: t.className,
+          isNumber: t.classList.contains('number'),
+          clipsX: getComputedStyle(t).overflowX !== 'visible',
+          clipsY: getComputedStyle(t).overflowY !== 'visible',
+          opacity,
           text: (t.textContent || '').slice(0, 14),
           x,
           y,
@@ -158,6 +220,45 @@ for (const target of TARGETS) {
     checked++;
     const S = SAFE * UNIT;
 
+    // 数字的字体行框含较大留白，不能把行框溢出误判为裁字或与下一行重叠。
+    // 有字/无数字截图的差分给出实际墨迹；复用对比度闸门的 PNG 解码。
+    const numberTexts = data.texts.filter(text => text.isNumber);
+    if (numberTexts.length) {
+      const host = page.locator(`[data-book="${spec.book}"][data-id="${spec.id}"]`);
+      const actual = await captureNumbers(host);
+      // 只对有裁切样式的数字增加参照截图。保持宽高、字体和位置，仅解除 overflow。
+      // 比较实际墨迹，不能因字体行框超出容器就判裁字，也不能只检查纵向滚动尺寸。
+      // 黑白字形探针单独分离笔画，避免背景抗锯齿重绘产生的零星差分扩张墨迹框。
+      const clipped = numberTexts.some(text => text.clipsX || text.clipsY) ? await captureNumbers(host, { probe: true }) : null;
+      const reference = clipped ? await captureNumbers(host, { unclipped: true, probe: true }) : null;
+      if ([actual.image, actual.bare, ...(reference ? [clipped.image, clipped.bare, reference.image, reference.bare] : [])].some(image =>
+        image.width !== actual.image.width || image.height !== actual.image.height)) {
+        problems.push(`[${spec.book}/${spec.id}] 数字截图尺寸不一致，请检查布局并重新构建`);
+        continue;
+      }
+      const scale = actual.image.width / data.width;
+      for (const text of numberTexts) {
+        const ink = numberInkBounds(actual, text, scale);
+        if (!ink) {
+          problems.push(`[${spec.book}/${spec.id}] ${text.cls} 数字量不到墨迹，请检查遮挡、透明度和裁切`);
+          continue;
+        }
+        if (text.clipsX || text.clipsY) {
+          const full = numberInkBounds(reference, text, scale, true);
+          const remaining = numberInkBounds(clipped, text, scale, true);
+          if (!full) problems.push(`[${spec.book}/${spec.id}] ${text.cls} 解除裁切后仍量不到数字墨迹，请检查字体、透明度与布局`);
+          else {
+            const axes = [];
+            if (!remaining || full.x < remaining.x - 1 || full.x + full.width > remaining.x + remaining.width + 1) axes.push('横向');
+            if (!remaining || full.y < remaining.y - 1 || full.y + full.height > remaining.y + remaining.height + 1) axes.push('纵向');
+            if (axes.length) problems.push(`[${spec.book}/${spec.id}]（${target.label}）${text.cls}「${text.text}」文字被裁` +
+              `（${axes.join('、')}墨迹缺失）；请调整数字容器尺寸或 overflow，并重新构建`);
+          }
+        }
+        Object.assign(text, ink);
+      }
+    }
+
     /* 1. 文字互相重叠 */
     for (let i = 0; i < data.texts.length; i++) {
       for (let j = i + 1; j < data.texts.length; j++) {
@@ -188,7 +289,8 @@ for (const target of TARGETS) {
 
     /* 3. 文字溢出容器（内容被裁） */
     for (const t of data.texts) {
-      if (t.scrollH > t.clientH + 1 && t.cls !== 'sound') {
+      // 数字已按横纵实际墨迹比较，普通文字保留原有纵向溢出判据。
+      if (!t.isNumber && t.scrollH > t.clientH + 1 && t.cls !== 'sound') {
         problems.push(
           `[${spec.id}]（${target.label}）${t.cls}「${t.text}」文字被裁` +
             `（内容高 ${Math.round(t.scrollH / UNIT)}，容器高 ${Math.round(t.clientH / UNIT)}）`

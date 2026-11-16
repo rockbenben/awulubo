@@ -41,7 +41,7 @@ fs.mkdirSync(outDir, { recursive: true });
 
 /* 清掉上一版的残留截图：删过页之后旧图还躺在目录里，
    联系表和闸门都会把它算进去——"多出来的一张"看着像证据，其实是陈旧产物。 */
-/* 每一册一个子目录：页码在册内独立（两册都有 p01），
+/* 每一册一个子目录：页码在册内独立（每册都有 p01），
    文件名不带上册就会互相覆盖——第二册的 p01 会盖掉第一册的 p01。 */
 const keep = new Set(pages.map((p) => path.join(p.book, `${p.id}.png`)));
 const walk = (dir, base = '') => {
@@ -73,7 +73,13 @@ await page.goto(url, { waitUntil: 'load' });
 /* 字没加载完就截，截到的是回退字体——联系表与闸门都会跟着失真 */
 await page.evaluate(() => document.fonts.ready);
 
+let currentBook = '';
 for (const p of pages) {
+  if (isPrint && p.book !== currentBook) {
+    await page.goto(url + '?book=' + encodeURIComponent(p.book), { waitUntil: 'load' });
+    await page.evaluate(() => document.fonts.ready);
+    currentBook = p.book;
+  }
   const dir = path.join(outDir, p.book);
   fs.mkdirSync(dir, { recursive: true });
   const out = path.join(dir, `${p.id}.png`);
