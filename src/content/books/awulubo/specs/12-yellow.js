@@ -1,38 +1,133 @@
-/* S4 黄星星：吃完变黄，亮得不得了 */
-export default [
-  {
-    id: 'p12',
-    template: 't-food',
-    sound: 'chomp',
-    aria: '再吃一颗黄星星。噜啵，张嘴。啊呜！点一下黄星星。',
-    bg: { kind: 'rays-corner', colors: ['--purple'], focus: [-40, 1040], cover: 'all', wash: '--wash-purple' },
-    props: [
-      { kind: 'star', at: [300, 150], scale: 0.4, rotate: 10, class: 'prop-star' },
-      /* 提示字压在深紫笔触上只有 2.2:1，垫一块手绘白底块（同 p12/p40 的手法） */
-      { kind: 'blob', at: [6, 688], scale: 0.4 },
-    ],
-    char: { pose: 'peek', at: [280, 620], scale: 0.5 },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 420, text: '再吃一颗黄星星。<br>噜啵，张嘴——' },
-      sound: { text: '啊呜！', at: [380, 560], size: 14, rotate: -3 },
-      prompt: { text: '点一下黄星星。', at: [60, 870], size: 4, width: 300 },
-    },
-    /* 热区罩住黄星星的墨迹（311–634 × 201–537），
-       原来偏上，星星的下尖点不到 */
-    hotspot: { action: 'feed', target: 'star', at: [297, 193], size: 352, label: '喂噜啵吃黄星星' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-blue"
   },
-  {
-    id: 'p13',
-    template: 't-color t-yellow',
-    sound: 'sparkle',
-    aria: '啊呜！噜啵变黄啦！闪闪闪！',
-    bg: { kind: 'rays', colors: ['--yellow-deep', '--yellow'], gap: '--yellow', focus: [500, 680], wash: '--yellow' },
-    props: [{ kind: 'blob', at: [2.5, -138.5], scale: 0.5 }],
-    char: { pose: 'happy', state: 'on-color state-yellow', at: [120, 300], scale: 0.76, spiral: true },
-    text: {
-      narration: { text: '啊呜！噜啵变黄啦！', at: [90, 75], size: 3.4, width: 360 },
-      /* 黄底白字只有 1.3:1，读不了；文字色交给模板的规则定（黄底黑字） */
-      sound: { text: '闪闪闪！', at: [490, 70], size: 12, rotate: 3 },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p12",
+      "template": "t-dialog",
+      "reading": "simulate",
+      "aria": "还有一颗黄星星。喂它黄星星。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 5.5,
+          "width": 549.2,
+          "text": "还有一颗黄星星。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "喂它黄星星。",
+          "print": "喂它黄星星。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "willing",
+        "at": [
+          130,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true,
+        "state": "state-blue"
+      },
+      "props": [
+        {
+          "id": "star-A",
+          "kind": "star",
+          "at": [
+            600,
+            410
+          ],
+          "scale": 0.25,
+          "class": "prop-star"
+        }
+      ],
+      "hotspot": {
+        "targetId": "star-A",
+        "action": "feed",
+        "target": "star",
+        "at": [
+          600,
+          410
+        ],
+        "size": 280,
+        "label": "喂一口"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -222.88,
+          -119.81
+        ],
+        "scale": 1.2
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p13",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "闪闪闪！黄颜色一下铺开！",
+      "text": {
+        "narration": {
+          "at": [
+            224.48000000000002,
+            150
+          ],
+          "size": 4.7,
+          "width": 695.52,
+          "text": "闪闪闪！黄颜色一下铺开！",
+          "align": "right"
+        }
+      },
+      "responseTo": "p12",
+      "char": {
+        "pose": "tiptoe",
+        "at": [
+          240,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true,
+        "state": "state-yellow"
+      },
+      "bg": {
+        "wash": "--wash-yellow",
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "turn": "黄颜色",
+      "framing": {
+        "at": [
+          -222.88,
+          -119.81
+        ],
+        "scale": 1.2
+      }
+    }
+  ]
+};

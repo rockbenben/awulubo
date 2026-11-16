@@ -1,6 +1,6 @@
 /* 《啊呜噜啵！》设计令牌
    色板实测自参考书（见 docs/superpowers/specs/2026-10-30-awulubo-picture-book-design.md §3.3）。
-   字体 @font-face 由 tools/build.mjs 在构建时注入（内联 base64 woff2 子集）。 */
+   字体 @font-face 在 src/css/fonts.css 中声明，构建时由 Vite 内联 base64 woff2 子集。 */
 
 :root {
   /* —— 纸与墨 —— */
@@ -96,3 +96,6 @@
 .on-color     { --body: var(--red);     --spiral: var(--ink); }
 .on-color.state-blue   { --body: var(--blue); }
 .on-color.state-yellow { --body: var(--yellow); }
+
+/* 三色集中在肚上，赠色前不改成满版彩虹。 */
+.state-rainbow { --belly-colors: inline; }

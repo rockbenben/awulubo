@@ -1,29 +1,156 @@
-/* S13 去看它：它又睡着了，呼吸平了 */
-export default [
-  {
-    id: 'p28',
-    template: 't-night',
-    sound: 'snore',
-    aria: '它又睡着了。呼吸平了。',
-    bg: { kind: 'stars', focus: [500, 500], cover: 'all', wash: '--night' },
-    char: { pose: 'asleep', state: 'state-pale', at: [250, 440], scale: 0.58, spiral: true },
-    props: [{ kind: 'moon', at: [660, 100], scale: 0.4, class: 'prop-moon' }],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, color: '--paper', text: '它又睡着了。<br>呼吸平了。' },
-      sound: { at: [300, 240], size: 14, rotate: 2, color: '--paper', text: '呼噜……' },
-      prompt: { at: [60, 870], size: 4, width: 380, color: '--paper', text: '再等等。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--night"
   },
-  {
-    id: 'p29',
-    template: 't-night',
-    noSound: true,
-    aria: '你坐在它旁边，等天亮。',
-    bg: { kind: 'stars', focus: [500, 300], cover: 'all', wash: '--night-deep' },
-    char: { pose: 'asleep', state: 'state-pale', at: [300, 460], scale: 0.56, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, color: '--paper', text: '你坐在它旁边，<br>等天亮。' },
-      prompt: { at: [60, 870], size: 4, width: 380, color: '--paper', text: '陪它坐一会儿。' },
-    },
+  "scene": {
+    "kind": "room",
+    "light": "night"
   },
-];
+  "pages": [
+    {
+      "id": "p28",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "它的呼吸慢下来。\n陪它坐一会儿。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            200
+          ],
+          "size": 4.3,
+          "width": 435.92,
+          "text": "它的呼吸慢下来。",
+          "color": "--paper",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "陪它坐一会儿。",
+          "print": "陪它坐一会儿。",
+          "color": "--paper",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sick-curled",
+        "at": [
+          230,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          117.24,
+          73.66
+        ],
+        "scale": 0.85
+      }
+    },
+    {
+      "id": "p29",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "你坐着，听它慢慢呼气。",
+      "text": {
+        "narration": {
+          "at": [
+            331.86,
+            200
+          ],
+          "size": 4.3,
+          "width": 588.14,
+          "text": "你坐着，听它慢慢呼气。",
+          "color": "--paper",
+          "align": "right"
+        }
+      },
+      "responseTo": "p28",
+      "char": {
+        "pose": "covered-rest",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": false,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          117.24,
+          73.66
+        ],
+        "scale": 0.85
+      }
+    }
+  ]
+};

@@ -1,33 +1,132 @@
-/* S2 红苹果：吃完变红 */
-export default [
-  {
-    id: 'p08',
-    template: 't-food',
-    sound: 'chomp',
-    aria: '先吃一个红苹果。噜啵，张嘴。啊呜！点一下红苹果。',
-    bg: { kind: 'disc', colors: ['--blue'], focus: [500, 940], cover: 'x', wash: '--wash-blue' },
-    props: [{ kind: 'apple', at: [320, 180], scale: 0.36, class: 'prop-apple' }],
-    char: { pose: 'peek', at: [280, 620], scale: 0.5 },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 420, text: '先吃一个红苹果。<br>噜啵，张嘴——' },
-      sound: { text: '啊呜！', at: [380, 560], size: 14, rotate: -3 },
-      prompt: { text: '点一下红苹果。', at: [60, 870], size: 4, width: 300 },
-    },
-    /* 热区罩住红苹果的墨迹（345–653 × 212–488），
-       原来偏右下，苹果的左上角点不到 */
-    hotspot: { action: 'feed', target: 'apple', at: [337, 188], size: 324, label: '喂噜啵吃红苹果' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-cream"
   },
-  {
-    id: 'p09',
-    template: 't-color',
-    sound: 'burp',
-    aria: '啊呜！噜啵变红啦！嗝——',
-    bg: { kind: 'rays', colors: ['--red-deep', '--red'], gap: '--red', focus: [500, 680], wash: '--red' },
-    props: [{ kind: 'blob', at: [2.5, -138.5], scale: 0.5 }],
-    char: { pose: 'happy', state: 'on-color state-red', at: [120, 300], scale: 0.76, spiral: true },
-    text: {
-      narration: { text: '啊呜！噜啵变红啦！', at: [90, 75], size: 3.4, width: 360 },
-      sound: { text: '嗝——', at: [490, 70], size: 16, rotate: 3, color: '--paper' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p08",
+      "template": "t-dialog",
+      "reading": "simulate",
+      "aria": "噜啵张着嘴，等苹果。喂它红苹果。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 5.5,
+          "width": 679,
+          "text": "噜啵张着嘴，等苹果。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "喂它红苹果。",
+          "print": "喂它红苹果。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "willing",
+        "at": [
+          130,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "apple-A",
+          "kind": "apple",
+          "at": [
+            560,
+            480
+          ],
+          "scale": 0.27,
+          "class": "prop-apple"
+        }
+      ],
+      "hotspot": {
+        "targetId": "apple-A",
+        "action": "feed",
+        "target": "apple",
+        "at": [
+          560,
+          480
+        ],
+        "size": 280,
+        "label": "喂一口"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -239.81,
+          -177.02
+        ],
+        "scale": 1.25
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p09",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "啊呜！它变红，四周也红啦！",
+      "text": {
+        "narration": {
+          "at": [
+            169.01999999999998,
+            150
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "啊呜！它变红，四周也红啦！",
+          "align": "right"
+        }
+      },
+      "responseTo": "p08",
+      "char": {
+        "pose": "chew",
+        "at": [
+          240,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true,
+        "state": "state-red"
+      },
+      "bg": {
+        "wash": "--wash-red",
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "turn": "变红",
+      "framing": {
+        "at": [
+          -239.81,
+          -177.02
+        ],
+        "scale": 1.25
+      }
+    }
+  ]
+};

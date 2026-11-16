@@ -1,0 +1,39 @@
+<!-- 儿童幻想空间：色场为主，纸片城堡、软拱光口与色岛只提供必要线索。
+     保留2000×1000跨页及旧scene接口；不画家庭透视、窗格、踢脚线或家具。 -->
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs><clipPath id="scene-page-clip" clipPathUnits="userSpaceOnUse"><rect width="1000" height="1000"/></clipPath></defs>
+  <g id="scene-color-island" style="fill:var(--paper);fill-opacity:var(--scene-island-opacity);stroke:none">
+    <path d="M -70 820 Q 180 735 515 809 Q 712 857 1025 790 Q 1340 722 1610 800 Q 1870 865 2070 794 L 2070 920 Q 1740 962 1410 870 Q 1150 814 900 900 Q 500 980 180 892 Q 30 850 -70 900 Z"/>
+  </g>
+  <!-- 屋、窝、门窗只保留软圆光口；没有整套家庭空间。 -->
+  <g id="scene-window" data-scene-anchor="window" style="fill:var(--paper);fill-opacity:var(--scene-shape-opacity);stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:12;stroke-linejoin:round">
+    <path d="M 142 530 Q 115 330 295 294 Q 474 250 502 444 L 494 551 Q 326 594 142 530 Z"/>
+    <path d="M 185 504 Q 147 345 297 333" style="fill:none;stroke-width:8"/>
+  </g>
+  <g id="scene-door-frame" data-scene-anchor="door" style="fill:var(--paper);fill-opacity:var(--scene-shape-opacity);stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:14;stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 1450 803 Q 1410 560 1480 405 Q 1565 265 1720 336 Q 1840 394 1830 798 L 1775 807 Q 1795 470 1685 419 Q 1560 365 1535 525 L 1510 800 Z"/>
+  </g>
+  <g id="scene-fantasy-castle" data-scene-anchor="fantasy-castle" style="fill:var(--scene-sky);fill-opacity:var(--scene-castle-opacity);stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:10;stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 1260 560 L 1273 383 L 1220 383 L 1315 268 L 1406 383 L 1360 383 L 1360 438 L 1445 438 L 1445 396 L 1510 396 L 1510 440 L 1580 440 L 1580 378 L 1530 378 L 1630 231 L 1725 378 L 1681 378 L 1690 561 Q 1490 594 1260 560 Z"/>
+    <path d="M 1451 563 Q 1441 486 1480 485 Q 1515 488 1514 568" style="fill:none"/>
+    <path d="M 1630 235 L 1632 183 L 1700 206 L 1632 221" style="fill:var(--paper)"/>
+  </g>
+  <g id="scene-corner" data-scene-anchor="wall-foot" style="fill:none;stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:12;stroke-linecap:round">
+    <path d="M -20 695 Q 175 590 240 768 Q 265 819 420 800"/>
+  </g>
+  <g id="scene-mat" data-scene-anchor="mat" style="fill:var(--paper);fill-opacity:var(--scene-shape-opacity);stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:9;stroke-linejoin:round">
+    <path d="M 450 757 Q 1000 704 1525 768 Q 1590 790 1560 835 Q 1000 913 404 834 Q 355 797 450 757 Z"/>
+  </g>
+  <g id="scene-grass-tuft" style="fill:var(--green);fill-opacity:var(--scene-grass-opacity);stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:7;stroke-linejoin:round">
+    <path d="M -80 0 Q -69 -50 -45 -63 L -32 -13 Q -20 -74 4 -88 L 17 -12 Q 48 -62 70 -61 L 45 0 Z"/>
+  </g>
+  <g id="scene-room"><use href="#scene-color-island"/></g>
+  <g id="scene-window-nook"><use href="#scene-color-island"/><use href="#scene-window"/></g>
+  <g id="scene-doorway"><use href="#scene-color-island"/><use href="#scene-door-frame"/></g>
+  <g id="scene-wall-corner"><use href="#scene-color-island"/><use href="#scene-corner"/></g>
+  <g id="scene-play-mat"><use href="#scene-mat"/></g>
+  <g id="scene-grass"><use href="#scene-color-island"/><use href="#scene-fantasy-castle"/><g transform="translate(530 813)"><use href="#scene-grass-tuft"/></g></g>
+  <g id="scene-grass-front" style="fill:var(--scene-grass-front);stroke:var(--scene-ink);stroke-opacity:var(--scene-line-opacity);stroke-width:9;stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 1250 818 Q 1265 652 1329 576 L 1360 731 Q 1372 520 1450 463 L 1469 723 Q 1511 514 1592 502 L 1575 741 Q 1648 555 1719 582 L 1660 764 Q 1767 623 1850 670 L 1775 822 Z" />
+  </g>
+</svg>

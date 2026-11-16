@@ -1,42 +1,145 @@
-/* S19 三个红苹果：数对了 */
-export default [
-  {
-    id: 'p40',
-    template: 't-burst',
-    sound: 'ding',
-    aria: '三个红苹果！叮！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    props: [
-      { kind: 'apple', at: [110, 190], scale: 0.26, class: 'prop-apple count-item' },
-      { kind: 'apple', at: [640, 270], scale: 0.26, class: 'prop-apple count-item' },
-      { kind: 'apple', at: [370, 520], scale: 0.26, class: 'prop-apple count-item' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "wash",
+    "wash": "--wash-cream",
+    "colors": [
+      "--wash-yellow"
     ],
-    /* 答案：数字一开始就亮着 */
-    numbers: [{ text: '3', at: [120, 450], size: 28, on: true }],
-    char: { pose: 'happy', at: [600, 480], scale: 0.45, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '三个红苹果！' },
-      /* 「一二三！」在站酷快乐体里是六根横杠，看着像一地散落的彩纸；
-         这一页要的是"数对了"的铃铛声，不是数数本身。 */
-      sound: { text: '叮！', at: [70, 740], size: 14, rotate: -2 },
-    },
+    "gap": "--paper",
+    "cover": "all"
   },
-  {
-    id: 'p41',
-    template: 't-burst',
-    sound: 'giggle',
-    aria: '数对啦！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [330, 380], scale: 0.58, spiral: true },
-    props: [
-      { kind: 'flower', at: [140, 200], scale: 0.16, style: '--flower: var(--yellow); --flower-center: var(--orange)' },
-      { kind: 'flower', at: [820, 170], scale: 0.13, rotate: 20, style: '--flower: var(--orange); --flower-center: var(--yellow)' },
-      { kind: 'flower', at: [870, 760], scale: 0.15, rotate: -14, style: '--flower: var(--pink); --flower-center: var(--yellow)' },
-      { kind: 'flower', at: [110, 800], scale: 0.12, rotate: 8, style: '--flower: var(--green); --flower-center: var(--yellow)' },
-    ],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 340, text: '数对啦！' },
-      sound: { text: '嘿嘿！', at: [490, 76], size: 16, rotate: 4 },
-    },
+  "scene": {
+    "kind": "grass",
+    "occlude": false,
+    "grassScale": 2
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p40",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "它跨到门外，也歪着头数。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 4.7,
+          "width": 695.52,
+          "text": "它跨到门外，也歪着头数。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "look-back",
+        "at": [
+          410,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true,
+        "state": "state-rainbow"
+      },
+      "props": [
+        {
+          "id": "apple-F",
+          "kind": "apple",
+          "at": [
+            10,
+            710
+          ],
+          "scale": 0.075
+        },
+        {
+          "id": "apple-G",
+          "kind": "apple",
+          "at": [
+            90,
+            710
+          ],
+          "scale": 0.075
+        },
+        {
+          "id": "apple-H",
+          "kind": "apple",
+          "at": [
+            170,
+            710
+          ],
+          "scale": 0.075
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          21,
+          -8.87
+        ],
+        "scale": 0.97
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p41",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "它点点头，咧嘴朝你笑。",
+      "text": {
+        "narration": {
+          "at": [
+            176.10000000000002,
+            150
+          ],
+          "size": 5.5,
+          "width": 743.9,
+          "text": "它点点头，咧嘴朝你笑。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p40",
+      "char": {
+        "pose": "beaming-lean",
+        "at": [
+          240,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true,
+        "state": "state-rainbow"
+      },
+      "numbers": [
+        {
+          "text": "3",
+          "at": [
+            700,
+            300
+          ],
+          "size": 21,
+          "on": true,
+          "width": 230
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          21,
+          -8.87
+        ],
+        "scale": 0.97
+      }
+    }
+  ]
+};

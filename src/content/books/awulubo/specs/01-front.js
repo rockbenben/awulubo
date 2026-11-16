@@ -1,8 +1,9 @@
 /* 封面 / 前环衬 / 扉页
    （版权页放在书末 p60：中文书的版权页本来就在最后，
    放在这里会让正文从奇数页起——骑马钉永远翻到「偶数|奇数」，
-   正文的每一跨就会被拆成两半。见 AGENTS.md 第 13 条。） */
-export default [
+   正文的每一跨就会被拆成两半。见 AGENTS.md「故事与装订」。） */
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default { pages: [
   {
     id: 'p01',
     template: 't-cover',
@@ -16,7 +17,7 @@ export default [
       /* 屏幕上要告诉孩子"点我"；纸书上点不动，封面上就不放这句（跟真的书封一样干净） */
       prompt: { at: [60, 870], size: 4, align: 'center', width: 1000, text: '点我，开始。', print: '' },
     },
-    hotspot: { action: 'start', at: [0, 0], size: 1000, label: '点封面开始阅读' },
+    hotspot: { targetId: 'page', action: 'start', at: [0, 0], size: 1000, label: '点封面开始阅读' },
   },
   {
     id: 'p02',
@@ -24,14 +25,14 @@ export default [
     noSound: true,
     aria: '前环衬：苹果、小鱼、星星散落在纸上。',
     props: [
-      { kind: 'apple', at: [90, 120], scale: 0.19, rotate: -12 },
-      { kind: 'fish', at: [560, 60], scale: 0.22, rotate: 14 },
-      { kind: 'star', at: [320, 330], scale: 0.17, rotate: -8 },
-      { kind: 'apple', at: [690, 430], scale: 0.15, rotate: 18 },
-      { kind: 'fish', at: [70, 600], scale: 0.18, rotate: -16 },
-      { kind: 'star', at: [420, 700], scale: 0.2, rotate: 9 },
-      { kind: 'apple', at: [250, 830], scale: 0.14, rotate: 24 },
-      { kind: 'star', at: [840, 790], scale: 0.12, rotate: -20 },
+      { id: 'apple-1', kind: 'apple', at: [90, 120], scale: 0.19, rotate: -12 },
+      { id: 'fish-1', kind: 'fish', at: [560, 60], scale: 0.22, rotate: 14 },
+      { id: 'star-1', kind: 'star', at: [320, 330], scale: 0.17, rotate: -8 },
+      { id: 'apple-2', kind: 'apple', at: [690, 430], scale: 0.15, rotate: 18 },
+      { id: 'fish-2', kind: 'fish', at: [70, 600], scale: 0.18, rotate: -16 },
+      { id: 'star-2', kind: 'star', at: [420, 700], scale: 0.2, rotate: 9 },
+      { id: 'apple-3', kind: 'apple', at: [250, 830], scale: 0.14, rotate: 24 },
+      { id: 'star-3', kind: 'star', at: [840, 790], scale: 0.12, rotate: -20 },
     ],
   },
   {
@@ -46,4 +47,4 @@ export default [
       narration: { at: [300, 300], size: 3.4, align: 'center', width: 400, text: '一个要你喂的小怪物' },
     },
   },
-];
+] };

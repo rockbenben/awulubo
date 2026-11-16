@@ -72,11 +72,35 @@
     <path style="fill:var(--ink)" d="M 752 214 L 792 288 L 700 296 Z" />
   </g>
 
-  <!-- 毯子（第二册：盖在噜啵身上） -->
+  <!-- 毯子（第二册：盖在噜啵身上）
+       —— 原来是**一个碗形的拱盖**（半圆 + 一道弧线），画出来像个空碗：
+          p07「它躲在毯子底下」时毯子在角色左边地上，根本没盖住它；
+          p13「给它盖上毯子」时毯子端端正正扣在头顶上，像戴帽子。
+       改成**搭在身上的一块毯子**：上面一条圆弧（远边，搭在肩上），
+       下面是**波浪形的垂边**（近边搭下来），中间三道褶。
+       本地坐标的范围：x 95–905，y 95–575。 -->
   <g id="prop-blanket">
     <path style="fill:var(--pink);stroke:var(--ink);stroke-width:26;stroke-linecap:round;stroke-linejoin:round"
-          d="M 100 520 C 100 300, 280 200, 500 200 C 720 200, 900 300, 900 520 C 760 570, 240 570, 100 520 Z" />
-    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round" d="M 190 500 C 320 540, 680 540, 810 500" />
+          d="M 95 240 C 95 145, 275 95, 500 95 C 725 95, 905 145, 905 240
+             C 928 330, 920 420, 905 470
+             C 830 522, 748 458, 655 512
+             C 560 568, 452 462, 358 512
+             C 272 556, 168 462, 95 452
+             C 74 392, 72 312, 95 240 Z" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round"
+          d="M 288 205 C 302 300, 292 386, 280 458" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round"
+          d="M 500 172 C 512 285, 506 380, 497 474" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round"
+          d="M 712 205 C 726 292, 718 378, 708 450" />
+  </g>
+
+  <!-- 同一粉色毯子的局部折角：寻找时只露布角，不提前画出整条毯子和脚。 -->
+  <g id="prop-blanket-corner">
+    <path style="fill:var(--pink);stroke:var(--ink);stroke-width:26;stroke-linecap:round;stroke-linejoin:round"
+          d="M 120 160 C 290 145, 510 205, 760 450 C 635 480, 480 530, 340 650 C 285 470, 210 300, 120 160 Z" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round"
+          d="M 150 180 C 300 260, 385 390, 420 515" />
   </g>
 
   <!-- 水杯（第二册：喂它喝水） -->
@@ -96,10 +120,88 @@
     <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round" d="M 500 352 L 500 508" />
   </g>
 
+  <!-- 球（第三册《一起玩！》：轮流玩的那颗球）
+       —— 颜色走 CSS 变量：页面数据写 style="--ball:var(--blue)" 就能换成蓝球，
+          不用为每种颜色各画一个。条纹是纸白的一条粗线 + 一道细墨线，
+          跟其他道具一样有手描的轮廓。 -->
+  <g id="prop-ball">
+    <circle style="fill:var(--ball,var(--red));stroke:var(--ink);stroke-width:26" cx="500" cy="500" r="300" />
+    <path style="fill:none;stroke:var(--ball-band,var(--paper));stroke-width:72;stroke-linecap:round"
+          d="M 310 650 C 390 570, 490 530, 600 530 C 660 530, 710 550, 750 585" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:20;stroke-linecap:round"
+          d="M 310 650 C 390 570, 490 530, 600 530 C 660 530, 710 550, 750 585" />
+  </g>
+
+  <!-- 积木（第四册《生气啦！》：搭了又倒的那座塔）
+       —— 三个面：正面 + 顶面 + 侧面。三个面各自的颜色也走变量，
+          页面数据可以写 style="--block-face:var(--red)"。 -->
+  <g id="prop-block">
+    <path style="fill:var(--block-top,var(--yellow));stroke:var(--ink);stroke-width:24;stroke-linejoin:round"
+          d="M 320 400 L 400 300 L 760 300 L 680 400 Z" />
+    <path style="fill:var(--block-side,var(--orange));stroke:var(--ink);stroke-width:24;stroke-linejoin:round"
+          d="M 680 400 L 760 300 L 760 630 L 680 730 Z" />
+    <path style="fill:var(--block-face,var(--yellow));stroke:var(--ink);stroke-width:24;stroke-linejoin:round"
+          d="M 320 400 L 680 400 L 680 730 L 320 730 Z" />
+    <circle style="fill:none;stroke:var(--ink);stroke-width:22" cx="500" cy="565" r="70" />
+  </g>
+
+  <!-- 篮子（第五册《我自己来！》：把宝贝收进去的那只篮子）
+       —— 提手是一个弧，筐身是梯形，三道横线是编出来的纹。 -->
+  <g id="prop-basket">
+    <path style="fill:none;stroke:var(--ink);stroke-width:26;stroke-linecap:round"
+          d="M 300 330 C 300 190, 700 190, 700 330" />
+    <path style="fill:var(--basket,var(--orange));stroke:var(--ink);stroke-width:26;stroke-linejoin:round"
+          d="M 250 330 L 750 330 L 690 760 Q 500 812, 310 760 Z" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round" d="M 264 480 L 736 480" />
+    <path style="fill:none;stroke:var(--ink);stroke-width:16;stroke-linecap:round" d="M 278 620 L 722 620" />
+  </g>
+
   <!-- 睡着了的 z（第二册） -->
   <g id="prop-zzz">
     <path style="fill:none;stroke:var(--paper);stroke-width:22;stroke-linecap:round;stroke-linejoin:round" d="M 180 240 L 330 240 L 180 390 L 340 390" />
     <path style="fill:none;stroke:var(--paper);stroke-width:16;stroke-linecap:round;stroke-linejoin:round" d="M 370 80 L 470 80 L 370 190 L 480 190" />
   </g>
 
+
+  <!-- 彩纸是独立物件，身份由书稿给定；不是满版喷纸特效。 -->
+  <g id="prop-paper" style="fill:var(--pink);stroke:var(--ink);stroke-width:18;stroke-linejoin:round"><path d="M 160 300 L 760 255 L 810 590 L 210 635 Z"/></g>
+  <g id="prop-paper-red" style="fill:var(--red);stroke:var(--ink);stroke-width:15"><path d="M 160 300 L 760 255 L 810 590 L 210 635 Z"/></g>
+  <g id="prop-paper-blue" style="fill:var(--blue);stroke:var(--ink);stroke-width:15"><path d="M 160 300 L 760 255 L 810 590 L 210 635 Z"/></g>
+  <g id="prop-paper-yellow" style="fill:var(--yellow);stroke:var(--ink);stroke-width:15"><path d="M 160 300 L 760 255 L 810 590 L 210 635 Z"/></g>
+  <g id="prop-palm" style="fill:var(--wash-orange);stroke:var(--ink);stroke-width:18;stroke-linecap:round;stroke-linejoin:round"><path d="M 210 800 L 185 1550 L 620 1550 L 580 800 Z"/><path d="M 210 820 L 240 610 Q 145 525 175 485 Q 200 456 295 540 L 300 310 Q 305 260 340 280 L 375 480 L 410 230 Q 420 190 452 220 L 470 475 L 530 260 Q 550 225 573 260 L 565 500 L 635 350 Q 660 320 680 355 L 650 605 Q 630 700 585 740 L 580 820 Z"/></g>
+
+  <!-- 同毯的软折边：嘴下、头顶、肩背及推向孩子的角，均复用粉毯材质。 -->
+  <g id="prop-blanket-fold" style="fill:var(--pink);stroke:var(--ink);stroke-width:22;stroke-linejoin:round"><path d="M 80 230 Q 330 105 650 200 L 865 550 Q 615 610 350 545 L 90 565 Q 155 400 80 230 Z"/><path d="M 80 230 Q 365 210 650 200 L 570 300 Q 300 275 80 230" style="fill:none;stroke-width:14"/></g>
+  <g id="prop-blanket-hood" style="fill:var(--pink);stroke:var(--ink);stroke-width:20;stroke-linejoin:round"><path d="M 100 220 Q 510 45 880 235 L 780 440 L 710 245 Q 465 180 255 270 L 155 420 Z"/><path d="M 155 420 L 255 270 Q 465 180 710 245" style="fill:none;stroke-width:12"/></g>
+  <g id="prop-blanket-drape" style="fill:var(--pink);stroke:var(--ink);stroke-width:20;stroke-linejoin:round"><path d="M 80 190 Q 480 10 900 190 L 870 660 L 735 680 L 710 250 Q 460 180 285 280 L 260 675 L 100 640 Z"/><path d="M 140 265 L 160 580 M 810 255 L 820 590" style="fill:none;stroke-width:12"/></g>
+  <g id="prop-blanket-shared"><use href="#prop-blanket"/><path d="M 105 445 Q -30 440 -10 575 Q 145 650 355 513" style="fill:var(--pink);stroke:var(--ink);stroke-width:24;stroke-linejoin:round"/></g>
+  <!-- 一口后的苹果保持同一身份和缺口，不再次整只出现。 -->
+  <g id="prop-apple-bitten" style="stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round"><path d="M 490 245 C 250 130 100 335 170 600 Q 245 845 480 770 Q 645 845 790 650 Q 675 635 710 535 Q 610 510 665 410 Q 595 350 675 270 Q 590 205 490 245 Z" style="fill:var(--red);stroke-width:26"/><path d="M 490 245 Q 475 135 525 98" style="fill:none;stroke-width:24"/></g>
+  <!-- 成人持勺的手与袖口是一个对象；不画散放药丸，不提供孩子热区。 -->
+  <g id="prop-medicine-adult" style="stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round"><path d="M 210 150 L 560 150" style="fill:none;stroke-width:23"/><ellipse cx="85" cy="150" rx="83" ry="36" style="fill:var(--paper);stroke-width:16"/><path d="M 37 139 Q 87 119 134 141" style="fill:none;stroke:var(--purple);stroke-width:20"/><path d="M 450 165 Q 423 80 480 75 L 620 110 Q 695 150 650 260 L 635 450 L 475 450 L 485 260 L 400 215 Q 358 183 390 150 Q 410 139 450 165 Z" style="fill:#F6C5AC;stroke-width:20"/><path d="M 470 365 L 640 365 L 652 490 L 455 490 Z" style="fill:var(--blue);stroke-width:20"/></g>
+  <g id="prop-blanket-lap" style="fill:var(--pink);stroke:var(--ink);stroke-width:22;stroke-linejoin:round"><path d="M 70 215 Q 470 170 900 220 L 870 415 Q 660 460 470 412 Q 240 465 90 415 Z"/><path d="M 220 225 L 235 390 M 490 218 L 485 400 M 735 230 L 725 395" style="fill:none;stroke-width:12"/></g>
+
+  <g id="prop-blanket-lap-open"><use href="#prop-blanket-lap"/><path d="M 735 230 L 880 185 L 900 305 Z" style="fill:var(--pink);stroke:var(--ink);stroke-width:20;stroke-linejoin:round"/></g>
+  <g id="prop-blanket-lap-shared"><use href="#prop-blanket-lap"/><path d="M 94 310 Q -42 320 -75 420 Q 45 478 235 420" style="fill:var(--pink);stroke:var(--ink);stroke-width:22;stroke-linejoin:round"/></g>
+  <g id="prop-foot-pushing"><g transform="translate(-620 -690)"><use href="#ch-foot-raised"/></g></g>
+
+  <g id="prop-ball-squeezed"><g transform="translate(-100 250) scale(1.2 .5)"><use href="#prop-ball"/></g></g>
+  <!-- 孩子的手独立于角色；伸手、争抢和摘发带只作故事画面，不要求真实拉扯。 -->
+  <g id="prop-child-reach" style="fill:var(--wash-orange);stroke:var(--ink);stroke-width:14;stroke-linecap:round;stroke-linejoin:round"><path d="M 0 45 L 204 45 Q 244 -4 278 22 L 330 50 Q 370 53 358 76 L 312 77 L 355 95 Q 378 112 355 126 L 310 112 Q 348 141 323 151 L 265 124 Q 280 164 250 162 L 205 119 L 0 125 Z"/></g>
+
+  <g id="prop-wall-foot" style="fill:none;stroke:var(--scene-ink,var(--ink));stroke-opacity:var(--scene-line-opacity,.25);stroke-width:16;stroke-linecap:round;stroke-linejoin:round"><path d="M 0 20 Q 120 -30 130 180 L 130 420 Q 230 480 440 440"/></g>
+  <g id="prop-scarf" style="fill:var(--orange);stroke:var(--ink);stroke-width:16;stroke-linejoin:round"><path d="M 40 150 Q 260 90 510 170 L 610 210 L 555 260 L 465 205 Q 245 160 40 205 Z"/><path d="M 490 175 L 605 110 L 665 155 L 560 220 Z"/></g>
+  <g id="prop-child-foot" style="fill:var(--wash-orange);stroke:var(--ink);stroke-width:16;stroke-linecap:round;stroke-linejoin:round"><path d="M 60 -140 L 190 -140 L 200 35 Q 260 35 290 80 Q 330 45 355 80 Q 400 70 400 110 Q 400 165 325 170 L 105 170 Q 40 160 60 90 Z"/><path d="M 295 94 L 290 130 M 350 100 L 340 135" style="fill:none;stroke-width:10"/></g>
+  <g id="prop-color-edge"><path d="M -70 10 Q 170 130 95 300 Q 150 490 -60 670 Z" style="fill:var(--edge,var(--wash-red));stroke:none"/></g>
+  <!-- 同一橘篮的翻倒和侧躺剖视；开口朝右，原三物由独立对象放在内腔。 -->
+  <g id="prop-basket-fallen"><g transform="rotate(125 500 500)"><use href="#prop-basket"/></g></g>
+  <g id="prop-basket-side" style="stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 110 300 Q 355 235 720 270 L 720 730 Q 350 770 110 700 Q 28 500 110 300 Z" style="fill:var(--basket,var(--orange));stroke-width:24"/>
+    <path d="M 165 350 Q 405 300 675 325 L 675 680 Q 390 710 165 650 Q 110 500 165 350 Z" style="fill:var(--wash-orange);stroke-width:15"/>
+    <path d="M 100 425 L 140 420 M 76 560 L 129 560 M 270 730 L 265 690 M 430 745 L 430 705 M 585 743 L 585 700" style="fill:none;stroke-width:16"/>
+    <ellipse cx="720" cy="500" rx="100" ry="230" style="fill:none;stroke-width:24"/>
+    <path d="M 737 270 Q 925 480 742 730" style="fill:none;stroke-width:18"/>
+  </g>
+  <g id="prop-child-cradle" style="fill:var(--wash-orange);stroke:var(--ink);stroke-width:18;stroke-linejoin:round"><path d="M 0 100 Q 245 205 470 115 L 620 45 Q 664 32 670 66 L 552 155 Q 310 310 0 205 Z"/><path d="M 544 111 L 610 82" style="fill:none;stroke-width:12;stroke-linecap:round"/></g>
+  <g id="prop-child-reach-left"><g transform="translate(400 0) scale(-1 1)"><use href="#prop-child-reach"/></g></g>
 </svg>

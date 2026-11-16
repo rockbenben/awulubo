@@ -55,8 +55,8 @@ body {
    书是正方形（印刷也是 216×216 mm 的正方形），竖屏手机上只占屏幕的上半段。
    原来顶在屏幕顶端、下面一大片空白，看着像没加载出来；
    居中之后像"手里捧着一本书"。
-   注意只作用于"互动的屏幕版"：拼版（proof）是 body.screen.static，
-   它靠 grid 平铺 32 页，被 flex 一顶就全叠到一起了。 */
+   注意只作用于"互动的屏幕版"：校样（proof）是 body.screen.static，
+   它靠 grid 平铺全书页面，被 flex 一顶就全叠到一起了。 */
 body.screen:not(.static) {
   --page: min(100vw, 100dvh);
   /* 舞台有多宽：单页时就是一页，摊开成跨页时是两页。
@@ -213,6 +213,15 @@ body.screen:not(.static) .chrome-btn {
   margin-top: 0;
 }
 
+/* 屏幕版跳过纸书 p61「给大人的话」，这里按册补一段最要紧的共读提示。
+   不参与 Tab 顺序：浮层的焦点边界只认 button / a（见 panels.js）。 */
+.shell-tip {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
 .shell-row {
   display: flex;
   flex-wrap: wrap;
@@ -242,14 +251,14 @@ body.screen:not(.static) .chrome-btn {
 }
 
 /* 别册的页面不显示。
-   打印/拼版模式下页面是平铺的，不藏就会把两册拼在一起印——
+   打印/拼版模式下页面是平铺的，不藏就会把各册拼在一起印——
    每一册都是一本独立的书，骑马钉的帖序也在册内各算各的。 */
 .page.is-off-book,
 .sheet.is-off-book {
   display: none !important;
 }
 
-/* 拼版（static）是联系表：两册都要摊开，
+/* 静态模式（static）是联系表：全部册都要摊开，
    否则逐页截图只截得到当前那一册。印刷版不在这里——它一册一册印。 */
 body.screen.static .page.is-off-book {
   display: block !important;
@@ -436,9 +445,9 @@ body.screen .page.is-active {
 
 /* 点肚子：噜啵晃一下 */
 @keyframes char-wobble {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  30% { transform: translate(-1.4%, 1%) rotate(-2.4deg); }
-  65% { transform: translate(1.2%, -0.6%) rotate(2deg); }
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  30% { translate: -1.4% 1%; rotate: -2.4deg; }
+  65% { translate: 1.2% -0.6%; rotate: 2deg; }
 }
 
 .is-wobble {
@@ -447,8 +456,8 @@ body.screen .page.is-active {
 
 /* 苹果飞进嘴 */
 @keyframes prop-fly {
-  from { transform: translate(0, 0) scale(1); opacity: 1; }
-  to { transform: translate(18%, 62%) scale(0.25); opacity: 0.1; }
+  from { translate: 0 0; scale: 1; opacity: 1; }
+  to { translate: var(--feed-x, 18%) var(--feed-y, 62%); scale: 0.25; opacity: 0.1; }
 }
 
 .is-flying {
@@ -459,9 +468,9 @@ body.screen .page.is-active {
 
 /* 点错：摇摇头 */
 @keyframes char-shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2.5%); }
-  60% { transform: translateX(2.5%); }
+  0%, 100% { translate: 0 0; }
+  25% { translate: -2.5% 0; }
+  60% { translate: 2.5% 0; }
 }
 
 .is-shake {
@@ -547,7 +556,10 @@ body.static .page.is-active {
 /* 静态模式下关闭一切动画 */
 body.static *,
 body.static *::before,
-body.static *::after {
+body.static *::after,
+body.print *,
+body.print *::before,
+body.print *::after {
   animation: none !important;
   transition: none !important;
 }
@@ -594,3 +606,6 @@ body.print .page {
     display: none !important;
   }
 }
+
+/* R7共读页的腹纹由本次手势驱动，静止叙事不持续自转。 */
+body.screen:not(.static) .page[data-reading] .spiral { animation: none; }

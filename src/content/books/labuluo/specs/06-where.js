@@ -1,39 +1,155 @@
-/* S2 找找看：它在毯子底下 */
-export default [
-  {
-    id: 'p06',
-    template: 't-search',
-    sound: 'chirp',
-    aria: '桌子底下没有。床底下呢？',
-    bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all', wash: '--wash-purple' },
-    props: [
-      { kind: 'cup', at: [160, 190], scale: 0.16, rotate: -12, class: 'prop-cup' },
-      { kind: 'pill', at: [620, 640], scale: 0.17, rotate: 10, class: 'prop-pill' },
-      { kind: 'star', at: [600, 160], scale: 0.14, rotate: 16, class: 'prop-star' },
-    ],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '桌子底下没有。<br>床底下呢？' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '嗯……' },
-      prompt: { at: [60, 870], size: 4, width: 560, text: '点一点，掀开看看。' },
-    },
-    trap: true,
-    hotspot: [
-      { action: 'find', target: 'cup', at: [104, 155], size: 250, label: '掀开杯子看看' },
-      { action: 'find', target: 'pill', at: [646, 596], size: 250, label: '掀开药丸看看' },
-      { action: 'find', target: 'star', at: [540, 118], size: 250, label: '掀开星星看看' },
-    ],
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-blue"
   },
-  {
-    id: 'p07',
-    template: 't-search',
-    sound: 'giggle',
-    aria: '找到了！它躲在毯子底下。',
-    bg: { kind: 'sprinkle', focus: [500, 500], cover: 'all', wash: '--wash-purple' },
-    props: [{ kind: 'blanket', at: [250, 380], scale: 0.34, rotate: -3, class: 'prop-blanket' }],
-    char: { pose: 'tired', state: 'state-pale', at: [420, 430], scale: 0.48, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '找到了！<br>它躲在毯子底下。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '找到啦……' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p06",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "observe",
+      "aria": "杯子旁，露出一角毯子。\n指指那角毯子。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 5.5,
+          "width": 743.9,
+          "text": "杯子旁，露出一角毯子。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            865
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "指指那角毯子。",
+          "print": "指指那角毯子。",
+          "align": "left"
+        }
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-corner",
+          "at": [
+            170,
+            430
+          ],
+          "scale": 0.5
+        }
+      ],
+      "hotspot": [
+        {
+          "targetId": "blanket-1",
+          "action": "find",
+          "target": "blanket",
+          "at": [
+            210,
+            470
+          ],
+          "size": 380,
+          "label": "指指那角毯子"
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          62.45,
+          -407.33
+        ],
+        "scale": 1.2
+      }
+    },
+    {
+      "id": "p07",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "毯子一角，两只小脚露出来。",
+      "text": {
+        "narration": {
+          "at": [
+            169.01999999999998,
+            735
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "毯子一角，两只小脚露出来。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p06",
+      "char": {
+        "pose": "hidden-feet",
+        "at": [
+          170,
+          360
+        ],
+        "scale": 0.6,
+        "spiral": false,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            170,
+            470
+          ],
+          "scale": 0.6
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          62.45,
+          -407.33
+        ],
+        "scale": 1.2
+      }
+    }
+  ]
+};

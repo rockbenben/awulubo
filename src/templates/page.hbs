@@ -1,20 +1,32 @@
-<!-- 一页的骨架。数据来自 src/content/specs/*.js，由 tools/render-page.mjs 用 Handlebars 渲染。
+<!-- 一页的骨架。数据来自 src/content/books/<册>/specs/*.js，由 tools/render-page.mjs 用 Handlebars 渲染。
      模板里不写任何逻辑：背景的放大倍数、拟声词的逐字微转，都在渲染器里算好再传进来。 -->
-<section class="page {{template}}" data-id="{{id}}" data-book="{{book}}"{{#if sound}} data-sound="{{sound}}"{{else}} data-no-sound{{/if}}{{#if trap}} data-trap="1"{{/if}}{{#if pat}} data-pat="1"{{/if}}{{#if aria}} aria-label="{{aria}}"{{/if}}>
+<section class="page {{template}}" data-id="{{id}}" data-book="{{book}}"{{#if reading}} data-reading="{{reading}}"{{/if}}{{#if responseTo}} data-response-to="{{responseTo}}"{{/if}}{{#if exit}} data-exit="{{exit}}"{{/if}}{{#if sound}} data-sound="{{sound}}"{{else}} data-no-sound{{/if}}{{#if trap}} data-trap="1"{{/if}}{{#if pat}} data-pat="1"{{/if}}{{#if aria}} aria-label="{{aria}}"{{/if}}>
   <div class="art" aria-hidden="true">
     <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">
-{{#if bg}}      <g class="fx"{{#if bg.vars}} style="{{bg.vars}}"{{/if}}>
+{{#if scene}}      <rect data-scene-base width="1000" height="1000" style="fill:var({{scene.base}})" />
+{{/if}}
+{{#if bg}}      <g data-object="effects" class="fx"{{#if bg.vars}} style="{{bg.vars}}"{{/if}}>
 {{#if bg.wash}}        <use class="fx-wash" href="#{{bg.wash.symbol}}" transform="{{bg.wash.transform}}" />
 {{/if}}        <use href="#{{bg.symbol}}" transform="{{bg.transform}}" />
       </g>
-{{/if}}{{#if char}}      <g class="char{{#if char.state}} {{char.state}}{{/if}}"{{#if char.id}} id="{{char.id}}"{{/if}} data-base-scale="{{char.scale}}" data-base-transform="translate({{char.at0}},{{char.at1}}) scale({{char.scale}})" transform="translate({{char.at0}},{{char.at1}}) scale({{char.scale}})">
-        <use href="#pose-{{char.pose}}" />{{#if char.spiral}}
-        <use href="#ch-spiral" class="spiral" />{{/if}}
+{{/if}}{{#if scene}}      <g data-object="scene" data-scene-kind="{{scene.kind}}" data-scene-side="{{scene.side}}" data-scene-light="{{scene.light}}" style="{{scene.vars}};pointer-events:none" clip-path="url(#scene-page-clip)">
+        {{#if scene.framing}}<g data-scene-framing transform="{{scene.framing}}">{{/if}}<g transform="{{scene.transform}}"><use href="#{{scene.symbol}}" />{{#if scene.backdrop}}<g transform="{{scene.vegetationTransform}}"><use href="#{{scene.backdrop}}" /></g>{{/if}}</g>{{#if scene.framing}}</g>{{/if}}
       </g>
-{{/if}}{{#each props}}      <use href="#{{symbol}}"{{#if class}} class="{{class}}"{{/if}}{{#if style}} style="{{style}}"{{/if}} transform="translate({{at0}},{{at1}}){{#if rotate}} rotate({{rotate}}){{/if}} scale({{scale}})" />
-{{/each}}    </svg>
+{{/if}}{{#if framing}}      <g data-framing transform="{{framing}}">
+{{/if}}{{#each backProps}}      <use data-object="{{objectId}}" href="#{{symbol}}"{{#if class}} class="{{class}}"{{/if}}{{#if style}} style="{{style}}"{{/if}} transform="translate({{at0}},{{at1}}){{#if rotate}} rotate({{rotate}}){{/if}} scale({{scale}})" />
+{{/each}}{{#if char}}      <g data-object="character" class="char{{#if char.state}} {{char.state}}{{/if}}"{{#if char.id}} id="{{char.id}}"{{/if}}{{#if char.vars}} style="{{char.vars}}"{{/if}} data-base-scale="{{char.scale}}" data-base-transform="translate({{char.at0}},{{char.at1}}) scale({{char.scale}})" transform="translate({{char.at0}},{{char.at1}}) scale({{char.scale}})">
+        <use href="#pose-{{char.pose}}" /><g data-mouth-frame{{#if char.spiralFrame}} transform="{{char.spiralFrame}}"{{/if}}><circle data-mouth cx="{{char.mouthX}}" cy="{{char.mouthY}}" r="1" style="opacity:0;pointer-events:none" /></g>{{#if char.spiral}}
+{{#if char.spiralFrame}}        <g data-spiral-frame transform="{{char.spiralFrame}}"><use href="#ch-spiral" class="spiral" /></g>{{else}}        <use href="#ch-spiral" class="spiral" />{{/if}}{{/if}}
+      </g>
+{{/if}}{{#each props}}{{#if motion}}      <g data-object="{{objectId}}"{{#if class}} class="{{class}}"{{/if}}{{#if style}} style="{{style}}"{{/if}} transform="translate({{at0}},{{at1}}){{#if rotate}} rotate({{rotate}}){{/if}} scale({{scale}})"><use data-feed-ink href="#{{symbol}}" /></g>
+{{else}}      <use data-object="{{objectId}}" href="#{{symbol}}"{{#if class}} class="{{class}}"{{/if}}{{#if style}} style="{{style}}"{{/if}} transform="translate({{at0}},{{at1}}){{#if rotate}} rotate({{rotate}}){{/if}} scale({{scale}})" />
+{{/if}}{{/each}}{{#if framing}}      </g>
+{{/if}}{{#if scene.foreground}}      <g data-object="scene-foreground" style="{{scene.vars}};pointer-events:none" clip-path="url(#scene-page-clip)">
+        {{#if scene.framing}}<g data-scene-framing transform="{{scene.framing}}">{{/if}}<g transform="{{scene.transform}}"><g transform="{{scene.vegetationTransform}}"><use href="#{{scene.foreground}}" /></g></g>{{#if scene.framing}}</g>{{/if}}
+      </g>
+{{/if}}    </svg>
   </div>
-{{#each texts}}  <{{tag}} class="{{key}}" style="{{style}}">{{{body}}}</{{tag}}>
+{{#each texts}}  <{{tag}} class="{{key}}" data-object="{{key}}" style="{{style}}">{{{body}}}</{{tag}}>
 {{/each}}{{#each numbers}}  <p class="number {{cls}}" style="{{style}}">{{{text}}}</p>
-{{/each}}{{#each hotspots}}  <button class="hotspot" data-action="{{action}}"{{#if target}} data-target="{{target}}"{{/if}}{{#if index}} data-index="{{index}}"{{/if}} style="left:{{left}};top:{{top}};width:{{width}};height:{{height}}" aria-label="{{label}}"></button>
+{{/each}}{{#each hotspots}}  <{{tag}} class="hotspot"{{#if static}} aria-hidden="true"{{/if}} data-action="{{action}}" data-target-id="{{targetId}}"{{#if target}} data-target="{{target}}"{{/if}}{{#if index}} data-index="{{index}}"{{/if}} style="left:{{left}};top:{{top}};width:{{width}};height:{{height}}" aria-label="{{label}}"></{{tag}}>
 {{/each}}</section>

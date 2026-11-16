@@ -1,33 +1,192 @@
-/* S26 玩够啦……我困了：把节奏降下来
-   —— 尾巴的第一段。44 页版到这里就是最后一个"耶！"，
-      戛然而止；这一页开始收。 */
-export default [
-  {
-    id: 'p54',
-    template: 't-dialog',
-    sound: 'sigh',
-    aria: '玩够啦……我困了。点它。',
-    /* 淡紫：夜里和白天之间的颜色，比夜浅、比白深 */
-    bg: { kind: 'rays-tight', colors: ['--purple'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-purple' },
-    char: { pose: 'sleepy', state: 'state-pale', at: [360, 320], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '玩够啦……我困了。' },
-      sound: { text: '哈——', at: [520, 74], size: 14, rotate: -2 },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '点它。' },
-    },
-    /* 点它＝它打个哈欠，哈欠声 + 身子一软，然后翻页 */
-    hotspot: { action: 'sleepy', target: 'char', at: [439, 417], size: 442, label: '点它' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-night"
   },
-  {
-    id: 'p55',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '打个哈欠……啊——',
-    bg: { kind: 'rays-tight', colors: ['--purple'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-purple' },
-    char: { pose: 'yawn', state: 'state-pale', at: [360, 340], scale: 0.58, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '打个哈欠……' },
-      sound: { text: '啊——', at: [520, 74], size: 14, rotate: 3 },
-    },
+  "scene": {
+    "kind": "grass",
+    "light": "night",
+    "occlude": false,
+    "grassScale": 2
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p54",
+      "template": "t-night",
+      "reading": "autonomous",
+      "aria": "天黑了，噜啵的眼皮垂下来。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            200
+          ],
+          "size": 4.3,
+          "width": 689.62,
+          "text": "天黑了，噜啵的眼皮垂下来。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sleepy",
+        "at": [
+          130,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "apple-F",
+          "kind": "apple",
+          "at": [
+            10,
+            710
+          ],
+          "scale": 0.075,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "apple-G",
+          "kind": "apple",
+          "at": [
+            90,
+            710
+          ],
+          "scale": 0.075,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "apple-H",
+          "kind": "apple",
+          "at": [
+            170,
+            710
+          ],
+          "scale": 0.075,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "K2-red",
+          "kind": "paper-red",
+          "at": [
+            380,
+            760
+          ],
+          "scale": 0.09,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "K2-blue",
+          "kind": "paper-blue",
+          "at": [
+            600,
+            770
+          ],
+          "scale": 0.1,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "K2-yellow",
+          "kind": "paper-yellow",
+          "at": [
+            760,
+            755
+          ],
+          "scale": 0.1,
+          "style": "opacity:.4"
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          136.44,
+          141.53
+        ],
+        "scale": 0.85
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p55",
+      "template": "t-night",
+      "reading": "autonomous",
+      "aria": "啊——好长一个哈欠。",
+      "text": {
+        "narration": {
+          "at": [
+            382.6,
+            200
+          ],
+          "size": 4.3,
+          "width": 537.4,
+          "text": "啊——好长一个哈欠。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p54",
+      "char": {
+        "pose": "yawn",
+        "at": [
+          240,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "K2-red",
+          "kind": "paper-red",
+          "at": [
+            380,
+            760
+          ],
+          "scale": 0.09,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "K2-blue",
+          "kind": "paper-blue",
+          "at": [
+            600,
+            770
+          ],
+          "scale": 0.1,
+          "style": "opacity:.4"
+        },
+        {
+          "id": "K2-yellow",
+          "kind": "paper-yellow",
+          "at": [
+            760,
+            755
+          ],
+          "scale": 0.1,
+          "style": "opacity:.4"
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          136.44,
+          141.53
+        ],
+        "scale": 0.85
+      }
+    }
+  ]
+};

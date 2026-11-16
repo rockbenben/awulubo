@@ -1,28 +1,190 @@
-/* S18 啊呜！它一口吃掉了苹果 */
-export default [
-  {
-    id: 'p38',
-    template: 't-burst',
-    sound: 'chomp',
-    aria: '啊呜！它一口吃掉了苹果。',
-    bg: { kind: 'rays', colors: ['--red', '--orange'], gap: '--red', focus: [500, 540], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'chomp', state: 'state-pale', at: [290, 330], scale: 0.62, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '啊呜！<br>它一口吃掉了苹果。' },
-      sound: { at: [520, 76], size: 18, rotate: -3, text: '啊呜！' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "wash",
+    "wash": "--wash-yellow",
+    "colors": [
+      "--yellow"
+    ],
+    "gap": "--paper",
+    "cover": "all"
   },
-  {
-    id: 'p39',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '它的眼睛亮了一下。',
-    bg: { kind: 'rays-tight', colors: ['--red', '--orange'], gap: '--red', focus: [500, 640], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'happy', state: 'state-pale', at: [290, 340], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它的眼睛亮了一下。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '唔！' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '好像有点精神了。' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p38",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "苹果来到嘴边。\n喂它一口苹果。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 7.428571428571429,
+          "width": 643.6,
+          "text": "苹果来到嘴边。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "喂它一口苹果。",
+          "print": "喂它一口苹果。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "willing",
+        "at": [
+          210,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-drape",
+          "at": [
+            255,
+            435
+          ],
+          "scale": 0.62,
+          "layer": "behind"
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple",
+          "at": [
+            450,
+            512
+          ],
+          "scale": 0.14,
+          "class": "prop-apple"
+        }
+      ],
+      "hotspot": {
+        "targetId": "apple-A",
+        "action": "feed",
+        "target": "apple",
+        "at": [
+          430,
+          490
+        ],
+        "size": 250,
+        "label": "喂它一口苹果"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -99.5,
+          -243.03
+        ],
+        "scale": 1.25
+      }
+    },
+    {
+      "id": "p39",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "啊呜！它吃下一口。",
+      "text": {
+        "narration": {
+          "at": [
+            305.9,
+            150
+          ],
+          "size": 5.5,
+          "width": 614.1,
+          "text": "啊呜！它吃下一口。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p38",
+      "char": {
+        "pose": "chew",
+        "at": [
+          275,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-drape",
+          "at": [
+            255,
+            435
+          ],
+          "scale": 0.62,
+          "layer": "behind"
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple-bitten",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple"
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -99.5,
+          -243.03
+        ],
+        "scale": 1.25
+      }
+    }
+  ]
+};

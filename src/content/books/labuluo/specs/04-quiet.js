@@ -1,29 +1,142 @@
-/* S1 今天，它没有说"咕噜——" */
-export default [
-  {
-    id: 'p04',
-    template: 't-dialog',
-    sound: 'gulu',
-    aria: '今天，噜啵没有说「咕噜——」。',
-    bg: { kind: 'rays-tight', colors: ['--blue', '--deep-blue'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-blue' },
-    char: { pose: 'tired', state: 'state-pale', at: [300, 300], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '今天，噜啵没有说<br>「咕噜——」。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '你在哪儿呀？' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-blue"
   },
-  {
-    id: 'p05',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '「噜啵？你在哪儿呀？」',
-    bg: { kind: 'rays-tight', colors: ['--blue', '--deep-blue'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-blue' },
-    char: { pose: 'peek', at: [300, 620], scale: 0.5 },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '「噜啵？」<br>「你在哪儿呀？」' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '噜……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '找找它。' },
-    },
+  "scene": {
+    "kind": "window-nook"
   },
-];
+  "pages": [
+    {
+      "id": "p04",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "蓝蓝的屋里，没听见咕噜声。\n轻轻叫叫噜啵。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            200
+          ],
+          "size": 4.3,
+          "width": 689.62,
+          "text": "蓝蓝的屋里，没听见咕噜声。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "轻轻叫叫噜啵。",
+          "print": "轻轻叫叫噜啵。",
+          "align": "left"
+        }
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            165,
+            430
+          ],
+          "scale": 0.74
+        }
+      ],
+      "hotspot": {
+        "targetId": "blanket-1",
+        "action": "poke",
+        "at": [
+          200,
+          470
+        ],
+        "size": 650,
+        "label": "轻轻叫叫噜啵"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          71.17,
+          82.47
+        ],
+        "scale": 0.9
+      }
+    },
+    {
+      "id": "p05",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "噜……毯子里鼓起小小一团。",
+      "text": {
+        "narration": {
+          "at": [
+            230.38,
+            200
+          ],
+          "size": 4.3,
+          "width": 689.62,
+          "text": "噜……毯子里鼓起小小一团。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p04",
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            155,
+            414
+          ],
+          "scale": 0.74
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          71.17,
+          82.47
+        ],
+        "scale": 0.9
+      }
+    }
+  ]
+};

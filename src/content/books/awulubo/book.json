@@ -1,4 +1,9 @@
 {
   "title": "啊呜噜啵！",
-  "subtitle": "一个要你喂的小怪物"
+  "subtitle": "一个要你喂的小怪物",
+  "adultTip": "旁白念给孩子，拟声词让孩子跟着说。点错了不说「不对」，再来一次就好。",
+  "production": {
+    "script": "2026-11-15-script-r7-awulubo.md",
+    "freeze": "R7-2026-11-15"
+  }
 }

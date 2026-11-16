@@ -1,42 +1,297 @@
-/* S8 彩纸：把噜啵卷起来，送到天上 */
-export default [
-  {
-    id: 'p22',
-    template: 't-burst',
-    sound: 'pop',
-    aria: '好多颜色！红的、蓝的、黄的……点一片彩纸。',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-cream' },
-    char: { pose: 'happy', at: [300, 380], scale: 0.6, spiral: true },
-    props: [
-      { kind: 'flower', class: 'confetti-flower', at: [110, 210], scale: 0.22, rotate: -12, style: '--flower: var(--pink); --flower-center: var(--yellow)' },
-      { kind: 'flower', class: 'confetti-flower', at: [700, 170], scale: 0.17, rotate: 18, style: '--flower: var(--orange); --flower-center: var(--pink)' },
-      { kind: 'flower', class: 'confetti-flower', at: [740, 620], scale: 0.2, rotate: -8, style: '--flower: var(--green); --flower-center: var(--yellow)' },
-      { kind: 'flower', class: 'confetti-flower', at: [180, 640], scale: 0.15, rotate: 24, style: '--flower: var(--blue); --flower-center: var(--pink)' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "wash",
+    "wash": "--wash-yellow",
+    "colors": [
+      "--yellow"
     ],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 400, text: '好多颜色！<br>红的、蓝的、黄的……' },
-      sound: { text: '啵！', at: [520, 80], size: 20, rotate: 6 },
-      prompt: { text: '点一片彩纸。', at: [60, 870], size: 4, width: 300 },
-    },
-    /* 热区罩住整片彩纸：提示写的是"点一片彩纸"，
-       原来只压住其中一朵花——点别处的彩纸会直接翻页，彩纸不变花。 */
-    hotspot: { action: 'confetti', target: 'confetti', at: [0, 0], size: 1000, label: '点一片彩纸' },
+    "gap": "--paper",
+    "cover": "all"
   },
-  {
-    id: 'p23',
-    template: 't-dialog',
-    sound: 'whoosh',
-    aria: '彩纸把噜啵卷起来，送到天上啦！点它，看它飞过去。',
-    bg: { kind: 'bands', colors: ['--orange', '--yellow'], focus: [500, 500], cover: 'all', wash: '--wash-cream' },
-    char: { pose: 'happy', at: [360, 140], scale: 0.46, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 420, text: '彩纸把噜啵卷起来，<br>送到天上啦！' },
-      sound: { text: '啊呜——', at: [540, 78], size: 16, rotate: 5 },
-    },
-    /* 「送到天上啦」这句话的兑现就在这一页，不另起一页：
-       点它，它横着飞过天空（呼——）。
-       以前这一页没有热区，噜啵只是"在那儿"；
-       飞行是全书唯一的"它自己在动"，没有这一下，前面那句就是空话。 */
-    hotspot: { action: 'fly', target: 'char', at: [419, 213], size: 343, label: '看它飞过去' },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p22",
+      "template": "t-dialog",
+      "reading": "observe",
+      "aria": "一片彩纸贴上它的脑门。指指那片彩纸。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 5.5,
+          "width": 743.9,
+          "text": "一片彩纸贴上它的脑门。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "指指那片彩纸。",
+          "print": "指指那片彩纸。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "cross-eyed",
+        "at": [
+          100,
+          225
+        ],
+        "scale": 0.7,
+        "spiral": true,
+        "wear": "paper"
+      },
+      "props": [
+        {
+          "id": "K1-0",
+          "kind": "paper-red",
+          "at": [
+            30,
+            280
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-1",
+          "kind": "paper-blue",
+          "at": [
+            230,
+            260
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-2",
+          "kind": "paper-yellow",
+          "at": [
+            400,
+            250
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-3",
+          "kind": "paper-red",
+          "at": [
+            850,
+            260
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-4",
+          "kind": "paper-blue",
+          "at": [
+            870,
+            350
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-5",
+          "kind": "paper-yellow",
+          "at": [
+            30,
+            620
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-6",
+          "kind": "paper-red",
+          "at": [
+            860,
+            680
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-7",
+          "kind": "paper-blue",
+          "at": [
+            850,
+            500
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-8",
+          "kind": "paper-yellow",
+          "at": [
+            30,
+            480
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          58.71,
+          196.31
+        ],
+        "scale": 0.79
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p23",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "彩纸一卷，带着它飞过去！",
+      "text": {
+        "narration": {
+          "at": [
+            224.48000000000002,
+            150
+          ],
+          "size": 4.7,
+          "width": 695.52,
+          "text": "彩纸一卷，带着它飞过去！",
+          "align": "right"
+        }
+      },
+      "responseTo": "p22",
+      "char": {
+        "pose": "flying",
+        "at": [
+          100,
+          -10
+        ],
+        "scale": 0.82,
+        "spiral": true,
+        "wear": "paper"
+      },
+      "props": [
+        {
+          "id": "K1-0",
+          "kind": "paper-red",
+          "at": [
+            30,
+            280
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-1",
+          "kind": "paper-blue",
+          "at": [
+            230,
+            260
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-2",
+          "kind": "paper-yellow",
+          "at": [
+            400,
+            250
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-3",
+          "kind": "paper-red",
+          "at": [
+            850,
+            260
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-4",
+          "kind": "paper-blue",
+          "at": [
+            870,
+            350
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-5",
+          "kind": "paper-yellow",
+          "at": [
+            30,
+            620
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-6",
+          "kind": "paper-red",
+          "at": [
+            860,
+            680
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-7",
+          "kind": "paper-blue",
+          "at": [
+            850,
+            500
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-8",
+          "kind": "paper-yellow",
+          "at": [
+            30,
+            480
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          58.71,
+          196.31
+        ],
+        "scale": 0.79
+      }
+    }
+  ]
+};

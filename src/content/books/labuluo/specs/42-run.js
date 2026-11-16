@@ -1,28 +1,174 @@
-/* S20 它跳起来了！ */
-export default [
-  {
-    id: 'p42',
-    template: 't-burst',
-    sound: 'giggle',
-    aria: '它跳起来了！一下，又一下！',
-    bg: { kind: 'rays', colors: ['--orange', '--yellow-deep'], gap: '--orange', focus: [1000, 540], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'cheer', at: [300, 330], scale: 0.66, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它跳起来了！<br>一下，又一下！' },
-      sound: { at: [520, 76], size: 18, rotate: 3, text: '跳！' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-yellow"
   },
-  {
-    id: 'p43',
-    template: 't-burst',
-    sound: 'giggle',
-    aria: '它的颜色回来了！',
-    bg: { kind: 'rays', colors: ['--orange', '--yellow-deep'], gap: '--orange', focus: [0, 540], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'cheer', at: [300, 330], scale: 0.66, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它的颜色<br>一点一点回来了！' },
-      sound: { at: [520, 76], size: 16, rotate: -3, text: '回来啦！' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '它好了！' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p42",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "毯子落在身后，它弯弯小脚。\n轻轻跳一下。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "毯子落在身后，它弯弯小脚。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            865
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "轻轻跳一下。",
+          "print": "轻轻跳一下。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "poised",
+        "at": [
+          370,
+          260
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-paper"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            210,
+            605
+          ],
+          "scale": 0.39,
+          "layer": "behind"
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple-bitten",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple"
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          25.38,
+          -260.48
+        ],
+        "scale": 1.1
+      }
+    },
+    {
+      "id": "p43",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它跟着跳了一下，稳稳落地。",
+      "text": {
+        "narration": {
+          "at": [
+            169.01999999999998,
+            735
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "它跟着跳了一下，稳稳落地。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p42",
+      "char": {
+        "pose": "yield",
+        "at": [
+          350,
+          260
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-paper"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            210,
+            605
+          ],
+          "scale": 0.39,
+          "layer": "behind"
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple-bitten",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple"
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          25.38,
+          -260.48
+        ],
+        "scale": 1.1
+      }
+    }
+  ]
+};

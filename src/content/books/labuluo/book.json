@@ -1,4 +1,9 @@
 {
   "title": "噜啵生病啦！",
-  "subtitle": "一个要你照顾的小怪物"
+  "subtitle": "一个要你照顾的小怪物",
+  "adultTip": "这一册孩子是照顾人的那个。念到「苦」那页可以问一句「苦不苦？」；药只能大人拿。",
+  "production": {
+    "script": "2026-11-15-script-r7-labuluo.md",
+    "freeze": "R7-2026-11-15"
+  }
 }

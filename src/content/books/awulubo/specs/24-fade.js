@@ -1,28 +1,217 @@
-/* S9 玩累了：颜色要回家了 */
-export default [
-  {
-    id: 'p24',
-    sound: 'sigh',
-    template: 't-dialog',
-    aria: '玩累了……唉——颜色要回家了。',
-    bg: { kind: 'rays-tight', colors: ['--yellow'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'tired', state: 'state-pale', at: [320, 330], scale: 0.6, spiral: true },
-    text: {
-      narration: { text: '玩累了……颜色要回家了。', at: [60, 70], size: 3.4, width: 460 },
-      /* 这一页是全书最安静的一页：一声叹气就够了 */
-      sound: { text: '唉——', at: [560, 70], size: 14, rotate: -2 },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-cream"
   },
-  {
-    id: 'p25',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '明天，再变新的颜色。呼噜……',
-    bg: { kind: 'rays-tight', colors: ['--pink', '--pink-deep'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'asleep', state: 'state-pale', at: [320, 340], scale: 0.58, spiral: true },
-    text: {
-      narration: { text: '明天，再变新的颜色。', at: [60, 70], size: 3.4, width: 460 },
-      sound: { text: '呼噜……', at: [540, 70], size: 14, rotate: 3 },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p24",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "它落地一弹，颜色慢慢淡了。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "它落地一弹，颜色慢慢淡了。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "squash",
+        "at": [
+          120,
+          250
+        ],
+        "scale": 0.66,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "K1-0",
+          "kind": "paper-red",
+          "at": [
+            30,
+            280
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-1",
+          "kind": "paper-blue",
+          "at": [
+            230,
+            260
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-2",
+          "kind": "paper-yellow",
+          "at": [
+            400,
+            250
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-3",
+          "kind": "paper-red",
+          "at": [
+            850,
+            260
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-4",
+          "kind": "paper-blue",
+          "at": [
+            870,
+            350
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-5",
+          "kind": "paper-yellow",
+          "at": [
+            30,
+            620
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-6",
+          "kind": "paper-red",
+          "at": [
+            860,
+            680
+          ],
+          "scale": 0.08,
+          "rotate": -14
+        },
+        {
+          "id": "K1-7",
+          "kind": "paper-blue",
+          "at": [
+            850,
+            500
+          ],
+          "scale": 0.08,
+          "rotate": 0
+        },
+        {
+          "id": "K1-8",
+          "kind": "paper-yellow",
+          "at": [
+            30,
+            480
+          ],
+          "scale": 0.08,
+          "rotate": 14
+        },
+        {
+          "id": "K1-tag",
+          "kind": "paper-red",
+          "at": [
+            480,
+            410
+          ],
+          "scale": 0.065,
+          "rotate": 25
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          135.27,
+          -62.37
+        ],
+        "scale": 0.88
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p25",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "彩纸落下。明天，还想和你玩。",
+      "text": {
+        "narration": {
+          "at": [
+            412.1,
+            735
+          ],
+          "size": 4.5,
+          "width": 507.9,
+          "text": "彩纸落下。<br>明天，还想和你玩。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p24",
+      "char": {
+        "pose": "ready",
+        "at": [
+          240,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "K1-tag",
+          "kind": "paper-red",
+          "at": [
+            170,
+            755
+          ],
+          "scale": 0.065
+        },
+        {
+          "id": "K1-1",
+          "kind": "paper-blue",
+          "at": [
+            600,
+            765
+          ],
+          "scale": 0.07
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          135.27,
+          -62.37
+        ],
+        "scale": 0.88
+      }
+    }
+  ]
+};

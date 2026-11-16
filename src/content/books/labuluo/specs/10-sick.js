@@ -1,29 +1,143 @@
-/* S4 「你生病了。」/ 要怎么办 */
-export default [
-  {
-    id: 'p10',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '「你生病了。」',
-    bg: { kind: 'rays-tight', colors: ['--blue'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-blue' },
-    char: { pose: 'tired', state: 'state-pale', at: [300, 320], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '「你生病了。」' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '生病要怎么办？' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-blue"
   },
-  {
-    id: 'p11',
-    template: 't-dialog',
-    sound: 'sigh',
-    aria: '生病了要怎么办？让我想想……',
-    bg: { kind: 'rays-tight', colors: ['--blue'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-blue' },
-    char: { pose: 'tired', state: 'state-pale', at: [300, 330], scale: 0.58, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '生病了要怎么办？<br>让我想想……' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '唔……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '我知道了！' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p10",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "你生病啦？",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 9,
+          "width": 561,
+          "text": "你生病啦？",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sick-raised",
+        "at": [
+          210,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            220,
+            510
+          ],
+          "scale": 0.58,
+          "layer": "behind"
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -54.79,
+          -438.79
+        ],
+        "scale": 1.3
+      }
+    },
+    {
+      "id": "p11",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它抬抬头，又软软地趴下。",
+      "text": {
+        "narration": {
+          "at": [
+            224.48000000000002,
+            735
+          ],
+          "size": 4.7,
+          "width": 695.52,
+          "text": "它抬抬头，又软软地趴下。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p10",
+      "char": {
+        "pose": "prone",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            220,
+            510
+          ],
+          "scale": 0.58,
+          "layer": "behind"
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -54.79,
+          -438.79
+        ],
+        "scale": 1.3
+      }
+    }
+  ]
+};

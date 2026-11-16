@@ -1,28 +1,178 @@
-/* S25 孩子也困了 */
-export default [
-  {
-    id: 'p54',
-    template: 't-night',
-    sound: 'sigh',
-    aria: '你也困了。',
-    bg: { kind: 'stars', focus: [500, 500], cover: 'all', wash: '--night' },
-    char: { pose: 'asleep', state: 'state-pale', at: [200, 460], scale: 0.56, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 400, color: '--paper', text: '你也困了。' },
-      sound: { at: [300, 100], size: 14, rotate: 2, color: '--paper', text: '唔……' },
-      prompt: { at: [60, 870], size: 4, width: 380, color: '--paper', text: '躺在它旁边。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--night"
   },
-  {
-    id: 'p55',
-    template: 't-night',
-    noSound: true,
-    aria: '你躺在它旁边，睡着了。',
-    bg: { kind: 'stars', focus: [500, 300], cover: 'all', wash: '--night-deep' },
-    char: { pose: 'asleep', state: 'state-pale', at: [240, 470], scale: 0.56, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, color: '--paper', text: '你躺在它旁边，<br>睡着了。' },
-      prompt: { at: [60, 870], size: 4, width: 380, color: '--paper', text: '一起睡。' },
-    },
+  "scene": {
+    "kind": "room",
+    "light": "night"
   },
-];
+  "pages": [
+    {
+      "id": "p54",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "这次，你先打哈欠。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            200
+          ],
+          "size": 4.3,
+          "width": 486.66,
+          "text": "这次，你先打哈欠。",
+          "color": "--paper",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sick-curled",
+        "at": [
+          230,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": false,
+        "state": "state-paper"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup",
+          "style": "opacity:.6"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple-bitten",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple",
+          "style": "opacity:.6"
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          117.24,
+          71.1
+        ],
+        "scale": 0.85
+      }
+    },
+    {
+      "id": "p55",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它挪近，用小脚推来毯角。",
+      "text": {
+        "narration": {
+          "at": [
+            281.12,
+            200
+          ],
+          "size": 4.3,
+          "width": 638.88,
+          "text": "它挪近，用小脚推来毯角。",
+          "color": "--paper",
+          "align": "right"
+        }
+      },
+      "responseTo": "p54",
+      "char": {
+        "pose": "push-corner",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": false,
+        "state": "state-paper"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup",
+          "style": "opacity:.6"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap-shared",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple-bitten",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple",
+          "style": "opacity:.6"
+        },
+        {
+          "id": "foot-corner",
+          "kind": "foot-pushing",
+          "at": [
+            245,
+            780
+          ],
+          "scale": 0.6,
+          "rotate": 170
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          117.24,
+          71.1
+        ],
+        "scale": 0.85
+      }
+    }
+  ]
+};

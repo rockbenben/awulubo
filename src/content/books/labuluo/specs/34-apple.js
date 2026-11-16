@@ -1,31 +1,185 @@
-/* S16 拿来一个苹果 */
-export default [
-  {
-    id: 'p34',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '拿一个苹果来。让它闻闻。',
-    bg: { kind: 'rays-tight', colors: ['--pink'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'asleep', state: 'state-pale', at: [280, 340], scale: 0.58, spiral: true },
-    props: [{ kind: 'apple', at: [660, 420], scale: 0.3, rotate: -10, class: 'prop-apple' }],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '拿一个苹果来。<br>让它闻闻。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '唔……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '放在它嘴边。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-yellow"
   },
-  {
-    id: 'p35',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '苹果放在它嘴边。它还没醒。',
-    bg: { kind: 'rays-tight', colors: ['--pink'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'asleep', state: 'state-pale', at: [280, 350], scale: 0.58, spiral: true },
-    props: [{ kind: 'apple', at: [660, 430], scale: 0.3, rotate: -10, class: 'prop-apple' }],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '苹果放在它嘴边。<br>它还没醒。' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '呼噜……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '再等等。' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p34",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "observe",
+      "aria": "你把苹果放在旁边。\n指指苹果。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 5.5,
+          "width": 614.1,
+          "text": "你把苹果放在旁边。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "指指苹果。",
+          "print": "指指苹果。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "tired",
+        "at": [
+          210,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-drape",
+          "at": [
+            255,
+            435
+          ],
+          "scale": 0.62,
+          "layer": "behind"
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple"
+        }
+      ],
+      "hotspot": {
+        "targetId": "apple-A",
+        "action": "find",
+        "target": "apple",
+        "at": [
+          170,
+          600
+        ],
+        "size": 250,
+        "label": "指指苹果"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -99.5,
+          -250.26
+        ],
+        "scale": 1.25
+      }
+    },
+    {
+      "id": "p35",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它的嘴巴动动，身子挪近一点。",
+      "text": {
+        "narration": {
+          "at": [
+            435.7,
+            95
+          ],
+          "size": 5.5,
+          "width": 484.3,
+          "text": "它的嘴巴动动，<br>身子挪近一点。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p34",
+      "char": {
+        "pose": "sick-raised",
+        "at": [
+          275,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-drape",
+          "at": [
+            255,
+            435
+          ],
+          "scale": 0.62,
+          "layer": "behind"
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple",
+          "at": [
+            170,
+            600
+          ],
+          "scale": 0.2,
+          "class": "prop-apple"
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -99.5,
+          -250.26
+        ],
+        "scale": 1.25
+      }
+    }
+  ]
+};

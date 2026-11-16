@@ -1,39 +1,193 @@
-/* S18 跺脚：一起跺脚
-   —— 亲子动作页之三，也是最响的一个：
-      跺下去整页都跟着颤一下——纸上的抖动是屏幕给不了的。 */
-export default [
-  {
-    id: 'p52',
-    template: 't-dialog',
-    aria: '我们一起跺脚！咚！点它，一起跺。',
-    /* 放射线从右下角冲上来：震动从脚下起 */
-    bg: { kind: 'rays-corner', colors: ['--orange', '--yellow-deep'], focus: [500, 900], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'cheer', at: [360, 300], scale: 0.56, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 360, text: '我们一起跺脚！' },
-      sound: { text: '咚！', at: [560, 76], size: 20, rotate: -4 },
-      prompt: { at: [60, 870], size: 4, width: 380, text: '点它，一起跺。' },
-    },
-    hotspot: { action: 'stomp', target: 'char', at: [434, 392], size: 411, label: '和它一起跺脚' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-cream"
   },
-  {
-    id: 'p53',
-    template: 't-burst',
-    sound: 'giggle',
-    aria: '大家都跳起来啦！耶！',
-    bg: { kind: 'confetti', focus: [500, 500], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'happy', at: [470, 290], scale: 0.6, spiral: true },
-    /* 被跺得跳起来的东西：书里那三样。
-       泡泡原来放在 [760,760]，正好黏在角色的脚上，像它抱着一个泡泡——
-       彩纸底子本来就够热闹了，泡泡撤掉。 */
-    props: [
-      { kind: 'apple', at: [150, 300], scale: 0.2, rotate: -16 },
-      { kind: 'fish', at: [250, 700], scale: 0.2, rotate: 14 },
-      { kind: 'star', at: [850, 210], scale: 0.18, rotate: 12 },
-    ],
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 400, text: '大家都跳起来啦！' },
-      sound: { text: '耶！', at: [560, 76], size: 20, rotate: 5 },
-    },
+  "scene": {
+    "kind": "grass",
+    "occlude": false,
+    "grassScale": 2
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p52",
+      "template": "t-dialog",
+      "reading": "simulate",
+      "aria": "最后一片彩纸落在脚边。轻轻跺一下脚。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 5.5,
+          "width": 743.9,
+          "text": "最后一片彩纸落在脚边。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            865
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "轻轻跺一下脚。",
+          "print": "轻轻跺一下脚。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "poised",
+        "at": [
+          130,
+          255
+        ],
+        "scale": 0.65,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "apple-F",
+          "kind": "apple",
+          "at": [
+            10,
+            710
+          ],
+          "scale": 0.075
+        },
+        {
+          "id": "apple-G",
+          "kind": "apple",
+          "at": [
+            90,
+            710
+          ],
+          "scale": 0.075
+        },
+        {
+          "id": "apple-H",
+          "kind": "apple",
+          "at": [
+            170,
+            710
+          ],
+          "scale": 0.075
+        },
+        {
+          "id": "K2-red",
+          "kind": "paper-red",
+          "at": [
+            380,
+            760
+          ],
+          "scale": 0.09
+        },
+        {
+          "id": "K2-blue",
+          "kind": "paper-blue",
+          "at": [
+            600,
+            770
+          ],
+          "scale": 0.1
+        },
+        {
+          "id": "K2-yellow",
+          "kind": "paper-yellow",
+          "at": [
+            760,
+            755
+          ],
+          "scale": 0.1
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          81.95,
+          -239.64
+        ],
+        "scale": 1.05
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p53",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "咚。它跟着跺一下，停住了。",
+      "text": {
+        "narration": {
+          "at": [
+            169.01999999999998,
+            735
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "咚。它跟着跺一下，停住了。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p52",
+      "char": {
+        "pose": "beaming-lean",
+        "at": [
+          240,
+          285
+        ],
+        "scale": 0.6,
+        "spiral": true
+      },
+      "props": [
+        {
+          "id": "K2-red",
+          "kind": "paper-red",
+          "at": [
+            380,
+            760
+          ],
+          "scale": 0.09
+        },
+        {
+          "id": "K2-blue",
+          "kind": "paper-blue",
+          "at": [
+            600,
+            770
+          ],
+          "scale": 0.1
+        },
+        {
+          "id": "K2-yellow",
+          "kind": "paper-yellow",
+          "at": [
+            760,
+            755
+          ],
+          "scale": 0.1
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          81.95,
+          -239.64
+        ],
+        "scale": 1.05
+      }
+    }
+  ]
+};

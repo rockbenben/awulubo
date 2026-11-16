@@ -1,29 +1,162 @@
-/* S15 「你饿了吗？」 */
-export default [
-  {
-    id: 'p32',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '「你饿了吗？」',
-    bg: { kind: 'rays-tight', colors: ['--pink'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'sleepy', state: 'state-pale', at: [290, 340], scale: 0.58, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '「你饿了吗？」' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '它没反应。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-yellow"
   },
-  {
-    id: 'p33',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '它没反应。再等等。',
-    bg: { kind: 'rays-tight', colors: ['--pink'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'asleep', state: 'state-pale', at: [300, 350], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它没反应。<br>再等等。' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '呼噜……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '它饿了会说的。' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p32",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "毯边搭在头顶，它还眯着眼。\n叫一声噜啵。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "毯边搭在头顶，它还眯着眼。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "叫一声噜啵。",
+          "print": "叫一声噜啵。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "tired",
+        "at": [
+          210,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-hood",
+          "at": [
+            275,
+            340
+          ],
+          "scale": 0.58
+        }
+      ],
+      "hotspot": {
+        "targetId": "character",
+        "action": "poke",
+        "at": [
+          326.17,
+          425.81
+        ],
+        "size": 405.93,
+        "label": "叫一声噜啵"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -88.74,
+          -141.49
+        ],
+        "scale": 1.15
+      }
+    },
+    {
+      "id": "p33",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它眨眨眼，又眯起来。",
+      "text": {
+        "narration": {
+          "at": [
+            241,
+            150
+          ],
+          "size": 5.5,
+          "width": 679,
+          "text": "它眨眨眼，又眯起来。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p32",
+      "char": {
+        "pose": "sick-curled",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-hood",
+          "at": [
+            270,
+            465
+          ],
+          "scale": 0.62
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -88.74,
+          -141.49
+        ],
+        "scale": 1.15
+      }
+    }
+  ]
+};

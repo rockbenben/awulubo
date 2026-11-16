@@ -1,28 +1,152 @@
-/* S9 药太苦——它的脸皱成一团 */
-export default [
-  {
-    id: 'p20',
-    template: 't-dialog',
-    sound: 'slurp',
-    aria: '它把药吃了！',
-    bg: { kind: 'rays-tight', colors: ['--yellow'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-yellow' },
-    char: { pose: 'ouch', state: 'state-pale', at: [290, 340], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它把药吃了！' },
-      sound: { at: [520, 76], size: 16, rotate: 3, text: '咕噜。' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '怎么这张脸？' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-blue"
   },
-  {
-    id: 'p21',
-    template: 't-burst',
-    sound: 'poof',
-    aria: '苦！它的脸皱成一团。',
-    bg: { kind: 'rays', colors: ['--red', '--pink-deep'], gap: '--red', focus: [500, 540], cover: 'all', wash: '--wash-red' },
-    char: { pose: 'ouch', state: 'state-pale', at: [300, 330], scale: 0.66, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '苦！<br>它的脸皱成一团。' },
-      sound: { at: [520, 76], size: 16, rotate: -3, text: '苦——！' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p20",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "大人拿来药，噜啵吃了一口。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "大人拿来药，噜啵吃了一口。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "willing",
+        "at": [
+          80,
+          290
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-fold",
+          "at": [
+            275,
+            550
+          ],
+          "scale": 0.58
+        },
+        {
+          "id": "medicine-adult",
+          "kind": "medicine-adult",
+          "at": [
+            322,
+            452
+          ],
+          "scale": 0.8
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -91.97,
+          -215.87
+        ],
+        "scale": 1.18
+      }
+    },
+    {
+      "id": "p21",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "苦！嘴皱扁了，红色一下铺开！",
+      "text": {
+        "narration": {
+          "at": [
+            435.7,
+            95
+          ],
+          "size": 5.5,
+          "width": 484.3,
+          "text": "苦！嘴皱扁了，<br>红色一下铺开！",
+          "align": "right"
+        }
+      },
+      "responseTo": "p20",
+      "char": {
+        "pose": "bitter-curled",
+        "at": [
+          275,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "bg": {
+        "wash": "--wash-red",
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "turn": "红色一下铺开",
+      "framing": {
+        "at": [
+          -91.97,
+          -215.87
+        ],
+        "scale": 1.18
+      }
+    }
+  ]
+};

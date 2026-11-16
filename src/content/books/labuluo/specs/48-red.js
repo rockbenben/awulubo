@@ -1,31 +1,102 @@
-/* S22 它变红了——它好了！ */
-export default [
-  {
-    id: 'p48',
-    template: 't-color',
-    sound: 'chirp',
-    aria: '它变红了——它好了！',
-    bg: { kind: 'rays', colors: ['--red-deep', '--red'], gap: '--red', focus: [500, 680], cover: 'all', wash: '--red' },
-    props: [{ kind: 'blob', at: [2.5, -138.5], scale: 0.5 }],
-    char: { pose: 'happy', state: 'on-color state-red', at: [120, 300], scale: 0.74, spiral: true },
-    text: {
-      narration: { at: [90, 75], size: 3.4, width: 360, text: '它变红了——<br>它好了！' },
-      sound: { at: [490, 70], size: 16, rotate: 3, color: '--paper', text: '啊呜！' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-cream"
   },
-  {
-    id: 'p49',
-    template: 't-dialog',
-    sound: 'giggle',
-    aria: '「你瞧我！」',
-    /* 这一跨两页都是红的，但底色不能都铺满红：p49 的放射线之间留纸白，
-       「你瞧我！」才压得住（黑字压在满版红上只有 4.3:1）。 */
-    bg: { kind: 'rays-tight', colors: ['--red'], gap: '--paper', focus: [500, 620], cover: 'all', wash: '--wash-red' },
-    char: { pose: 'proud', state: 'on-color state-red', at: [290, 340], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '「你瞧我！」' },
-      sound: { at: [520, 76], size: 16, rotate: -3, text: '嘿嘿！' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '你好了真好。' },
-    },
+  "scene": {
+    "kind": "grass",
+    "occlude": false
   },
-];
+  "pages": [
+    {
+      "id": "p48",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它挺起圆肚子，回头看你。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 4.7,
+          "width": 695.52,
+          "text": "它挺起圆肚子，回头看你。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "belly-offer",
+        "at": [
+          370,
+          260
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-paper"
+      },
+      "props": [],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -237.87,
+          -277.44
+        ],
+        "scale": 1.19
+      }
+    },
+    {
+      "id": "p49",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "这回，是它等着你。",
+      "text": {
+        "narration": {
+          "at": [
+            305.9,
+            735
+          ],
+          "size": 5.5,
+          "width": 614.1,
+          "text": "这回，是它等着你。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p48",
+      "char": {
+        "pose": "beaming-lean",
+        "at": [
+          350,
+          260
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-paper"
+      },
+      "props": [],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -237.87,
+          -277.44
+        ],
+        "scale": 1.19
+      }
+    }
+  ]
+};

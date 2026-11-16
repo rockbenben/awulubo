@@ -1,106 +1,281 @@
-/* 版权 / 给大人的话 / 再读一次 / 后环衬 / 封底 —— 第二册
-   （版权页原在 p04，挪到这里：中文书的版权页本来就在书末，
-   放在正文前面会让正文从奇数页起，骑马钉的每一跨都被拆成两半） */
-export default [
-  {
-    id: 'p60',
-    template: 't-plain',
-    screen: false,
-    noSound: true,
-    aria: '版权页与编者说：记录这本书的来历、字体授权，以及怎么和孩子一起读。',
-    props: [{ kind: 'spiral', at: [430, 640], scale: 0.14 }],
-    text: {
-      narration: { at: [140, 120], size: 3.4, width: 600, text: '《噜啵生病啦！》' },
-      adult: {
-        at: [140, 240],
-        size: 2.2,
-        width: 720,
-        text: [
-          '一个要你照顾的小怪物',
-          '文字与插画：＿＿＿＿＿＿＿',
-          '出版：＿＿＿＿＿＿＿　初版：＿＿＿＿年＿＿月',
-          '版本 1.0。未经许可不得转载。',
-          '字体：站酷快乐体 · 霞鹜文楷（SIL OFL 1.1），可商用、可嵌入出版物。',
-          '',
-          '编者说：',
-          '这一册和前一册反着来：前一册是孩子喂它，这一册是孩子照顾它。',
-          '所以这一册里没有一样是它自己要的——它要的只是有人陪着。',
-          '另有一本可以点、可以听的屏幕版，手机或平板上打开就能读。',
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "pages": [
+    {
+      "id": "p60",
+      "template": "t-plain",
+      "screen": false,
+      "noSound": true,
+      "aria": "《噜啵生病啦！》\n一个要你照顾的小怪物\n文字与插画：rockbenben\n出版：＿＿＿＿＿＿＿　初版：＿＿＿＿年＿＿月\n作品内容：CC BY-NC-ND 4.0，非商业分享请署名。\n字体：站酷快乐体 · 霞鹜文楷（SIL OFL 1.1），可商用、可嵌入出版物。\n\n编者说：从发现难受到照顾、等待，最后被恢复的伙伴等候。读到犹豫的地方，可以停一停，听孩子怎么说。",
+      "props": [
+        {
+          "id": "spiral-1",
+          "kind": "spiral",
+          "at": [
+            430,
+            640
+          ],
+          "scale": 0.14
+        }
+      ],
+      "text": {
+        "narration": {
+          "at": [
+            140,
+            120
+          ],
+          "size": 3.4,
+          "width": 600,
+          "text": "《噜啵生病啦！》"
+        },
+        "adult": {
+          "at": [
+            140,
+            240
+          ],
+          "size": 2.2,
+          "width": 720,
+          "text": [
+            "一个要你照顾的小怪物",
+            "文字与插画：rockbenben",
+            "出版：＿＿＿＿＿＿＿　初版：＿＿＿＿年＿＿月",
+            "作品内容：CC BY-NC-ND 4.0，非商业分享请署名。",
+            "字体：站酷快乐体 · 霞鹜文楷（SIL OFL 1.1），可商用、可嵌入出版物。",
+            "",
+            "编者说：从发现难受到照顾、等待，最后被恢复的伙伴等候。读到犹豫的地方，可以停一停，听孩子怎么说。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "p61",
+      "template": "t-plain",
+      "screen": false,
+      "noSound": true,
+      "aria": "怎么读这本册子\n旁白慢慢念，拟声让孩子接着说。指认、拍手、呼气都可以在共读时一起做，不要求每页都做动作。孩子没有回应时，可以等一等，也可以翻过去。\n虚构角色的颜色、动作变化不等同于现实疾病恢复规律；药物由成人负责，孩子共读时只作观察与模拟。\n这册可以特别停在：p22–p23 苦后安慰与 p28–p35 等待。让孩子说说看，不急着给答案。\n睡前最后几跨，声音逐渐放轻。孩子想停在某一页，就在那里停一会儿。",
+      "props": [
+        {
+          "id": "spiral-1",
+          "kind": "spiral",
+          "at": [
+            430,
+            130
+          ],
+          "scale": 0.14
+        }
+      ],
+      "text": {
+        "narration": {
+          "at": [
+            140,
+            120
+          ],
+          "size": 3.4,
+          "width": 600,
+          "text": "怎么读这本册子"
+        },
+        "adult": {
+          "at": [
+            140,
+            240
+          ],
+          "size": 2.2,
+          "width": 720,
+          "text": [
+            "旁白慢慢念，拟声让孩子接着说。指认、拍手、呼气都可以在共读时一起做，不要求每页都做动作。孩子没有回应时，可以等一等，也可以翻过去。",
+            "虚构角色的颜色、动作变化不等同于现实疾病恢复规律；药物由成人负责，孩子共读时只作观察与模拟。",
+            "这册可以特别停在：p22–p23 苦后安慰与 p28–p35 等待。让孩子说说看，不急着给答案。",
+            "睡前最后几跨，声音逐渐放轻。孩子想停在某一页，就在那里停一会儿。"
+          ]
+        }
+      }
+    },
+    {
+      "id": "p62",
+      "exit": "p04",
+      "template": "t-again",
+      "noSound": true,
+      "aria": "还想再读吗？\n点圆圈，再读一次。",
+      "bg": {
+        "kind": "rays-tight",
+        "colors": [
+          "--yellow-deep",
+          "--yellow"
         ],
-      },
-    },
-  },
-  {
-    id: 'p61',
-    template: 't-plain',
-    screen: false,
-    noSound: true,
-    aria: '给大人的话：怎么读这本册子。念旁白让孩子跟拟声词，点错了再来一次，跳页倒着翻都没关系。',
-    props: [{ kind: 'spiral', at: [430, 130], scale: 0.14 }],
-    text: {
-      narration: { at: [140, 120], size: 3.4, width: 600, text: '怎么读这本册子' },
-      adult: {
-        at: [140, 240],
-        size: 2.2,
-        width: 720,
-        text: [
-          '· 旁白念给孩子听，拟声词让孩子跟着说。',
-          '· 这一册里孩子是照顾人的那个：摸摸它、盖毯子、喂水喂药。',
-          '  念到「苦」那一页，可以问一句「苦不苦？」——孩子会答。',
-          '· 每页只有一件事：念完，等孩子点。',
-          '· 点错了别说「不对」，再来一次就好。',
-          '· 咕噜——咕噜——，可以一起念。',
-          '· 孩子跳过哪页、倒着翻，都没关系。',
-          '· 这一册可以读完接第一册：它好了，该喂它了。',
-          '· 纸书版没有声音；屏幕版可以点、可以听。',
+        "gap": "--paper",
+        "focus": [
+          500,
+          700
         ],
+        "cover": "all",
+        "wash": "--yellow"
       },
+      "props": [
+        {
+          "id": "arrow-1",
+          "kind": "arrow",
+          "at": [
+            120,
+            420
+          ],
+          "scale": 0.72,
+          "class": "prop-arrow"
+        }
+      ],
+      "char": {
+        "pose": "happy",
+        "at": [
+          540,
+          450
+        ],
+        "scale": 0.52,
+        "spiral": true
+      },
+      "text": {
+        "narration": {
+          "at": [
+            60,
+            70
+          ],
+          "size": 3.4,
+          "width": 300,
+          "text": "还想再读吗？"
+        },
+        "prompt": {
+          "at": [
+            60,
+            870
+          ],
+          "size": 4,
+          "width": 400,
+          "text": "点圆圈，再读一次。",
+          "print": "翻回封面吧。"
+        }
+      },
+      "trap": true,
+      "hotspot": {
+        "targetId": "arrow-1",
+        "action": "again",
+        "target": "arrow",
+        "at": [
+          184,
+          190
+        ],
+        "size": 508,
+        "label": "点圆圈，再读一次"
+      }
     },
-  },
-  {
-    id: 'p62',
-    template: 't-again',
-    sound: 'chirp',
-    aria: '读完啦？再读一次。点圆圈，转回去。',
-    bg: { kind: 'rays-tight', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [500, 700], cover: 'all', wash: '--yellow' },
-    props: [{ kind: 'arrow', at: [120, 420], scale: 0.72, class: 'prop-arrow' }],
-    char: { pose: 'happy', at: [540, 450], scale: 0.52, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 300, text: '读完啦？' },
-      sound: { at: [360, 70], size: 14, rotate: -2, text: '再读一次' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '点圆圈，转回去。', print: '翻回第一页吧。' },
+    {
+      "id": "p63",
+      "template": "t-endpaper",
+      "screen": false,
+      "noSound": true,
+      "aria": "后环衬：同毯、杯子与缺口苹果。",
+      "props": [
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            280,
+            300
+          ],
+          "scale": 0.24,
+          "rotate": -4
+        },
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            700,
+            180
+          ],
+          "scale": 0.18,
+          "rotate": 10
+        },
+        {
+          "id": "apple-A",
+          "kind": "apple-bitten",
+          "at": [
+            620,
+            700
+          ],
+          "scale": 0.16,
+          "rotate": 14
+        }
+      ]
     },
-    trap: true,
-    hotspot: { action: 'again', target: 'arrow', at: [184, 190], size: 508, label: '点圆圈，再读一次' },
-  },
-  {
-    id: 'p63',
-    template: 't-endpaper',
-    screen: false,
-    noSound: true,
-    aria: '后环衬：毯子、杯子、药丸、苹果散落在纸上。',
-    props: [
-      { kind: 'blanket', at: [280, 300], scale: 0.24, rotate: -4 },
-      { kind: 'cup', at: [700, 180], scale: 0.18, rotate: 10 },
-      { kind: 'pill', at: [120, 620], scale: 0.2, rotate: -12 },
-      { kind: 'apple', at: [620, 700], scale: 0.16, rotate: 14 },
-      { kind: 'star', at: [860, 460], scale: 0.13, rotate: -18 },
-    ],
-  },
-  {
-    id: 'p64',
-    template: 't-color',
-    screen: false,
-    sound: 'chirp',
-    aria: '《噜啵生病啦！》一个要你照顾的小怪物。',
-    bg: { kind: 'rays', colors: ['--deep-blue', '--blue'], gap: '--blue', focus: [500, 680], cover: 'all', wash: '--blue' },
-    props: [{ kind: 'blob', at: [240, -132], scale: 0.5 }],
-    char: { pose: 'happy', state: 'on-color state-blue', at: [260, 420], scale: 0.58, spiral: true },
-    text: {
-      narration: { at: [60, 90], size: 3.4, align: 'center', width: 1000, text: '《噜啵生病啦！》' },
-      /* 白字压在蓝底上只有 1.96:1——第一册的封底是红底，白字够；
-         蓝色太浅，这一句得用墨色。 */
-      sound: { at: [60, 205], size: 16, align: 'center', width: 1000, color: '--ink', text: '啊呜！' },
-    },
-  },
-];
+    {
+      "id": "p64",
+      "template": "t-color",
+      "screen": false,
+      "sound": "chirp",
+      "aria": "《噜啵生病啦！》一个要你照顾的小怪物。",
+      "bg": {
+        "kind": "rays",
+        "colors": [
+          "--deep-blue",
+          "--blue"
+        ],
+        "gap": "--blue",
+        "focus": [
+          500,
+          680
+        ],
+        "cover": "all",
+        "wash": "--blue"
+      },
+      "props": [
+        {
+          "id": "blob-1",
+          "kind": "blob",
+          "at": [
+            240,
+            -132
+          ],
+          "scale": 0.5
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap-shared",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "char": {
+        "pose": "covered-rest",
+        "at": [
+          240,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": false
+      },
+      "text": {
+        "narration": {
+          "at": [
+            60,
+            90
+          ],
+          "size": 3.4,
+          "align": "center",
+          "width": 1000,
+          "text": "《噜啵生病啦！》"
+        },
+        "sound": {
+          "at": [
+            60,
+            205
+          ],
+          "size": 16,
+          "align": "center",
+          "width": 1000,
+          "color": "--ink",
+          "text": "啊呜！"
+        }
+      }
+    }
+  ]
+};

@@ -1,29 +1,155 @@
-/* S14 早上——它的颜色回来了一点点 */
-export default [
-  {
-    id: 'p30',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '早上。它的颜色回来了一点点。',
-    bg: { kind: 'rays-tight', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-cream' },
-    char: { pose: 'sleepy', state: 'state-pale', at: [290, 340], scale: 0.58, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '早上。<br>它的颜色回来了一点点。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '嗯……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '它还在睡。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "wash",
+    "wash": "--wash-yellow",
+    "colors": [
+      "--yellow"
+    ],
+    "gap": "--paper",
+    "cover": "all"
   },
-  {
-    id: 'p31',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '它还在睡。睡得比昨天香。',
-    bg: { kind: 'rays-tight', colors: ['--yellow-deep', '--yellow'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-cream' },
-    char: { pose: 'asleep', state: 'state-pale', at: [300, 350], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它还在睡。<br>睡得比昨天香。' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '呼噜……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '该叫醒它吗？' },
-    },
+  "scene": {
+    "kind": "window-nook"
   },
-];
+  "pages": [
+    {
+      "id": "p30",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "又一个早晨，窗边透进浅黄的光。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            735
+          ],
+          "size": 4.5,
+          "width": 507.9,
+          "text": "又一个早晨，<br>窗边透进浅黄的光。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sleep-curled",
+        "at": [
+          230,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          87.18,
+          -326.65
+        ],
+        "scale": 1.05
+      }
+    },
+    {
+      "id": "p31",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "它伸出一只脚，蹬开毯角。",
+      "text": {
+        "narration": {
+          "at": [
+            224.48000000000002,
+            735
+          ],
+          "size": 4.7,
+          "width": 695.52,
+          "text": "它伸出一只脚，蹬开毯角。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p30",
+      "char": {
+        "pose": "kick-corner",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap-open",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        },
+        {
+          "id": "foot-corner",
+          "kind": "foot-pushing",
+          "at": [
+            675,
+            730
+          ],
+          "scale": 0.65
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          87.18,
+          -326.65
+        ],
+        "scale": 1.05
+      }
+    }
+  ]
+};

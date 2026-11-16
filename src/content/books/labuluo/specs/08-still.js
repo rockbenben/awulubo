@@ -1,33 +1,169 @@
-/* S3 它趴着，一动不动 */
-export default [
-  {
-    id: 'p08',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '它趴着，一动不动。',
-    bg: { kind: 'rays-tight', colors: ['--purple'], gap: '--paper', focus: [1000, 630], cover: 'all', wash: '--wash-purple' },
-    /* 书脊边的放射线是深紫的，「呼……」压在笔触上只有 2.2:1——
-       垫一块手绘白底块（同 awulubo p12/p40 的手法） */
-    props: [{ kind: 'blob', at: [418, -214], scale: 0.7 }],
-    char: { pose: 'tired', state: 'state-pale', at: [280, 340], scale: 0.62, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它趴着，<br>一动不动。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '呼……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '摸一摸它。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "wash",
+    "wash": "--wash-blue",
+    "colors": [
+      "--wash-blue"
+    ],
+    "gap": "--paper",
+    "cover": "all"
   },
-  {
-    id: 'p09',
-    template: 't-dialog',
-    sound: 'sigh',
-    aria: '摸一摸它的肚子——好烫！',
-    bg: { kind: 'rays-tight', colors: ['--red', '--pink-deep'], gap: '--paper', focus: [0, 630], cover: 'all', wash: '--wash-red' },
-    char: { pose: 'ouch', state: 'state-pale', at: [280, 330], scale: 0.62, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '摸一摸它的肚子——<br>好烫！' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '嗯……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '它生病了。' },
-    },
-    hotspot: { action: 'belly', target: 'belly', at: [400, 500], size: 320, label: '摸一摸它的肚子' },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p08",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "它蜷着，肚子贴着地。\n轻轻摸一下。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 5.5,
+          "width": 679,
+          "text": "它蜷着，肚子贴着地。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "轻轻摸一下。",
+          "print": "轻轻摸一下。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sick-curled",
+        "at": [
+          230,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            220,
+            510
+          ],
+          "scale": 0.58,
+          "layer": "behind"
+        }
+      ],
+      "hotspot": {
+        "targetId": "character",
+        "action": "poke",
+        "at": [
+          328.77,
+          548.8
+        ],
+        "size": 403.14,
+        "label": "轻轻摸一下"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -110.26,
+          -367.73
+        ],
+        "scale": 1.35
+      }
+    },
+    {
+      "id": "p09",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "呀，肚子热热的。",
+      "text": {
+        "narration": {
+          "at": [
+            370.79999999999995,
+            150
+          ],
+          "size": 5.5,
+          "width": 549.2,
+          "text": "呀，肚子热热的。",
+          "align": "right"
+        }
+      },
+      "responseTo": "p08",
+      "char": {
+        "pose": "sick-curled",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket",
+          "at": [
+            220,
+            510
+          ],
+          "scale": 0.58,
+          "layer": "behind"
+        }
+      ],
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -110.26,
+          -367.73
+        ],
+        "scale": 1.35
+      }
+    }
+  ]
+};

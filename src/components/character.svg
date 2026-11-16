@@ -17,6 +17,7 @@
 
   <g id="ch-body">
     <use href="#ch-body-line" style="fill:var(--body)" />
+    <use href="#ch-belly-colors" />
   </g>
 
   <g id="ch-spiral">
@@ -31,28 +32,11 @@
           d="M 614 752 C 634 762, 650 782, 646 802 C 642 822, 616 828, 598 816 C 583 806, 572 786, 572 758 Z" />
   </g>
 
-  <!-- 手臂：噜啵原来只有脚。招手、拍手、举高高都要手，
-       没有手它就只是一张贴图，不是一个小怪物。
-       画法：先描一条粗墨线，再在同一条线上描一条身体色，
-       两层叠出"有轮廓的肢体"（跟脚一个画法，只是细一点）。
-       手臂要伸到**身体轮廓之外**才看得见——起点全在身体里的话，
-       露出来的只有一小截，看起来像两片耳朵。 -->
-  <g id="ch-arm-l-down">
-    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 250 470 C 196 498, 152 548, 136 606" />
-    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 250 470 C 196 498, 152 548, 136 606" />
-  </g>
-  <g id="ch-arm-r-down">
-    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 750 470 C 804 498, 848 548, 864 606" />
-    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 750 470 C 804 498, 848 548, 864 606" />
-  </g>
-  <g id="ch-arm-l-up">
-    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 262 404 C 210 374, 164 324, 138 264" />
-    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 262 404 C 210 374, 164 324, 138 264" />
-  </g>
-  <g id="ch-arm-r-up">
-    <path style="fill:none;stroke:var(--ink);stroke-width:50;stroke-linecap:round" d="M 738 404 C 790 374, 836 324, 862 264" />
-    <path style="fill:none;stroke:var(--body);stroke-width:26;stroke-linecap:round" d="M 738 404 C 790 374, 836 324, 862 264" />
-  </g>
+  <!-- 旧零件ID仅保留为空兼容占位；冻结R7角色只有圆身、双脚和五官。 -->
+  <g id="ch-arm-l-down"></g>
+  <g id="ch-arm-r-down"></g>
+  <g id="ch-arm-l-up"></g>
+  <g id="ch-arm-r-up"></g>
 
   <g id="ch-eyes-dots">
     <circle style="fill:var(--ink)" cx="412" cy="352" r="26" />
@@ -209,8 +193,8 @@
   <!-- idle：平常，闭着嘴 -->
   <g id="pose-idle">
         <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
 
     <use href="#ch-brows-neutral" />
@@ -222,8 +206,8 @@
   <!-- hungry：饿了，眉毛发愁，嘴微微张着 -->
   <g id="pose-hungry">
         <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
 
     <use href="#ch-brows-worried" />
@@ -235,8 +219,8 @@
   <!-- chomp：啊呜，大张嘴 -->
   <g id="pose-chomp">
         <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
 
     <use href="#ch-brows-excited" />
@@ -247,8 +231,8 @@
   <!-- happy：吃饱了，眯眼大笑 -->
   <g id="pose-happy">
         <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
 
     <use href="#ch-brows-excited" />
@@ -269,8 +253,8 @@
   <g id="pose-full">
     <use href="#ch-body" />
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-brows-worried" />
     <use href="#ch-eyes-dots" />
     <use href="#ch-cheeks" />
@@ -281,8 +265,8 @@
   <g id="pose-burp">
     <use href="#ch-body" />
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-happy" />
     <use href="#ch-mouth-open" />
@@ -291,8 +275,8 @@
   <!-- asleep：睡着了 -->
   <g id="pose-asleep">
     <use href="#ch-body" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-brows-neutral" />
     <use href="#ch-eyes-happy" />
     <use href="#ch-mouth-smile" />
@@ -303,8 +287,8 @@
     <use href="#ch-body-rainbow" />
     <use href="#ch-body-line" style="fill:none" />
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-dots" />
     <use href="#ch-cheeks" />
@@ -320,8 +304,8 @@
   <!-- curious：歪着头看你（问名字那页） -->
   <g id="pose-curious">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-raised" />
     <use href="#ch-eyes-dots" />
@@ -332,8 +316,8 @@
   <!-- shy：害羞，深腮红，眼睛眯着 -->
   <g id="pose-shy">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-worried" />
     <use href="#ch-eyes-happy" />
@@ -344,8 +328,8 @@
   <!-- surprise：吓一跳——瞪圆的眼、汗滴 -->
   <g id="pose-surprise">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-raised" />
     <use href="#ch-eyes-wide" />
@@ -356,8 +340,8 @@
   <!-- cheeky：调皮，眨一只眼、吐舌头 -->
   <g id="pose-cheeky">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-wink" />
@@ -365,11 +349,11 @@
     <use href="#ch-mouth-tongue" />
   </g>
 
-  <!-- cheer：两只手举高，欢呼 -->
+  <!-- cheer：保留旧ID，以笑脸与小脚表达欢呼，不增加手。 -->
   <g id="pose-cheer">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-up" />
-    <use href="#ch-arm-r-up" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-happy" />
@@ -377,11 +361,11 @@
     <use href="#ch-mouth-grin" />
   </g>
 
-  <!-- wave：一只手举起来招手 -->
+  <!-- wave：保留旧ID，以面向读者的笑脸回应，不画招手。 -->
   <g id="pose-wave">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-up" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-happy" />
@@ -392,8 +376,8 @@
   <!-- sleepy：困了，半闭眼，软下来 -->
   <g id="pose-sleepy">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-neutral" />
     <use href="#ch-eyes-half" />
@@ -401,11 +385,43 @@
     <use href="#ch-mouth-smile" />
   </g>
 
+  <!-- 躲在毯下：复用原有双脚，身体与脸不在毯边提前露出。 -->
+  <g id="pose-hidden-feet">
+    <use href="#ch-feet" />
+  </g>
+
+  <!-- 盖好毯子：只露出原有双眼，不把脸、身体或双脚带到毯外。 -->
+  <g id="pose-hidden-eyes">
+    <use href="#ch-eyes-dots" />
+  </g>
+
+  <!-- 靠近陪伴者：原疲倦姿态与肚纹一起歪靠，不改变零件形状。 -->
+  <g id="pose-lean-close">
+    <g transform="rotate(-12 500 650)">
+      <use href="#pose-tired" />
+      <use href="#ch-spiral" />
+    </g>
+  </g>
+
+  <!-- 拒水转脸：身体不迎杯，闭嘴与五官转向杯子的反侧。 -->
+  <g id="pose-turn-away">
+    <use href="#ch-feet" />
+
+
+    <use href="#ch-body" />
+    <g transform="translate(-65 0)">
+      <use href="#ch-brows-droop" />
+      <use href="#ch-eyes-half" />
+      <use href="#ch-cheeks" />
+      <use href="#ch-mouth-flat" />
+    </g>
+  </g>
+
   <!-- tired：累了，眉毛垂下来，嘴抿着 -->
   <g id="pose-tired">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-droop" />
     <use href="#ch-eyes-half" />
@@ -416,8 +432,8 @@
   <!-- yawn：打哈欠——大张嘴，眉毛塌下来，眼睛半闭 -->
   <g id="pose-yawn">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-droop" />
     <use href="#ch-eyes-half" />
@@ -427,8 +443,8 @@
   <!-- grumpy：不高兴、把脸转开（第二册：它不喝水、不吃药）——眉里端往下、嘴往下撇 -->
   <g id="pose-grumpy">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-angry" />
     <use href="#ch-eyes-dots" />
@@ -442,8 +458,8 @@
        圆眼睛（ch-eyes-dots）配这张脸读起来像发愣。 -->
   <g id="pose-ouch">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-worried" />
     <use href="#ch-eyes-half" />
@@ -454,8 +470,8 @@
   <!-- proud：得意，歪嘴，旁边一颗闪光 -->
   <g id="pose-proud">
     <use href="#ch-feet" />
-    <use href="#ch-arm-l-down" />
-    <use href="#ch-arm-r-down" />
+
+
     <use href="#ch-body" />
     <use href="#ch-brows-excited" />
     <use href="#ch-eyes-dots" />
@@ -464,4 +480,296 @@
     <use href="#ch-sparkle" />
   </g>
 
+
+  <!-- P1-1共用脚型：接地、跨步、悬脚、收脚与趴伏，均不使用手臂。 -->
+  <g id="ch-feet-stride" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 370 744 C 337 754 270 792 283 817 C 300 842 347 815 395 775 Z" />
+    <path d="M 596 749 C 625 730 672 747 684 774 C 690 797 651 800 614 780 Z" />
+  </g>
+  <g id="ch-foot-planted" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round">
+    <path d="M 386 752 C 366 762 350 782 354 802 C 358 822 384 828 402 816 C 417 806 428 786 428 758 Z" />
+  </g>
+  <g id="ch-foot-raised" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round">
+    <path d="M 622 730 C 649 706 675 686 694 698 C 716 715 690 746 662 756 Z" />
+  </g>
+  <g id="ch-feet-trailing" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round">
+    <path d="M 754 721 C 788 696 835 682 844 704 C 855 728 816 752 780 760 Z" />
+    <path d="M 760 775 C 794 768 843 783 836 806 C 829 829 793 818 764 808 Z" />
+  </g>
+  <g id="ch-feet-folded" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round">
+    <path d="M 570 780 C 599 751 629 753 638 774 C 644 794 610 806 583 806 Z" />
+    <path d="M 630 784 C 650 758 679 768 683 786 C 689 808 657 815 636 808 Z" />
+  </g>
+  <g id="ch-feet-lifted" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round">
+    <path d="M 375 715 C 350 689 328 681 323 702 C 319 724 347 743 369 745 Z" />
+    <path d="M 625 715 C 650 689 672 681 677 702 C 681 724 653 743 631 745 Z" />
+  </g>
+  <!-- 注视与小幅表情独立于衣物。拒绝用旧闭嘴转脸，愿喝先张嘴。 -->
+  <g id="ch-eyes-looking">
+    <ellipse cx="408" cy="352" rx="30" ry="34" style="fill:var(--paper);stroke:var(--ink);stroke-width:14" />
+    <ellipse cx="586" cy="352" rx="30" ry="34" style="fill:var(--paper);stroke:var(--ink);stroke-width:14" />
+    <circle cx="397" cy="354" r="16" style="fill:var(--ink)" />
+    <circle cx="575" cy="354" r="16" style="fill:var(--ink)" />
+  </g>
+  <g id="ch-face-ready"><use href="#ch-brows-neutral" /><use href="#ch-eyes-dots" /><use href="#ch-mouth-smile" /></g>
+  <g id="ch-face-willing"><use href="#ch-brows-raised" /><use href="#ch-eyes-looking" /><use href="#ch-mouth-oops" /></g>
+  <g id="ch-face-hesitant"><use href="#ch-brows-worried" /><use href="#ch-eyes-looking" /><use href="#ch-mouth-flat" /></g>
+  <g id="ch-face-tense"><use href="#ch-brows-angry" /><use href="#ch-eyes-dots" /><use href="#ch-mouth-flat" /></g>
+  <g id="ch-face-rest"><use href="#ch-brows-neutral" /><use href="#ch-eyes-half" /><use href="#ch-mouth-smile" /></g>
+  <g id="ch-face-profile" style="stroke:var(--ink);stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 329 305 Q 350 291 373 297" style="fill:none;stroke-width:15" />
+    <circle cx="350" cy="350" r="26" style="fill:var(--ink);stroke:none" />
+    <circle cx="341" cy="341" r="8" style="fill:var(--paper);stroke:none" />
+    <path d="M 292 449 Q 325 475 360 453" style="fill:none;stroke-width:24" />
+  </g>
+  <!-- 三个附着区随身体坐标整体变形。局部线条不用文档选择器。 -->
+  <g id="ch-wear-head-front" data-anchor="head">
+    <g style="display:var(--wear-headband,none);transform:var(--wear-head-tilt,none);transform-origin:500px 265px">
+      <path d="M 306 270 Q 500 222 693 270" style="fill:none;stroke:var(--ink);stroke-width:48;stroke-linecap:round" />
+      <path d="M 306 270 Q 500 222 693 270" style="fill:none;stroke:var(--yellow);stroke-width:26;stroke-linecap:round" />
+      <path d="M 376 254 L 387 275 M 455 245 L 461 267 M 535 246 L 533 268 M 615 256 L 605 277" style="fill:none;stroke:var(--blue);stroke-width:12" />
+    </g>
+    <path d="M 548 249 L 597 237 L 609 272 L 563 286 Z" style="display:var(--wear-paper,none);fill:var(--red);stroke:var(--ink);stroke-width:10;stroke-linejoin:round" />
+  </g>
+  <g id="ch-wear-head-back" data-anchor="head">
+    <g style="display:var(--wear-headband,none);transform:var(--wear-head-tilt,none);transform-origin:500px 265px">
+      <path d="M 306 270 Q 500 222 693 270" style="fill:none;stroke:var(--ink);stroke-width:48;stroke-linecap:round" />
+      <path d="M 306 270 Q 500 222 693 270" style="fill:none;stroke:var(--yellow);stroke-width:26;stroke-linecap:round" />
+      <path d="M 485 258 L 455 285 L 478 301 L 500 268 L 530 299 L 551 281 L 514 256 Z" style="fill:var(--blue);stroke:var(--ink);stroke-width:12;stroke-linejoin:round" />
+    </g>
+  </g>
+  <g id="ch-wear-neck-front" data-anchor="neck">
+    <g style="display:var(--wear-scarf,none);fill:var(--orange);stroke:var(--ink);stroke-width:14;stroke-linejoin:round">
+      <path d="M 315 530 Q 500 566 685 530 L 663 565 Q 500 592 335 565 Z" />
+      <path d="M 633 559 L 680 562 L 699 619 L 661 608 Z" />
+      <path d="M 370 548 L 399 565 M 555 556 L 576 570" style="display:var(--wear-crease,none);fill:none;stroke-width:10" />
+    </g>
+  </g>
+  <g id="ch-wear-neck-back" data-anchor="neck">
+    <g style="display:var(--wear-scarf,none);fill:var(--orange);stroke:var(--ink);stroke-width:14;stroke-linejoin:round">
+      <path d="M 315 530 Q 500 566 685 530 L 663 565 Q 500 592 335 565 Z" />
+      <path d="M 485 553 L 450 598 L 478 614 L 504 568 L 532 615 L 555 595 L 520 551 Z" />
+      <path d="M 370 548 L 399 565" style="display:var(--wear-crease,none);fill:none;stroke-width:10" />
+    </g>
+  </g>
+  <g id="ch-wear-torso-front" data-anchor="torso">
+    <g style="display:var(--wear-vest,none);fill:var(--blue);stroke:var(--ink);stroke-width:16;stroke-linejoin:round">
+      <path d="M 301 538 L 412 551 L 414 745 L 318 720 Q 283 631 301 538 Z" />
+      <path d="M 588 551 L 695 538 Q 723 640 676 723 L 586 745 Z" />
+      <path d="M 332 627 L 384 650 M 620 660 L 669 639" style="display:var(--wear-crease,none);fill:none;stroke-width:10" />
+    </g>
+    <g style="display:var(--wear-damp,none);fill:var(--deep-blue)"><path d="M 345 596 Q 322 627 345 635 Q 368 627 345 596 Z M 373 648 Q 354 675 373 682 Q 392 675 373 648 Z"/></g>
+    <g style="display:var(--wear-blanket,none);fill:var(--pink);stroke:var(--ink);stroke-width:18;stroke-linejoin:round">
+      <path d="M 270 438 L 331 477 L 321 727 L 245 696 Z" />
+      <path d="M 672 478 L 731 438 L 756 694 L 685 728 Z" />
+    </g>
+  </g>
+  <g id="ch-wear-torso-back" data-anchor="torso">
+    <path d="M 301 538 Q 500 580 695 538 L 676 723 Q 500 778 318 720 Z" style="display:var(--wear-vest,none);fill:var(--blue);stroke:var(--ink);stroke-width:16;stroke-linejoin:round" />
+    <path d="M 270 438 Q 500 510 731 438 L 756 694 Q 500 768 245 696 Z" style="display:var(--wear-blanket,none);fill:var(--pink);stroke:var(--ink);stroke-width:18;stroke-linejoin:round" />
+  </g>
+  <g id="ch-belly-colors" style="display:var(--belly-colors,none);stroke:none">
+    <path d="M 355 610 Q 410 580 465 610 L 465 745 Q 400 748 355 700 Z" style="fill:var(--red)"/>
+    <path d="M 465 610 Q 515 585 550 610 L 550 745 L 465 745 Z" style="fill:var(--blue)"/>
+    <path d="M 550 610 Q 615 580 650 610 L 650 700 Q 610 750 550 745 Z" style="fill:var(--yellow)"/>
+  </g>
+  <!-- 动作轮廓是零件，不是把同一个圆整体压扁。五官、腹纹与衣物仍共用原锚点。 -->
+  <g id="ch-body-driving" style="fill:var(--body);stroke:var(--ink);stroke-width:var(--line);stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 492 239 C 614 228 692 282 743 390 C 770 449 785 525 773 595 C 763 693 685 766 577 780 C 443 802 293 777 235 692 C 188 624 226 513 257 438 C 286 352 355 250 492 239 Z"/>
+    <use href="#ch-belly-colors"/>
+  </g>
+  <g id="ch-body-gathered" style="fill:var(--body);stroke:var(--ink);stroke-width:var(--line);stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 480 241 C 597 223 710 276 749 378 C 785 464 748 523 770 604 C 802 724 684 783 538 785 C 399 790 267 771 233 679 C 206 608 246 566 244 496 C 236 383 322 261 480 241 Z"/>
+    <use href="#ch-belly-colors"/>
+  </g>
+  <g id="ch-body-laden" style="fill:var(--body);stroke:var(--ink);stroke-width:var(--line);stroke-linecap:round;stroke-linejoin:round">
+    <path d="M 490 240 C 591 236 637 279 678 341 C 735 416 783 519 774 617 C 771 734 648 793 509 789 C 371 797 235 753 222 641 C 208 528 257 432 311 347 C 352 279 403 237 490 240 Z"/>
+    <use href="#ch-belly-colors"/>
+  </g>
+  <g id="ch-rig-outline">
+    <use href="#ch-body" style="display:var(--contour-round,inline)"/>
+    <use href="#ch-body-driving" style="display:var(--contour-driving,none)"/>
+    <use href="#ch-body-gathered" style="display:var(--contour-gathered,none)"/>
+    <use href="#ch-body-laden" style="display:var(--contour-laden,none)"/>
+  </g>
+  <g id="ch-rig-front">
+    <use href="#ch-rig-outline" />
+    <use href="#ch-wear-torso-front" />
+    <use href="#ch-wear-neck-front" />
+    <use href="#ch-wear-head-front" />
+  </g>
+  <g id="ch-rig-back">
+    <use href="#ch-rig-outline" style="--belly-colors:none" />
+    <use href="#ch-wear-torso-back" />
+    <use href="#ch-wear-neck-back" />
+    <use href="#ch-wear-head-back" />
+  </g>
+  <g id="pose-ready">
+    <use href="#ch-feet" />
+    <g data-rig-body transform="translate(0 0)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-ready" />
+    </g>
+  </g>
+  <g id="pose-willing">
+    <use href="#ch-feet" />
+    <g data-rig-body transform="translate(0 0)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-willing" />
+    </g>
+  </g>
+  <g id="pose-hesitant">
+    <use href="#ch-feet" />
+    <g data-rig-body transform="translate(0 0)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-hesitant" />
+    </g>
+  </g>
+  <g id="pose-braced">
+    <use href="#ch-feet" />
+    <g data-rig-body transform="translate(75 -70) scale(.85 1.1)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-tense" />
+    </g>
+  </g>
+  <g id="pose-step">
+    <use href="#ch-feet-stride" />
+    <g data-rig-body transform="translate(25 0) scale(.95 1)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-ready" />
+    </g>
+  </g>
+  <g id="pose-poised">
+    <use href="#ch-foot-planted" />
+    <g data-rig-body transform="translate(0 0)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-hesitant" />
+    </g>
+    <use href="#ch-foot-raised" />
+  </g>
+  <g id="pose-yield">
+    <use href="#ch-feet-stride" />
+    <g data-rig-body transform="translate(55 35) scale(.9 .95)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-ready" />
+    </g>
+  </g>
+  <g id="pose-push">
+    <use href="#ch-feet-stride" />
+    <g data-rig-body transform="translate(25 180) scale(.95 .78)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-profile" />
+    </g>
+  </g>
+  <g id="pose-prone">
+    <use href="#ch-feet-trailing" />
+    <g data-rig-body transform="translate(-100 365) scale(1.2 .55)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-rest" />
+    </g>
+  </g>
+  <g id="pose-back">
+    <use href="#ch-feet" />
+    <g data-rig-body transform="translate(0 0)">
+      <use href="#ch-rig-back" />
+    </g>
+  </g>
+  <g id="pose-side">
+    <use href="#ch-feet" />
+    <g data-rig-body transform="translate(150 60) scale(.75 .92)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-profile" />
+    </g>
+  </g>
+  <g id="pose-curled">
+    <g data-rig-body transform="translate(-40 280) scale(1.05 .66)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-rest" />
+    </g>
+    <use href="#ch-feet-folded" />
+  </g>
+  <g id="pose-inflated">
+    <g data-rig-body transform="translate(-110 -135) scale(1.22 1.22)">
+      <use href="#ch-rig-front" />
+      <use href="#ch-face-hesitant" />
+    </g>
+    <use href="#ch-feet-lifted" />
+  </g>
+
+
+  <!-- 共用吞咽、重心与飞行姿态：沿用身体、脚、五官和穿戴零件，无手。 -->
+  <g id="pose-look-down"><use href="#ch-feet"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-front"/><g transform="translate(0 45)"><use href="#ch-brows-worried"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-oops"/></g></g></g>
+  <g id="pose-chew"><use href="#ch-feet"/><g data-rig-body transform="translate(-20 -20) scale(1.04 1)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-wide"/><use href="#ch-mouth-flat"/><ellipse cx="705" cy="500" rx="65" ry="82" style="fill:var(--body);stroke:var(--ink);stroke-width:20"/></g></g>
+  <g id="pose-tiptoe"><use href="#ch-feet"/><g data-rig-body transform="translate(65 -125) scale(.87 1.15)"><use href="#ch-rig-front"/><use href="#ch-face-willing"/></g></g>
+  <g id="pose-round-ground"><use href="#ch-feet"/><g data-rig-body transform="translate(-110 -135) scale(1.22 1.22)"><use href="#ch-rig-front"/><use href="#ch-face-hesitant"/></g></g>
+  <g id="pose-cross-eyed"><use href="#ch-feet"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><g style="fill:var(--paper);stroke:var(--ink);stroke-width:12"><ellipse cx="412" cy="352" rx="45" ry="38"/><ellipse cx="588" cy="352" rx="45" ry="38"/></g><g style="fill:var(--ink)"><circle cx="435" cy="335" r="20"/><circle cx="565" cy="335" r="20"/></g><use href="#ch-mouth-oops"/></g></g>
+  <g id="pose-flying"><g data-rig-body transform="rotate(78 500 500)"><use href="#ch-feet"/><use href="#ch-rig-front"/><use href="#ch-brows-excited"/><use href="#ch-eyes-wide"/><use href="#ch-mouth-oops"/></g></g>
+  <g id="pose-squash"><use href="#ch-feet"/><g data-rig-body transform="translate(-100 365) scale(1.2 .55)"><use href="#ch-rig-front"/><use href="#ch-face-rest"/></g></g>
+  <g id="pose-sleep-curled"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-half"/><use href="#ch-mouth-flat"/></g></g>
+
+  <g id="pose-look-back"><use href="#ch-feet-stride"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-front"/><g transform="rotate(-9 400 350)"><use href="#ch-face-profile"/></g></g></g>
+  <g id="pose-lean-rest"><use href="#ch-feet-folded"/><g data-rig-body transform="rotate(-15 500 650)"><use href="#ch-rig-back"/></g></g>
+
+  <g id="ch-eyes-sleep" style="fill:none;stroke:var(--ink);stroke-width:18;stroke-linecap:round"><path d="M 382 350 Q 408 372 434 350 M 562 350 Q 588 372 614 350"/></g>
+  <g id="ch-eyes-squeeze" style="fill:none;stroke:var(--ink);stroke-width:18;stroke-linecap:round"><path d="M 384 326 L 426 350 L 384 374 M 612 326 L 570 350 L 612 374"/></g>
+  <g id="ch-feet-kick"><use href="#ch-foot-planted"/><path d="M 638 745 Q 725 702 780 733 Q 795 759 754 775 L 654 786 Z" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round"/></g>
+  <g id="pose-sick-curled"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-droop"/><use href="#ch-eyes-half"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-sick-raised"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(40 100) scale(.92 .86)"><use href="#ch-rig-front"/><use href="#ch-brows-droop"/><use href="#ch-eyes-half"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-bitter-curled"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 180) scale(1.05 .78)"><use href="#ch-rig-front"/><use href="#ch-brows-angry"/><use href="#ch-eyes-squeeze"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-kick-corner"><use href="#ch-feet-kick"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-half"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-rise-one"><use href="#ch-foot-planted"/><g data-rig-body transform="translate(15 130) scale(.97 .84)"><use href="#ch-rig-front"/><use href="#ch-brows-worried"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-push-corner"><use href="#ch-feet-kick"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-half"/><use href="#ch-mouth-smile"/></g></g>
+  <g id="pose-run"><use href="#ch-feet-stride"/><g data-rig-body transform="rotate(-12 500 650)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-dots"/><use href="#ch-mouth-smile"/></g></g>
+  <g id="pose-covered-rest"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-sleep"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="ch-mouth-sip"><ellipse cx="500" cy="455" rx="23" ry="13" style="fill:var(--mouth);stroke:var(--ink);stroke-width:12"/></g>
+  <g id="pose-sip"><use href="#ch-feet"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-front"/><use href="#ch-brows-droop"/><use href="#ch-eyes-half"/><use href="#ch-mouth-sip"/></g></g>
+
+  <!-- 球戏的重心、背转与等候；复用身体／脚／五官与穿戴锚点，仍无手。 -->
+  <g id="ch-eyes-up"><g style="fill:var(--paper);stroke:var(--ink);stroke-width:14"><ellipse cx="408" cy="352" rx="30" ry="34"/><ellipse cx="586" cy="352" rx="30" ry="34"/></g><g style="fill:var(--ink)"><circle cx="408" cy="336" r="16"/><circle cx="586" cy="336" r="16"/></g></g>
+  <g id="pose-pounce"><use href="#ch-feet-lifted"/><g data-rig-body transform="rotate(-20 500 650)"><use href="#ch-rig-front"/><use href="#ch-face-willing"/></g></g>
+  <g id="pose-guard-ball"><use href="#ch-feet-trailing"/><g data-rig-body transform="translate(-100 365) scale(1.2 .55)"><use href="#ch-rig-front"/><use href="#ch-face-tense"/></g></g>
+  <g id="pose-startled-seat"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(25 180) scale(.95 .78)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-wide"/><use href="#ch-mouth-oops"/></g></g>
+  <g id="pose-sad-seat"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-worried"/><use href="#ch-eyes-half"/><use href="#ch-mouth-frown"/></g></g>
+  <g id="pose-listen-back"><use href="#ch-feet"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-back"/><circle cx="295" cy="355" r="17" style="fill:var(--ink)"/><path d="M 277 315 Q 295 304 312 312" style="fill:none;stroke:var(--ink);stroke-width:14;stroke-linecap:round"/></g></g>
+  <g id="pose-half-turn"><use href="#ch-feet"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-back"/><use href="#ch-face-profile-wary"/></g></g>
+  <g id="pose-push-right"><use href="#ch-feet-stride"/><g data-rig-body transform="translate(1000 0) scale(-1 1) translate(25 180) scale(.95 .78)"><use href="#ch-rig-front"/><use href="#ch-face-profile"/></g></g>
+  <g id="pose-bow"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(0 70) scale(1 .92)"><use href="#ch-rig-front"/><use href="#ch-face-rest"/></g></g>
+  <g id="pose-waiting-up"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-up"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-joy"><use href="#ch-feet-stride"/><g data-rig-body transform="rotate(-5 500 650)"><use href="#ch-rig-front"/><use href="#ch-brows-excited"/><use href="#ch-eyes-happy"/><use href="#ch-mouth-open"/></g></g>
+  <g id="pose-curled-yawn"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-droop"/><use href="#ch-eyes-half"/><use href="#ch-mouth-open"/></g></g>
+
+  <g id="ch-face-profile-wary" style="stroke:var(--ink);stroke-linecap:round"><path d="M 329 300 Q 350 290 373 303" style="fill:none;stroke-width:15"/><circle cx="350" cy="350" r="26" style="fill:var(--ink);stroke:none"/><circle cx="341" cy="341" r="8" style="fill:var(--paper);stroke:none"/><path d="M 300 455 L 354 455" style="fill:none;stroke-width:22"/></g>
+  <g id="pose-guard-step"><use href="#ch-feet-stride"/><g data-rig-body transform="translate(55 35) scale(.9 .95)"><use href="#ch-rig-front"/><use href="#ch-face-tense"/></g></g>
+  <g id="pose-press-ball"><use href="#ch-feet-stride"/><g data-rig-body transform="translate(25 180) scale(.95 .78)"><use href="#ch-rig-front"/><use href="#ch-face-tense"/></g></g>
+  <!-- 张力与松动分开，仍组合既有身体、脚、五官和穿戴锚点。 -->
+  <g id="pose-stretch-up"><use href="#ch-feet"/><g data-rig-body transform="translate(65 -125) scale(.87 1.15)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-up"/><use href="#ch-mouth-oops"/></g></g>
+  <g id="pose-stretch-look"><use href="#ch-feet"/><g data-rig-body transform="translate(65 -125) scale(.87 1.15)"><use href="#ch-rig-front"/><g transform="translate(0 40)"><use href="#ch-face-hesitant"/></g></g></g>
+  <g id="pose-recoil-step"><use href="#ch-foot-planted"/><use href="#ch-foot-raised"/><g data-rig-body transform="translate(55 35) scale(.9 .95)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-wide"/><use href="#ch-mouth-oops"/></g></g>
+  <g id="pose-tense-back"><use href="#ch-feet"/><g data-rig-body transform="translate(75 -70) scale(.85 1.1)"><use href="#ch-rig-back"/></g></g>
+  <g id="ch-face-profile-tense"><use href="#ch-face-profile-wary"/><path d="M 322 302 L 375 316" style="fill:none;stroke:var(--ink);stroke-width:17;stroke-linecap:round"/></g>
+  <g id="ch-cheek-puff"><path d="M 302 399 Q 242 420 278 468 L 305 478" style="fill:var(--body);stroke:var(--ink);stroke-width:20;stroke-linejoin:round"/></g>
+  <g id="pose-puffed-side"><use href="#ch-feet"/><g data-rig-body transform="translate(150 60) scale(.75 .92)"><use href="#ch-rig-back"/><use href="#ch-cheek-puff"/><use href="#ch-face-profile-tense"/></g></g>
+  <g id="pose-breath-side"><use href="#ch-feet"/><g data-rig-body transform="translate(150 60) scale(.75 .92)"><use href="#ch-rig-back"/><use href="#ch-face-profile-tense"/><ellipse cx="314" cy="455" rx="20" ry="12" style="fill:var(--mouth);stroke:var(--ink);stroke-width:12"/></g></g>
+  <g id="pose-soften-side"><use href="#ch-feet"/><g data-rig-body transform="translate(150 60) scale(.75 .92)"><use href="#ch-rig-back"/><use href="#ch-face-profile-wary"/></g></g>
+  <g id="pose-neutral-front"><use href="#ch-feet"/><g data-rig-body transform="translate(0 0)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-dots"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-ask-soft"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-oops"/></g></g>
+  <g id="ch-feet-dangle" style="fill:var(--body);stroke:var(--ink);stroke-width:24;stroke-linejoin:round"><path d="M 383 748 Q 355 823 380 897 Q 405 924 423 891 L 425 755 Z M 607 748 L 613 881 Q 640 919 662 880 Q 665 816 649 749 Z"/></g>
+  <g id="ch-foot-left-raised"><g transform="translate(1000 0) scale(-1 1)"><use href="#ch-foot-raised"/></g></g>
+  <g id="ch-foot-right-planted"><g transform="translate(1000 0) scale(-1 1)"><use href="#ch-foot-planted"/></g></g>
+  <g id="pose-head-nudge"><g data-rig-body transform="translate(50 -40) scale(.9) rotate(-55 500 650)"><use href="#ch-feet-stride"/><use href="#ch-rig-front"/><use href="#ch-face-hesitant"/></g></g>
+  <g id="pose-tilt-foot"><use href="#ch-foot-planted"/><g data-rig-body transform="rotate(18 500 650)"><use href="#ch-rig-front"/><use href="#ch-face-hesitant"/></g><use href="#ch-foot-raised"/></g>
+  <g id="pose-cry-seat"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-worried"/><use href="#ch-eyes-half"/><use href="#ch-mouth-open"/><path d="M 405 385 Q 362 442 400 460 Q 437 442 405 385 Z M 580 385 Q 548 442 580 460 Q 616 442 580 385 Z" style="fill:var(--blue);stroke:var(--ink);stroke-width:10"/></g></g>
+  <g id="pose-held-rest"><g data-rig-body transform="translate(-40 210) scale(1.05 .76)"><use href="#ch-rig-front"/><use href="#ch-brows-droop"/><use href="#ch-eyes-half"/><use href="#ch-mouth-flat"/></g><use href="#ch-feet-dangle"/></g>
+  <g id="pose-proud-belly"><use href="#ch-feet"/><g data-rig-body transform="translate(75 -70) scale(.85 1.1)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-wide"/><use href="#ch-mouth-smile"/></g></g>
+  <g id="pose-poised-left"><use href="#ch-foot-right-planted"/><g data-rig-body transform="translate(-40 0)"><use href="#ch-rig-front"/><use href="#ch-face-hesitant"/></g><use href="#ch-foot-left-raised"/></g>
+  <g id="pose-withdraw-step"><use href="#ch-feet-stride"/><g data-rig-body transform="translate(55 35) scale(.9 .95)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-watch-seat"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 280) scale(1.05 .66)"><use href="#ch-rig-front"/><use href="#ch-brows-neutral"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-flat"/></g></g>
+  <!-- 倾听、探近与退缩：脚的支点留在地上，身体独立偏转。 -->
+  <g id="ch-feet-pivot"><use href="#ch-foot-planted"/><g transform="rotate(-24 620 755)"><use href="#ch-foot-right-planted"/></g></g>
+  <g id="pose-curious-tilt"><use href="#ch-feet-pivot"/><g data-rig-body transform="rotate(-13 500 760)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-oops"/></g></g>
+  <g id="pose-lean-near"><use href="#ch-feet-stride"/><g data-rig-body transform="rotate(12 500 760)"><use href="#ch-rig-front"/><use href="#ch-face-willing"/></g></g>
+  <g id="pose-beaming-lean"><use href="#ch-feet-pivot"/><g data-rig-body transform="rotate(10 500 760)"><use href="#ch-rig-front"/><use href="#ch-brows-excited"/><use href="#ch-eyes-happy"/><use href="#ch-mouth-smile"/></g></g>
+  <g id="pose-huddle-away"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(30 180) scale(.94 .78) rotate(-12 500 650)"><use href="#ch-rig-back"/></g></g>
+  <g id="pose-listen-low"><use href="#ch-feet-folded"/><g data-rig-body transform="translate(-40 220) scale(1.05 .74) rotate(8 500 650)"><use href="#ch-rig-front"/><use href="#ch-brows-worried"/><use href="#ch-eyes-looking"/><use href="#ch-mouth-flat"/></g></g>
+  <g id="pose-belly-offer"><use href="#ch-feet-pivot"/><g data-rig-body transform="translate(-40 -25) scale(1.08 1.02) rotate(-7 500 760)"><use href="#ch-rig-front"/><use href="#ch-brows-raised"/><use href="#ch-eyes-happy"/><use href="#ch-mouth-smile"/></g></g>
 </svg>

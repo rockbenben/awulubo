@@ -1,37 +1,136 @@
-/* S6 吃太多：鼓成一个大球 */
-export default [
-  {
-    id: 'p16',
-    template: 't-dialog',
-    sound: 'chomp',
-    aria: '还要！还要！啊呜、啊呜、啊呜……再喂一口！',
-    bg: { kind: 'rays-corner', colors: ['--orange'], focus: [-40, 1040], cover: 'all', wash: '--wash-orange' },
-    props: [
-      { kind: 'apple', at: [680, 560], scale: 0.2, rotate: 16, class: 'prop-apple' },
-      { kind: 'star', at: [780, 300], scale: 0.15, rotate: -12, class: 'prop-star' },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "disc",
+    "wash": "--wash-yellow",
+    "colors": [
+      "--yellow"
     ],
-    char: { pose: 'hungry', at: [230, 190], scale: 0.56, spiral: true, id: 'grow-char' },
-    text: {
-      narration: { text: '还要！还要！', at: [60, 70], size: 3.4, width: 300 },
-      sound: { at: [330, 100], size: 13, rotate: -2, text: '啊呜、啊呜、<br>啊呜……' },
-      prompt: { text: '再喂一口！', at: [60, 870], size: 4, width: 320 },
-    },
-    /* 点空白不翻页：这一页要连喂三口，戳一下空地不该把这一页跳过去 */
-    trap: true,
-    hotspot: { action: 'feed', target: 'apple', at: [660, 580], size: 260, label: '再喂噜啵一口' },
+    "gap": "--paper",
+    "cover": "all"
   },
-  {
-    id: 'p17',
-    template: 't-dialog',
-    sound: 'gulu',
-    aria: '哎呀……噜啵吃太多，动不了了。帮帮我——点点它的肚子。',
-    bg: { kind: 'rays-tight', colors: ['--orange'], focus: [1000, 640], cover: 'all', wash: '--wash-orange' },
-    char: { pose: 'full', at: [120, 250], scale: 0.82, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 400, text: '哎呀……噜啵吃太多，<br>动不了了。帮帮我——' },
-      sound: { text: '咕噜……', at: [500, 70], size: 12, rotate: 3 },
-      prompt: { text: '点点它的肚子。', at: [60, 870], size: 4, width: 320 },
-    },
-    hotspot: { action: 'belly', target: 'belly', at: [340, 540], size: 280, label: '点点噜啵的肚子' },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "noSound": true,
+      "id": "p16",
+      "template": "t-dialog",
+      "reading": "simulate",
+      "aria": "它还张着大嘴。再喂一口苹果。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            105
+          ],
+          "size": 7.428571428571429,
+          "width": 643.6,
+          "text": "它还张着大嘴。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "再喂一口苹果。",
+          "print": "再喂一口苹果。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "willing",
+        "at": [
+          100,
+          215
+        ],
+        "scale": 0.7,
+        "spiral": true,
+        "state": "state-rainbow"
+      },
+      "props": [
+        {
+          "id": "apple-C",
+          "kind": "apple",
+          "at": [
+            560,
+            480
+          ],
+          "scale": 0.27,
+          "class": "prop-apple"
+        }
+      ],
+      "hotspot": {
+        "targetId": "apple-C",
+        "action": "feed",
+        "target": "apple",
+        "at": [
+          560,
+          480
+        ],
+        "size": 280,
+        "label": "喂一口"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -73.04,
+          70.5
+        ],
+        "scale": 0.96
+      }
+    },
+    {
+      "noSound": true,
+      "id": "p17",
+      "template": "t-dialog",
+      "reading": "autonomous",
+      "aria": "肚子鼓成球，小脚碰不到地！",
+      "text": {
+        "narration": {
+          "at": [
+            169.01999999999998,
+            150
+          ],
+          "size": 4.7,
+          "width": 750.98,
+          "text": "肚子鼓成球，小脚碰不到地！",
+          "align": "right"
+        }
+      },
+      "responseTo": "p16",
+      "char": {
+        "pose": "inflated",
+        "at": [
+          150,
+          120
+        ],
+        "scale": 0.76,
+        "spiral": true,
+        "state": "state-rainbow"
+      },
+      "bg": {
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          -73.04,
+          70.5
+        ],
+        "scale": 0.96
+      }
+    }
+  ]
+};

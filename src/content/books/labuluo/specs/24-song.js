@@ -1,29 +1,165 @@
-/* S11 唱首歌给它听 */
-export default [
-  {
-    id: 'p24',
-    template: 't-dialog',
-    sound: 'chirp',
-    aria: '再唱首歌给它听。',
-    bg: { kind: 'rays-tight', colors: ['--pink'], gap: '--paper', focus: [1000, 620], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'asleep', state: 'state-pale', at: [290, 340], scale: 0.58, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '再唱首歌给它听。' },
-      sound: { at: [520, 76], size: 14, rotate: -2, text: '啦啦……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '小声唱。' },
-    },
+/** @satisfies {import('../../../../js/model.ts').Spread} */
+export default {
+  "background": {
+    "kind": "none",
+    "wash": "--wash-pink"
   },
-  {
-    id: 'p25',
-    template: 't-dialog',
-    sound: 'snore',
-    aria: '它睡着了。',
-    bg: { kind: 'rays-tight', colors: ['--pink'], gap: '--paper', focus: [0, 620], cover: 'all', wash: '--wash-pink' },
-    char: { pose: 'asleep', state: 'state-pale', at: [300, 350], scale: 0.6, spiral: true },
-    text: {
-      narration: { at: [60, 70], size: 3.4, width: 460, text: '它睡着了。' },
-      sound: { at: [520, 76], size: 14, rotate: 3, text: '呼噜……' },
-      prompt: { at: [60, 870], size: 4, width: 340, text: '你也该睡了。' },
-    },
+  "scene": {
+    "kind": "room"
   },
-];
+  "pages": [
+    {
+      "id": "p24",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "simulate",
+      "aria": "屋里静下来。\n轻轻哼一小段。",
+      "text": {
+        "narration": {
+          "at": [
+            80,
+            200
+          ],
+          "size": 5.2,
+          "width": 398.16,
+          "text": "屋里静下来。",
+          "align": "left"
+        },
+        "prompt": {
+          "at": [
+            90,
+            880
+          ],
+          "size": 4.2,
+          "width": 820,
+          "text": "轻轻哼一小段。",
+          "print": "轻轻哼一小段。",
+          "align": "left"
+        }
+      },
+      "char": {
+        "pose": "sick-curled",
+        "at": [
+          230,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": true,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "hotspot": {
+        "targetId": "character",
+        "action": "poke",
+        "at": [
+          328.77,
+          548.8
+        ],
+        "size": 403.14,
+        "label": "轻轻哼一小段"
+      },
+      "bg": {
+        "focus": [
+          1000,
+          500
+        ]
+      },
+      "framing": {
+        "at": [
+          72.21,
+          3.51
+        ],
+        "scale": 0.95
+      }
+    },
+    {
+      "id": "p25",
+      "template": "t-dialog",
+      "noSound": true,
+      "pat": false,
+      "reading": "autonomous",
+      "aria": "夜蓝色里，只剩毯子轻轻起伏。",
+      "text": {
+        "narration": {
+          "at": [
+            433.34,
+            200
+          ],
+          "size": 4.3,
+          "width": 486.66,
+          "text": "夜蓝色里，<br>只剩毯子轻轻起伏。",
+          "color": "--paper",
+          "align": "right"
+        }
+      },
+      "responseTo": "p24",
+      "char": {
+        "pose": "covered-rest",
+        "at": [
+          260,
+          300
+        ],
+        "scale": 0.62,
+        "spiral": false,
+        "state": "state-pale"
+      },
+      "props": [
+        {
+          "id": "cup-1",
+          "kind": "cup",
+          "at": [
+            35,
+            590
+          ],
+          "scale": 0.22,
+          "class": "prop-cup"
+        },
+        {
+          "id": "blanket-1",
+          "kind": "blanket-lap",
+          "at": [
+            235,
+            560
+          ],
+          "scale": 0.62
+        }
+      ],
+      "bg": {
+        "wash": "--night",
+        "focus": [
+          0,
+          500
+        ]
+      },
+      "turn": "夜蓝色",
+      "framing": {
+        "at": [
+          72.21,
+          3.51
+        ],
+        "scale": 0.95
+      }
+    }
+  ]
+};

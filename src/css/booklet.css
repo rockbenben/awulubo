@@ -50,6 +50,10 @@ body.booklet .sheet:last-child {
 body.booklet .cell {
   width: var(--cell-w);
   height: var(--sheet-h);
+  /* 格子已有固定宽高；隔离内部 216mm 原页的尺寸贡献。
+     transform 只缩放绘制，当前 Chromium 打印仍会把内部数字的未缩放偏移
+     计入整张纸宽度，从而把 A4 再缩小一次；overflow:hidden 无法阻止这次测量。 */
+  contain: size;
   overflow: hidden;
   position: relative;
 }
