@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { chromium, webkit } from 'playwright';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { verifyReaderTouch, verifyLegacyFullscreen } from './reader-touch.mjs';
+import { verifyReaderTouch, verifyLegacyFullscreen, verifyPortraitLayout } from './reader-touch.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const browser = await chromium.launch();
 try {
+  await verifyPortraitLayout(browser);
   await verifyReaderTouch(browser);
   await verifyLegacyFullscreen(browser);
   const page = await browser.newPage({ viewport: { width: 900, height: 900 } });
@@ -278,6 +279,7 @@ try {
   if (process.argv.includes('--webkit')) {
     const safariEngine = await webkit.launch();
     try {
+      await verifyPortraitLayout(safariEngine);
       await verifyReaderTouch(safariEngine, false);
       await verifyLegacyFullscreen(safariEngine);
     } finally {

@@ -12,6 +12,7 @@ import { physicalSpreads } from './model.ts';
   var pages = allPages.slice();
   var current = 0;
   var activeGroup = null;
+  var surroundColors = new WeakMap();
   /* 跨页：当前册摊开的样子——一项是一页或两页。
      见 buildSpreads 的说明：哪两页对在一起是物理决定的。 */
   var spreads = { groups: [], owner: [] };
@@ -168,6 +169,21 @@ import { physicalSpreads } from './model.ts';
     }
   }
 
+  /* 竖屏把书页的底色延展到空余屏幕；只读取底色，不复制角色或笔触。 */
+  function syncSurround(page) {
+    if (isStatic()) return;
+    var color = surroundColors.get(page);
+    if (!color) {
+      var base = page.querySelector('[data-scene-base]');
+      var effects = page.querySelector('.fx');
+      color = base ? getComputedStyle(base).fill :
+        effects ? getComputedStyle(effects).getPropertyValue('--wash').trim() : '';
+      color = color || 'var(--paper)';
+      surroundColors.set(page, color);
+    }
+    document.body.style.setProperty('--reader-surround', color);
+  }
+
   function show(i) {
     if (!pages.length) return;
     var n = Math.max(0, Math.min(pages.length - 1, i));
@@ -213,6 +229,7 @@ import { physicalSpreads } from './model.ts';
     var stage = document.getElementById('stage');
     if (stage) stage.setAttribute('data-pages', String(group.length));
     current = n;
+    syncSurround(first);
     var id = pages[current].getAttribute('data-id');
     /* 换页：上一页还在计时的效果、还没兑现的翻页请求、还没响的进场音，都作废 */
     global.BookEffects.enter(group);

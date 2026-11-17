@@ -5,6 +5,53 @@ import { pathToFileURL, fileURLToPath } from 'node:url';
 
 const entry = pathToFileURL(path.join(fileURLToPath(new URL('../', import.meta.url)), 'dist/index.html')).href;
 
+export async function verifyPortraitLayout(browser) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }, { width: 768, height: 1024 }]) {
+      await page.setViewportSize(viewport);
+      for (const [id, color] of [['p03', 'rgb(252, 227, 231)'], ['p54', 'rgb(46, 42, 90)']]) {
+        await page.goto(entry + '?book=awulubo#' + id);
+        await page.waitForFunction(expected => Book.page().dataset.id === expected, id);
+        const state = await page.evaluate(() => {
+          const page = Book.page();
+          const rect = page.getBoundingClientRect();
+          const art = page.querySelector('.art > svg').getBoundingClientRect();
+          const char = page.querySelector('.char').getScreenCTM();
+          const controls = [...document.querySelectorAll('#fullscreen-btn, #shell-btn, #page-btn, #mute')].map(el => el.getBoundingClientRect());
+          return { color: getComputedStyle(document.body).backgroundColor,
+            width: rect.width, height: rect.height, artWidth: art.width, artHeight: art.height,
+            sx: Math.hypot(char.a, char.b), sy: Math.hypot(char.c, char.d),
+            controlsClear: controls.every(control => control.bottom <= rect.top),
+            scrolls: document.documentElement.scrollHeight > innerHeight };
+        });
+        assert.equal(state.color, color, id + ' 竖屏衬底须跟随书页底色');
+        assert.equal(state.width, state.height, '书页保持完整正方形');
+        assert.equal(state.artWidth, state.width);
+        assert.equal(state.artHeight, state.height);
+        assert.ok(Math.abs(state.sx - state.sy) < .001, '角色保持等比缩放');
+        assert.ok(state.controlsClear, '工具按钮不能遮挡竖屏画面');
+        assert.equal(state.scrolls, false, '不产生纵向滚动');
+      }
+      await page.evaluate(() => Book.goToId('p58'));
+      assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(36, 31, 76)', '夜尾衬底继续变暗');
+      await page.evaluate(() => Book.setBook('labuluo'));
+      assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(138, 191, 233)', '换册时同步衬底');
+    }
+    await page.setViewportSize({ width: 844, height: 390 });
+    assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(255, 255, 255)', '横屏沿用纸白衬底');
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const name of ['proof', 'print', 'booklet']) {
+      await page.goto(entry.replace(/index\.html$/, name + '.html') + '?book=awulubo');
+      assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(255, 255, 255)', name + ' 保留纸白');
+      assert.equal(await page.evaluate(() => document.body.style.getPropertyValue('--reader-surround')), '', name + ' 不执行衬底同步');
+    }
+    console.log('✓ 竖屏随页衬色、工具栏避让、方形完整画面与角色比例');
+  } finally {
+    await page.close();
+  }
+}
+
 export async function verifyReaderTouch(browser, native = true) {
   for (const viewport of [
     { width: 390, height: 844 }, { width: 844, height: 390 },
